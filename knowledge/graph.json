@@ -1,0 +1,19 @@
+{
+  "version": "1.1.0",
+  "updated_at": "2026-09-04T07:05:10.068079Z",
+  "note": "Empty seed for a blank repo. Nodes/edges are added via the knowledge_update action (gateway/kb_store.py:apply_knowledge_op). Never hand-edit.",
+  "graph": {
+    "nodes": [
+      {
+        "id": "player_system",
+        "type": "domain",
+        "label": "Player System",
+        "tags": [
+          "input",
+          "movement"
+        ]
+      }
+    ],
+    "edges": []
+  }
+}

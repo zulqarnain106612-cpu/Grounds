@@ -1,0 +1,84 @@
+name: ingest
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Why this ingest was triggered"
+        required: false
+        default: "manual"
+      commit:
+        description: "Commit refreshed indexes back to the branch"
+        required: false
+        default: "true"
+  schedule:
+    # Poll for drift: rebuild indexes nightly. Replaces any local polling loop.
+    - cron: "17 3 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    env:
+      JFA_CI: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+
+      - name: Rebuild symbol index
+        run: python -m gateway.symbol_scanner
+
+      - name: Rebuild KB index and knowledge graph
+        run: python -m gateway.ingest
+
+      - name: Rebuild manifest
+        run: python -m gateway.manifest
+
+      - name: Assert the KB is non-empty and retrievable
+        run: python -m gateway.verify_retrieval
+
+      - name: Validate repo after ingest
+        run: python -m gateway.validate_repo
+
+      - name: Summarise
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          kb = json.load(open("index/kb.index.json"))
+          g = json.load(open("knowledge/graph.json"))["graph"]
+          s = json.load(open("symbols/index.json"))
+          m = json.load(open("index/manifest.json"))
+          print("## Ingest result\n")
+          print(f"| artifact | count |\n| --- | --- |")
+          print(f"| kb chunks | {kb['chunk_count']} |")
+          print(f"| graph nodes | {len(g['nodes'])} |")
+          print(f"| graph edges | {len(g['edges'])} |")
+          print(f"| symbols | {len(s['symbols'])} |")
+          print(f"| manifest files | {m['counts']['files']} |")
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: indexes
+          path: |
+            index/kb.index.json
+            index/manifest.json
+            knowledge/graph.json
+            symbols/index.json
+
+      - name: Commit refreshed indexes
+        if: github.event.inputs.commit != 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index/kb.index.json index/manifest.json knowledge/graph.json symbols/index.json
+          if git diff --cached --quiet; then
+            echo "indexes already up to date"
+          else
+            git commit -m "chore(ingest): refresh kb index, graph, symbols, manifest [skip ci]"
+            git push
+          fi

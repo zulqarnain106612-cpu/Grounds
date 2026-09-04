@@ -1,0 +1,17 @@
+{
+  "version": "1.1.0",
+  "forbidden_cmd_regex": [
+    "\\bcat\\s+.*\\.(cs|json|log|txt|md)\\b",
+    "\\bless\\b",
+    "\\bmore\\b",
+    "\\bhead\\s+-n?\\s*[5-9][0-9]{2,}\\b",
+    "\\btail\\s+-n?\\s*[2-9][0-9]{1,}\\b",
+    "\\bgrep\\b.*\\.cs\\b",
+    "\\bfind\\b.*-exec\\s+cat\\b",
+    "\\bxxd\\b",
+    "\\bstrings\\b",
+    "\\bod\\b\\s+-c",
+    "\\bcp\\b.*Scripts/.*\\.cs\\b.*\\bstdout\\b"
+  ],
+  "notes": "These regexes are matched against CommandExec.cmd + args by gateway/enforcement.py before subprocess execution. A match raises ForbiddenCommandError; the gateway never runs the command. This list is defense-in-depth, not the primary control -- the primary control is that FileOp has no 'read' op and command_exec output is always truncated to output_lines/max_command_output_lines regardless of what the command prints."
+}

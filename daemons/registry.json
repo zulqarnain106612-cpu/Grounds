@@ -1,0 +1,21 @@
+{
+  "version": "1.1.0",
+  "daemons": {
+    "symbol_indexer": {
+      "id": "symbol_indexer",
+      "description": "Regex-scans watch_paths for class/interface/enum/struct/method declarations. Writes name/kind/file/line to symbols/index.json. Never emits file content.",
+      "watch_paths": ["Assets/_Game/Scripts/**/*.cs"],
+      "poll_interval_ms": 1500,
+      "action": "gateway.symbol_scanner:rebuild_symbol_index",
+      "output": "symbols/index.json"
+    },
+    "log_monitor": {
+      "id": "log_monitor",
+      "description": "Tails logs/*.log, extracts ERROR/FATAL lines only into logs/failures.cache.json. log_query reads this cache, never the raw log.",
+      "watch_paths": ["logs/*.log"],
+      "poll_interval_ms": 2000,
+      "action": "gateway.log_guard:refresh_failures_cache",
+      "output": "logs/failures.cache.json"
+    }
+  }
+}

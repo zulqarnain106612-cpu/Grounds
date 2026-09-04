@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+daemons/state/*.pid
+daemons/state/context.*.json
+logs/*.log

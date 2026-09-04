@@ -1,0 +1,56 @@
+{
+  "version": "1.1.0",
+  "project": "JetFighter",
+  "engine": "Unity 2022 LTS",
+  "language": "C# (IL2CPP + Burst)",
+  "current_phase": "1",
+  "schema": "schema/agent.schema.json",
+  "source_globs": [
+    "Assets/_Game/Scripts/**/*.cs"
+  ],
+  "log_dir": "logs",
+  "kb_index": "index/kb.index.json",
+  "symbol_index": "symbols/index.json",
+  "knowledge_graph": "knowledge/graph.json",
+  "enforcement": {
+    "input_must_be_json": true,
+    "output_must_be_json": true,
+    "reject_non_json": true,
+    "cap_all_commands": true,
+    "cap_all_tool_calls": true,
+    "max_command_output_lines": 50,
+    "max_log_tail_lines": 20,
+    "max_tool_output_tokens": 1000,
+    "default_command_timeout_ms": 5000,
+    "forbidden_cmd_patterns_file": "tools/patterns.json"
+  },
+  "daemons_config": "daemons/registry.json",
+  "retrieval_config": "retrieval/strategies.json",
+  "patterns_config": "tools/patterns.json",
+  "manifest": "index/manifest.json",
+  "execution_policy": {
+    "local_heavy_ops": "FORBIDDEN",
+    "forbidden_locally": [
+      "build",
+      "test",
+      "review",
+      "ingest",
+      "manifest",
+      "poll",
+      "index"
+    ],
+    "required_execution_target": "github_actions",
+    "blocking_on_ci_runs": "PROHIBITED",
+    "ci_gate_env": [
+      "GITHUB_ACTIONS=true",
+      "JFA_CI=1"
+    ],
+    "note": "gateway/handlers.py:_in_ci() is the single gate. Outside CI these actions dispatch a workflow_dispatch and return immediately."
+  },
+  "generated_artifacts": [
+    "index/kb.index.json",
+    "index/manifest.json",
+    "knowledge/graph.json",
+    "symbols/index.json"
+  ]
+}

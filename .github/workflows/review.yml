@@ -1,0 +1,80 @@
+name: review
+on:
+  workflow_dispatch:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    env:
+      JFA_CI: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+
+      - name: Repo validation
+        run: python -m gateway.validate_repo
+
+      - name: Test suite
+        run: python -m pytest tests/ -q
+
+      - name: Structural review checks
+        run: |
+          python - <<'PY'
+          import json, pathlib, re, sys
+          findings = []
+
+          # 1. Every action in the schema must have both an example and a handler.
+          from gateway import schema_guard, handlers
+          schema = schema_guard.load_schema()
+          actions = set(schema["properties"]["intent"]["properties"]["action"]["enum"])
+          examples = set(json.load(open("schema/examples.json"))["examples"])
+          for missing in sorted(actions - examples):
+              findings.append(f"action '{missing}' has no example in schema/examples.json")
+          for missing in sorted(actions - set(handlers.DISPATCH)):
+              findings.append(f"action '{missing}' has no handler in gateway/handlers.py")
+          for extra in sorted(set(handlers.DISPATCH) - actions):
+              findings.append(f"handler '{extra}' dispatches an action absent from the schema")
+
+          # 2. Config file references must resolve.
+          cfg = json.load(open("config/agent.config.json"))
+          # 'manifest' is produced by the manifest workflow, so it is optional
+          # until that workflow has published one.
+          for key in ("schema", "kb_index", "symbol_index", "knowledge_graph",
+                      "daemons_config", "retrieval_config", "patterns_config"):
+              rel = cfg.get(key)
+              if rel and not pathlib.Path(rel).exists():
+                  findings.append(f"config key '{key}' points at missing path '{rel}'")
+
+          # 3. Every workflow referenced by the schema's execution_policy must exist.
+          for name, path in schema["x-enforcement"]["execution_policy"]["workflows"].items():
+              if not pathlib.Path(path).exists():
+                  findings.append(f"execution_policy names workflow '{name}' at missing path '{path}'")
+
+          # 4. No handler may block on a CI run.
+          src = pathlib.Path("gateway/handlers.py").read_text()
+          for pattern in (r"gh\s+run\s+watch", r"--wait\b", r"\btime\.sleep\("):
+              if re.search(pattern, src):
+                  findings.append(f"gateway/handlers.py blocks on CI (matched /{pattern}/) - "
+                                  f"dispatch must return immediately")
+
+          with open(__import__("os").environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write("## Review\n\n")
+              if findings:
+                  f.write("\n".join(f"- {x}" for x in findings) + "\n")
+              else:
+                  f.write("No structural findings.\n")
+
+          for x in findings:
+              print(f"::error::{x}")
+          sys.exit(1 if findings else 0)
+          PY

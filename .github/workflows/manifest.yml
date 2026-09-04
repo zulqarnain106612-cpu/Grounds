@@ -1,0 +1,84 @@
+name: manifest
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: "Commit the refreshed manifest back to the branch"
+        required: false
+        default: "true"
+  push:
+    branches: [main]
+    paths:
+      - "gateway/**"
+      - "schema/**"
+      - "config/**"
+      - "docs/**"
+
+permissions:
+  contents: write
+
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    env:
+      JFA_CI: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+
+      - name: Build manifest
+        run: python -m gateway.manifest
+
+      - name: Verify manifest checksums match working tree
+        run: |
+          python - <<'PY'
+          import hashlib, json, sys
+          from pathlib import Path
+          m = json.load(open("index/manifest.json"))
+          bad = []
+          for entry in m["files"]:
+              p = Path(entry["path"])
+              if not p.exists():
+                  bad.append(f"{entry['path']}: listed in manifest but missing on disk")
+                  continue
+              h = hashlib.sha256(p.read_bytes()).hexdigest()
+              if h != entry["sha256"]:
+                  bad.append(f"{entry['path']}: sha256 mismatch")
+          if bad:
+              for b in bad:
+                  print(f"::error::{b}")
+              sys.exit(1)
+          print(f"manifest verified: {len(m['files'])} files, all checksums match")
+          PY
+
+      - name: Summarise
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          m = json.load(open("index/manifest.json"))
+          print("## Manifest\n")
+          print("| metric | value |\n| --- | --- |")
+          for k, v in m["counts"].items():
+              print(f"| {k} | {v} |")
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: manifest
+          path: index/manifest.json
+
+      - name: Commit manifest
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.commit != 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index/manifest.json
+          if git diff --cached --quiet; then
+            echo "manifest already up to date"
+          else
+            git commit -m "chore(manifest): refresh content manifest [skip ci]"
+            git push
+          fi

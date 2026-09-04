@@ -1,0 +1,11 @@
+{
+  "version": "1.1.0",
+  "strategies": {
+    "exact": { "description": "Exact match on chunk id or symbol name.", "max_tokens": 500 },
+    "keyword": { "description": "Token overlap match over kb chunk tags/summary.", "max_tokens": 800, "top_k": 10 },
+    "semantic": { "description": "Placeholder for embedding similarity; falls back to keyword until an embedding provider is wired in kb_store.py.", "max_tokens": 1500, "top_k": 5 },
+    "hybrid": { "description": "keyword score + tag overlap, re-ranked.", "max_tokens": 1500, "top_k": 5 },
+    "symbol": { "description": "Symbol index lookup by name/tag/namespace. Returns file+line only, never content.", "max_tokens": 200 },
+    "log_failure": { "description": "Extract only ERROR/FATAL lines from the failures cache. Never reads raw log.", "max_tokens": 300, "filter_level": ["error","fatal"], "tail_lines": 20 }
+  }
+}

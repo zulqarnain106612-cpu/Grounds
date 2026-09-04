@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Installed via scripts/install.sh (git config core.hooksPath .githooks).
+#
+# EXECUTION POLICY: build / test / review / ingest / manifest / index never run
+# on a developer machine (config/agent.config.json -> execution_policy).
+# This hook therefore does only O(ms) syntax checks. The real enforcement --
+# schema validation, the test suite, symbol/KB index rebuilds and staleness
+# checks -- runs in GitHub Actions (.github/workflows/enforce.yml).
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+echo "== agent-gateway pre-commit (fast checks only) =="
+
+PY=python3
+if [ -d .venv ]; then PY=.venv/bin/python3; fi
+
+staged_json=$(git diff --cached --name-only --diff-filter=ACM -- '*.json' || true)
+if [ -n "$staged_json" ]; then
+  echo "-- parsing staged JSON --"
+  while IFS= read -r f; do
+    [ -f "$f" ] || continue
+    if ! "$PY" -c "import json,sys; json.load(open(sys.argv[1]))" "$f"; then
+      echo ""
+      echo "COMMIT BLOCKED: $f is not valid JSON."
+      exit 1
+    fi
+  done <<< "$staged_json"
+fi
+
+staged_py=$(git diff --cached --name-only --diff-filter=ACM -- '*.py' || true)
+if [ -n "$staged_py" ]; then
+  echo "-- parsing staged Python --"
+  while IFS= read -r f; do
+    [ -f "$f" ] || continue
+    if ! "$PY" -c "import ast,sys; ast.parse(open(sys.argv[1]).read())" "$f"; then
+      echo ""
+      echo "COMMIT BLOCKED: $f is not syntactically valid Python."
+      exit 1
+    fi
+  done <<< "$staged_py"
+fi
+
+echo "== fast checks passed; full validation runs in GitHub Actions =="
