@@ -1,13 +1,42 @@
-.PHONY: init validate test daemons-start daemons-stop daemons-status
+REF ?= main
+
+.PHONY: init validate test ingest manifest review retrieval-verify ci-status \
+        daemons-start daemons-stop daemons-status
 
 init:
 	bash scripts/install.sh
 
+# EXECUTION POLICY: validate/test/ingest/manifest/review never run locally
+# (config/agent.config.json -> execution_policy). These targets dispatch the
+# corresponding GitHub Actions workflow and return immediately -- they never
+# block waiting for a run to finish.
+
 validate:
-	python3 -m gateway.validate_repo
+	gh workflow run enforce.yml --ref $(REF)
+	@echo "dispatched enforce.yml on $(REF); check with 'make ci-status'"
 
 test:
-	python3 -m pytest tests/ -q
+	gh workflow run enforce.yml --ref $(REF)
+	@echo "dispatched enforce.yml on $(REF); check with 'make ci-status'"
+
+ingest:
+	gh workflow run ingest.yml --ref $(REF)
+	@echo "dispatched ingest.yml on $(REF); check with 'make ci-status'"
+
+manifest:
+	gh workflow run manifest.yml --ref $(REF)
+	@echo "dispatched manifest.yml on $(REF); check with 'make ci-status'"
+
+review:
+	gh workflow run review.yml --ref $(REF)
+	@echo "dispatched review.yml on $(REF); check with 'make ci-status'"
+
+retrieval-verify:
+	gh workflow run retrieval-verify.yml --ref $(REF)
+	@echo "dispatched retrieval-verify.yml on $(REF); check with 'make ci-status'"
+
+ci-status:
+	gh run list --limit 10
 
 daemons-start:
 	python3 -m gateway.cli <<< '{"meta":{"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":0,"phase":"1","timestamp_utc":"2026-01-01T00:00:00Z"},"intent":{"action":"daemon_start","domain":"daemon","priority":3},"payload":{"data":null,"daemon_op":{"daemon_id":"symbol_indexer"}}}'

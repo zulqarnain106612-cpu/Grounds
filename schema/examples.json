@@ -1,89 +1,472 @@
 {
   "examples": {
     "symbol_lookup": {
-      "meta": {"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":1,"phase":"1","timestamp_utc":"2026-09-04T00:00:01Z"},
-      "intent": {"action":"symbol_lookup","domain":"player","priority":8},
-      "payload": {"data": null, "context": {"strategy":"symbol","scope":"symbol_table","target":"PlayerController","max_tokens":200}}
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 1,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:01Z"
+      },
+      "intent": {
+        "action": "symbol_lookup",
+        "domain": "player",
+        "priority": 8
+      },
+      "payload": {
+        "data": null,
+        "context": {
+          "strategy": "symbol",
+          "scope": "symbol_table",
+          "target": "PlayerController",
+          "max_tokens": 200
+        }
+      }
     },
     "log_query": {
-      "meta": {"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":2,"phase":"1","timestamp_utc":"2026-09-04T00:00:02Z"},
-      "intent": {"action":"log_query","domain":"log","priority":9},
-      "payload": {"data": null, "log_op": {"op":"query_failure","filter_level":"error","tail_lines":20}}
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 2,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:02Z"
+      },
+      "intent": {
+        "action": "log_query",
+        "domain": "log",
+        "priority": 9
+      },
+      "payload": {
+        "data": null,
+        "log_op": {
+          "op": "query_failure",
+          "filter_level": "error",
+          "tail_lines": 20
+        }
+      }
     },
     "command_exec": {
-      "meta": {"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":3,"phase":"1","timestamp_utc":"2026-09-04T00:00:03Z"},
-      "intent": {"action":"command_exec","domain":"build_pipeline","priority":7},
-      "payload": {"data": null, "command": {"cmd":"echo","args":["hello"],"capped":true,"timeout_ms":2000,"output_lines":10}}
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 3,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:03Z"
+      },
+      "intent": {
+        "action": "command_exec",
+        "domain": "build_pipeline",
+        "priority": 7
+      },
+      "payload": {
+        "data": null,
+        "command": {
+          "cmd": "echo",
+          "args": [
+            "hello"
+          ],
+          "capped": true,
+          "timeout_ms": 2000,
+          "output_lines": 10
+        }
+      }
     },
     "tool_call": {
-      "meta": {"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":4,"phase":"1","timestamp_utc":"2026-09-04T00:00:04Z"},
-      "intent": {"action":"tool_call","domain":"asset","priority":5},
-      "payload": {"data": null, "tool": {"tool_name":"noop","parameters":{},"capped":true,"max_output":200}}
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 4,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:04Z"
+      },
+      "intent": {
+        "action": "tool_call",
+        "domain": "asset",
+        "priority": 5
+      },
+      "payload": {
+        "data": null,
+        "tool": {
+          "tool_name": "noop",
+          "parameters": {},
+          "capped": true,
+          "max_output": 200
+        }
+      }
     },
     "retrieve": {
-      "meta": {"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":5,"phase":"1","timestamp_utc":"2026-09-04T00:00:05Z"},
-      "intent": {"action":"retrieve","domain":"knowledge_base","priority":6},
-      "payload": {"data": null, "context": {"strategy":"hybrid","scope":"kb","target":"bullet pool performance","top_k":5,"max_tokens":1500}}
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 5,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:05Z"
+      },
+      "intent": {
+        "action": "retrieve",
+        "domain": "knowledge_base",
+        "priority": 6
+      },
+      "payload": {
+        "data": null,
+        "context": {
+          "strategy": "hybrid",
+          "scope": "kb",
+          "target": "bullet pool performance",
+          "top_k": 5,
+          "max_tokens": 1500
+        }
+      }
     },
     "query": {
-      "meta": {"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":6,"phase":"1","timestamp_utc":"2026-09-04T00:00:06Z"},
-      "intent": {"action":"query","domain":"retrieval","priority":5},
-      "payload": {"data": null, "context": {"strategy":"keyword","scope":"kb","target":"enemy fsm","top_k":3,"max_tokens":800}}
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 6,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:06Z"
+      },
+      "intent": {
+        "action": "query",
+        "domain": "retrieval",
+        "priority": 5
+      },
+      "payload": {
+        "data": null,
+        "context": {
+          "strategy": "keyword",
+          "scope": "kb",
+          "target": "enemy fsm",
+          "top_k": 3,
+          "max_tokens": 800
+        }
+      }
     },
     "write": {
-      "meta": {"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":7,"phase":"1","timestamp_utc":"2026-09-04T00:00:07Z"},
-      "intent": {"action":"write","domain":"knowledge_base","priority":4},
-      "payload": {"data": {"id":"kb-001","domain":"player","tags":["movement"],"summary":"seed chunk"}}
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 7,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:07Z"
+      },
+      "intent": {
+        "action": "write",
+        "domain": "knowledge_base",
+        "priority": 4
+      },
+      "payload": {
+        "data": {
+          "id": "kb-001",
+          "domain": "player",
+          "tags": [
+            "movement"
+          ],
+          "summary": "seed chunk"
+        }
+      }
     },
     "delete": {
-      "meta": {"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":8,"phase":"1","timestamp_utc":"2026-09-04T00:00:08Z"},
-      "intent": {"action":"delete","domain":"knowledge_base","priority":4},
-      "payload": {"data": {"id":"kb-001"}}
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 8,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:08Z"
+      },
+      "intent": {
+        "action": "delete",
+        "domain": "knowledge_base",
+        "priority": 4
+      },
+      "payload": {
+        "data": {
+          "id": "kb-001"
+        }
+      }
     },
     "index": {
-      "meta": {"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":9,"phase":"1","timestamp_utc":"2026-09-04T00:00:09Z"},
-      "intent": {"action":"index","domain":"build_pipeline","priority":6},
-      "payload": {"data": null}
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 9,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:09Z"
+      },
+      "intent": {
+        "action": "index",
+        "domain": "build_pipeline",
+        "priority": 6
+      },
+      "payload": {
+        "data": null
+      }
     },
     "daemon_start": {
-      "meta": {"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":10,"phase":"1","timestamp_utc":"2026-09-04T00:00:10Z"},
-      "intent": {"action":"daemon_start","domain":"daemon","priority":3},
-      "payload": {"data": null, "daemon_op": {"daemon_id":"symbol_indexer"}}
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 10,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:10Z"
+      },
+      "intent": {
+        "action": "daemon_start",
+        "domain": "daemon",
+        "priority": 3
+      },
+      "payload": {
+        "data": null,
+        "daemon_op": {
+          "daemon_id": "symbol_indexer"
+        }
+      }
     },
     "daemon_stop": {
-      "meta": {"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":11,"phase":"1","timestamp_utc":"2026-09-04T00:00:11Z"},
-      "intent": {"action":"daemon_stop","domain":"daemon","priority":3},
-      "payload": {"data": null, "daemon_op": {"daemon_id":"symbol_indexer"}}
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 11,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:11Z"
+      },
+      "intent": {
+        "action": "daemon_stop",
+        "domain": "daemon",
+        "priority": 3
+      },
+      "payload": {
+        "data": null,
+        "daemon_op": {
+          "daemon_id": "symbol_indexer"
+        }
+      }
     },
     "daemon_status": {
-      "meta": {"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":12,"phase":"1","timestamp_utc":"2026-09-04T00:00:12Z"},
-      "intent": {"action":"daemon_status","domain":"daemon","priority":2},
-      "payload": {"data": null, "daemon_op": {"daemon_id":"symbol_indexer"}}
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 12,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:12Z"
+      },
+      "intent": {
+        "action": "daemon_status",
+        "domain": "daemon",
+        "priority": 2
+      },
+      "payload": {
+        "data": null,
+        "daemon_op": {
+          "daemon_id": "symbol_indexer"
+        }
+      }
     },
     "schema_validate": {
-      "meta": {"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":13,"phase":"1","timestamp_utc":"2026-09-04T00:00:13Z"},
-      "intent": {"action":"schema_validate","domain":"schema","priority":10},
-      "payload": {"data": {"foo":"bar"}}
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 13,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:13Z"
+      },
+      "intent": {
+        "action": "schema_validate",
+        "domain": "schema",
+        "priority": 10
+      },
+      "payload": {
+        "data": {
+          "foo": "bar"
+        }
+      }
     },
     "knowledge_update": {
-      "meta": {"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":14,"phase":"1","timestamp_utc":"2026-09-04T00:00:14Z"},
-      "intent": {"action":"knowledge_update","domain":"knowledge_base","priority":5},
-      "payload": {"data": null, "knowledge_op": {"op":"add_node","id":"player_system","type":"domain","label":"Player System","tags":["input","movement"]}}
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 14,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:14Z"
+      },
+      "intent": {
+        "action": "knowledge_update",
+        "domain": "knowledge_base",
+        "priority": 5
+      },
+      "payload": {
+        "data": null,
+        "knowledge_op": {
+          "op": "add_node",
+          "id": "player_system",
+          "type": "domain",
+          "label": "Player System",
+          "tags": [
+            "input",
+            "movement"
+          ]
+        }
+      }
     },
     "context_push": {
-      "meta": {"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":15,"phase":"1","timestamp_utc":"2026-09-04T00:00:15Z"},
-      "intent": {"action":"context_push","domain":"scene","priority":2},
-      "payload": {"data": {"frame":"editing weapon_system"}}
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 15,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:15Z"
+      },
+      "intent": {
+        "action": "context_push",
+        "domain": "scene",
+        "priority": 2
+      },
+      "payload": {
+        "data": {
+          "frame": "editing weapon_system"
+        }
+      }
     },
     "context_pop": {
-      "meta": {"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":16,"phase":"1","timestamp_utc":"2026-09-04T00:00:16Z"},
-      "intent": {"action":"context_pop","domain":"scene","priority":2},
-      "payload": {"data": null}
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 16,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:16Z"
+      },
+      "intent": {
+        "action": "context_pop",
+        "domain": "scene",
+        "priority": 2
+      },
+      "payload": {
+        "data": null
+      }
     },
     "build": {
-      "meta": {"schema_version":"1.1.0","session_id":"550e8400-e29b-41d4-a716-446655440000","tick":17,"phase":"1","timestamp_utc":"2026-09-04T00:00:17Z"},
-      "intent": {"action":"build","domain":"build_pipeline","priority":9},
-      "payload": {"data": null, "command": {"cmd":"echo","args":["build-ok"],"capped":true,"output_lines":50}}
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 17,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:17Z"
+      },
+      "intent": {
+        "action": "build",
+        "domain": "build_pipeline",
+        "priority": 9
+      },
+      "payload": {
+        "data": null,
+        "command": {
+          "cmd": "echo",
+          "args": [
+            "build-ok"
+          ],
+          "capped": true,
+          "output_lines": 50
+        }
+      }
+    },
+    "ci_dispatch": {
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 18,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:18Z"
+      },
+      "intent": {
+        "action": "ci_dispatch",
+        "domain": "ci",
+        "priority": 7
+      },
+      "payload": {
+        "data": null,
+        "ci_op": {
+          "op": "dispatch",
+          "workflow": "ingest.yml",
+          "ref": "main",
+          "inputs": {
+            "reason": "kb refresh"
+          },
+          "remote_only": true,
+          "wait": false
+        }
+      }
+    },
+    "ci_status": {
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 19,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:19Z"
+      },
+      "intent": {
+        "action": "ci_status",
+        "domain": "ci",
+        "priority": 3
+      },
+      "payload": {
+        "data": null,
+        "ci_op": {
+          "op": "status",
+          "workflow": "enforce.yml",
+          "limit": 5,
+          "remote_only": true,
+          "wait": false
+        }
+      }
+    },
+    "ingest": {
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 20,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:20Z"
+      },
+      "intent": {
+        "action": "ingest",
+        "domain": "knowledge_base",
+        "priority": 6
+      },
+      "payload": {
+        "data": null,
+        "ci_op": {
+          "op": "dispatch",
+          "workflow": "ingest.yml",
+          "ref": "main",
+          "remote_only": true,
+          "wait": false
+        }
+      }
+    },
+    "manifest": {
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 21,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:21Z"
+      },
+      "intent": {
+        "action": "manifest",
+        "domain": "build_pipeline",
+        "priority": 4
+      },
+      "payload": {
+        "data": null,
+        "ci_op": {
+          "op": "dispatch",
+          "workflow": "manifest.yml",
+          "ref": "main",
+          "remote_only": true,
+          "wait": false
+        }
+      }
     }
   }
 }

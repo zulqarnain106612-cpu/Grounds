@@ -1,0 +1,88 @@
+name: retrieval-verify
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      JFA_CI: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+
+      - name: Build indexes from source of truth
+        run: |
+          python -m gateway.symbol_scanner
+          python -m gateway.ingest
+
+      - name: End-to-end retrieval probes through the gateway
+        run: python -m gateway.verify_retrieval
+
+      - name: Assert every schema action round-trips through the gateway
+        run: |
+          python - <<'PY'
+          import json, sys
+          from gateway import gateway, schema_guard
+          examples = json.load(open("schema/examples.json"))["examples"]
+          actions = set(schema_guard.load_schema()["properties"]["intent"]["properties"]["action"]["enum"])
+          failures = []
+          for name, req in examples.items():
+              env = gateway.handle(json.dumps(req))
+              if "response" not in env:
+                  failures.append(f"{name}: gateway returned no response envelope")
+                  continue
+              try:
+                  schema_guard.validate(env)
+              except schema_guard.RequestValidationError as e:
+                  failures.append(f"{name}: response violates schema: {e.errors}")
+              status = env["response"].get("status")
+              if status not in ("ok", "error", "partial", "skipped"):
+                  failures.append(f"{name}: illegal status {status!r}")
+              # A handler crash must never escape as an unhandled exception.
+              for err in env["response"].get("errors") or []:
+                  if err.get("code") == "handler_exception":
+                      failures.append(f"{name}: handler raised - {err['message']}")
+          uncovered = actions - set(examples)
+          if uncovered:
+              failures.append(f"actions with no example: {sorted(uncovered)}")
+          if failures:
+              for f in failures:
+                  print(f"::error::{f}")
+              sys.exit(1)
+          print(f"[PASS] all {len(examples)} example requests round-trip schema-valid")
+          PY
+
+      - name: Assert no-raw-file-read guarantee still holds
+        run: |
+          python - <<'PY'
+          import json, sys
+          from gateway import handlers, schema_guard
+          schema = schema_guard.load_schema()
+          failures = []
+          file_ops = schema["definitions"]["FileOp"]["properties"]["op"]["enum"]
+          if "read" in file_ops:
+              failures.append("FileOp.op gained a 'read' member - raw file read is no longer blocked")
+          policy = schema.get("x-enforcement", {}).get("execution_policy", {})
+          if policy.get("required_execution_target") != "github_actions":
+              failures.append("execution_policy.required_execution_target is not github_actions")
+          if policy.get("local_heavy_ops") != "FORBIDDEN":
+              failures.append("execution_policy.local_heavy_ops is not FORBIDDEN")
+          ci_op = schema["definitions"]["CIOp"]["properties"]
+          if ci_op["remote_only"].get("const") is not True:
+              failures.append("CIOp.remote_only is no longer const true")
+          if ci_op["wait"].get("const") is not False:
+              failures.append("CIOp.wait is no longer const false - blocking runs became expressible")
+          for f in failures:
+              print(f"::error::{f}")
+          sys.exit(1 if failures else 0)
+          PY

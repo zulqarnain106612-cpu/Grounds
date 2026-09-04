@@ -5,7 +5,9 @@
   "language": "C# (IL2CPP + Burst)",
   "current_phase": "1",
   "schema": "schema/agent.schema.json",
-  "source_globs": ["Assets/_Game/Scripts/**/*.cs"],
+  "source_globs": [
+    "Assets/_Game/Scripts/**/*.cs"
+  ],
   "log_dir": "logs",
   "kb_index": "index/kb.index.json",
   "symbol_index": "symbols/index.json",
@@ -24,5 +26,31 @@
   },
   "daemons_config": "daemons/registry.json",
   "retrieval_config": "retrieval/strategies.json",
-  "patterns_config": "tools/patterns.json"
+  "patterns_config": "tools/patterns.json",
+  "manifest": "index/manifest.json",
+  "execution_policy": {
+    "local_heavy_ops": "FORBIDDEN",
+    "forbidden_locally": [
+      "build",
+      "test",
+      "review",
+      "ingest",
+      "manifest",
+      "poll",
+      "index"
+    ],
+    "required_execution_target": "github_actions",
+    "blocking_on_ci_runs": "PROHIBITED",
+    "ci_gate_env": [
+      "GITHUB_ACTIONS=true",
+      "JFA_CI=1"
+    ],
+    "note": "gateway/handlers.py:_in_ci() is the single gate. Outside CI these actions dispatch a workflow_dispatch and return immediately."
+  },
+  "generated_artifacts": [
+    "index/kb.index.json",
+    "index/manifest.json",
+    "knowledge/graph.json",
+    "symbols/index.json"
+  ]
 }

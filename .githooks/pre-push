@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
+# EXECUTION POLICY: no local test/validate/build. Pushing is what triggers the
+# real verification -- .github/workflows/enforce.yml, review.yml and
+# retrieval-verify.yml run on push/PR. This hook only points at them.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 echo "== agent-gateway pre-push =="
-PY=python3
-if [ -d .venv ]; then PY=.venv/bin/python3; fi
-"$PY" -m gateway.validate_repo
-"$PY" -m pytest tests/ -q
-echo "== pre-push checks passed =="
+echo "Local validation is intentionally skipped (execution_policy: local_heavy_ops=FORBIDDEN)."
+echo "Verification runs in GitHub Actions. Watch it with:"
+echo "  gh run list --limit 5"

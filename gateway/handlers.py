@@ -1,4 +1,6 @@
 from __future__ import annotations
+import json
+import os
 import shlex
 import subprocess
 from pathlib import Path
@@ -179,6 +181,101 @@ def h_build(req: dict) -> dict:
     return h_command_exec(req)
 
 
+# ---- CI handlers ---------------------------------------------------------------
+# Policy: build / test / review / ingest / manifest / poll never run on the local
+# machine. They run on GitHub Actions. `_in_ci()` is the single gate: in-process
+# execution is permitted only when the process is itself a CI runner. Everywhere
+# else these actions dispatch a workflow and return immediately -- they never block.
+
+def _in_ci() -> bool:
+    return os.environ.get("GITHUB_ACTIONS") == "true" or os.environ.get("JFA_CI") == "1"
+
+
+def _gh(args: list[str], timeout_s: float = 20.0) -> tuple[int, str]:
+    """Run a short, non-blocking `gh` call. Never used to wait on a run."""
+    try:
+        proc = subprocess.run(
+            ["gh", *args], cwd=ROOT, capture_output=True, text=True, timeout=timeout_s
+        )
+    except FileNotFoundError:
+        return 127, "gh CLI not found on PATH"
+    except subprocess.TimeoutExpired:
+        return 124, f"gh call exceeded {timeout_s}s"
+    return proc.returncode, (proc.stdout or "") + (proc.stderr or "")
+
+
+def h_ci_dispatch(req: dict) -> dict:
+    ci_op = req["payload"].get("ci_op")
+    if not ci_op:
+        return _error("missing_ci_op", "payload.ci_op required for ci_dispatch")
+    workflow = ci_op.get("workflow")
+    if not workflow:
+        return _error("missing_workflow", "ci_op.workflow required for dispatch")
+
+    args = ["workflow", "run", workflow, "--ref", ci_op.get("ref", "main")]
+    for key, value in (ci_op.get("inputs") or {}).items():
+        args += ["-f", f"{key}={value}"]
+
+    code, out = _gh(args)
+    if code != 0:
+        return _error("dispatch_failed", out.strip()[:500])
+    # Deliberately returns without polling: CIOp.wait is const false in the schema.
+    return _ok(result={"dispatched": workflow, "ref": ci_op.get("ref", "main"), "blocking": False})
+
+
+def h_ci_status(req: dict) -> dict:
+    ci_op = req["payload"].get("ci_op") or {}
+    limit = enforcement.cap_output_lines(ci_op.get("limit"))
+    args = ["run", "list", "--limit", str(min(limit, 20)),
+            "--json", "databaseId,name,status,conclusion,headBranch,createdAt"]
+    if ci_op.get("workflow"):
+        args += ["--workflow", ci_op["workflow"]]
+    code, out = _gh(args)
+    if code != 0:
+        return _error("status_failed", out.strip()[:500])
+    try:
+        runs = json.loads(out)
+    except json.JSONDecodeError:
+        return _error("bad_gh_output", out.strip()[:500])
+    return _ok(result={"runs": runs})
+
+
+def _remote_only(action: str, workflow: str, req: dict, run_local, describe) -> dict:
+    """Run in-process only inside CI; otherwise dispatch the workflow and return."""
+    if _in_ci():
+        return _ok(result=describe(run_local()))
+    ci_op = dict(req["payload"].get("ci_op") or {})
+    ci_op.setdefault("workflow", workflow)
+    dispatch_req = {"payload": {"ci_op": {**ci_op, "op": "dispatch", "remote_only": True}}}
+    result = h_ci_dispatch(dispatch_req)
+    if result.get("status") == "ok":
+        result["result"]["delegated_action"] = action
+        result["result"]["reason"] = "local execution forbidden by execution_policy; dispatched to GitHub Actions"
+    return result
+
+
+def h_ingest(req: dict) -> dict:
+    from . import ingest
+    return _remote_only(
+        "ingest", "ingest.yml", req,
+        run_local=lambda: (ingest.build_kb_index(ROOT), ingest.build_graph(ROOT)),
+        describe=lambda r: {
+            "chunk_count": r[0]["chunk_count"],
+            "graph_nodes": len(r[1]["graph"]["nodes"]),
+            "graph_edges": len(r[1]["graph"]["edges"]),
+        },
+    )
+
+
+def h_manifest(req: dict) -> dict:
+    from . import manifest
+    return _remote_only(
+        "manifest", "manifest.yml", req,
+        run_local=lambda: manifest.build_manifest(ROOT),
+        describe=lambda m: m["counts"],
+    )
+
+
 def _tool_noop(params: dict):
     """Reference/example tool registration. Replace or add entries as real
     tools (e.g. a Unity batchmode build) are wired in."""
@@ -209,4 +306,8 @@ DISPATCH = {
     "daemon_start": h_daemon_start,
     "daemon_stop": h_daemon_stop,
     "build": h_build,
+    "ci_dispatch": h_ci_dispatch,
+    "ci_status": h_ci_status,
+    "ingest": h_ingest,
+    "manifest": h_manifest,
 }
