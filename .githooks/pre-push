@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+echo "== agent-gateway pre-push =="
+PY=python3
+if [ -d .venv ]; then PY=.venv/bin/python3; fi
+"$PY" -m gateway.validate_repo
+"$PY" -m pytest tests/ -q
+echo "== pre-push checks passed =="

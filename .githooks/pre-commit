@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Installed via scripts/install.sh (git config core.hooksPath .githooks).
+# Runs on every commit, starting with the repo's very first commit.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+echo "== agent-gateway pre-commit =="
+
+PY=python3
+if [ -d .venv ]; then PY=.venv/bin/python3; fi
+
+echo "-- refreshing symbol index from staged/tracked source files --"
+"$PY" -m gateway.symbol_scanner
+git add symbols/index.json
+
+echo "-- validating schema + config + examples --"
+if ! "$PY" -m gateway.validate_repo; then
+  echo ""
+  echo "COMMIT BLOCKED: repo validation failed (see above)."
+  echo "Fix the reported issues, or run 'make validate' locally to iterate."
+  exit 1
+fi
+
+echo "-- running test suite --"
+if ! "$PY" -m pytest tests/ -q; then
+  echo ""
+  echo "COMMIT BLOCKED: tests failed."
+  exit 1
+fi
+
+echo "== pre-commit checks passed =="

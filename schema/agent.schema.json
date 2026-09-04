@@ -1,0 +1,218 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "jetfighter-agent-schema-v1",
+  "title": "JetFighter Agent Schema",
+  "description": "Enforced schema for all agent input/output. Non-JSON input is rejected at the gateway boundary (see gateway/schema_guard.py). This file is the single source of truth: docs/SCHEMA.md is generated from it.",
+  "type": "object",
+  "required": ["meta", "intent", "payload"],
+  "additionalProperties": false,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["schema_version", "session_id", "tick", "phase", "timestamp_utc"],
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": { "type": "string", "const": "1.1.0" },
+        "session_id": { "type": "string", "pattern": "^[a-f0-9-]{36}$" },
+        "tick": { "type": "integer", "minimum": 0 },
+        "phase": { "type": "string", "enum": ["1","2","3","4","5","6","post","upgrade"] },
+        "timestamp_utc": { "type": "string", "format": "date-time" },
+        "agent_id": { "type": "string" },
+        "dry_run": { "type": "boolean", "default": false }
+      }
+    },
+    "intent": {
+      "type": "object",
+      "required": ["action", "domain", "priority"],
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "write","build","delete","query","index","retrieve","tool_call",
+            "command_exec","daemon_start","daemon_stop","daemon_status",
+            "log_query","symbol_lookup","schema_validate","knowledge_update",
+            "context_push","context_pop"
+          ]
+        },
+        "domain": {
+          "type": "string",
+          "enum": [
+            "player","enemy","weapon","physics","network","ui","audio","asset",
+            "scene","build_pipeline","knowledge_base","retrieval","daemon","log","schema"
+          ]
+        },
+        "priority": { "type": "integer", "minimum": 0, "maximum": 10 },
+        "idempotent": { "type": "boolean", "default": true }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "required": ["data"],
+      "additionalProperties": false,
+      "properties": {
+        "data": { "type": ["object","array","string","number","boolean","null"] },
+        "context": { "$ref": "#/definitions/RetrievalContext" },
+        "command": { "$ref": "#/definitions/CommandExec" },
+        "tool": { "$ref": "#/definitions/ToolCall" },
+        "file_op": { "$ref": "#/definitions/FileOp" },
+        "log_op": { "$ref": "#/definitions/LogOp" },
+        "knowledge_op": { "$ref": "#/definitions/KnowledgeNode" },
+        "daemon_op": { "$ref": "#/definitions/DaemonOp" },
+        "input_source": { "$ref": "#/definitions/InputSource" }
+      }
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": { "type": "string", "enum": ["ok","error","partial","skipped"] },
+        "result": {},
+        "errors": { "type": "array", "items": { "$ref": "#/definitions/AgentError" } },
+        "symbols": { "type": "array", "items": { "$ref": "#/definitions/Symbol" } },
+        "retrieved": { "type": "array", "items": { "$ref": "#/definitions/RetrievedChunk" } },
+        "mutations": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "definitions": {
+    "RetrievalContext": {
+      "type": "object",
+      "required": ["strategy"],
+      "additionalProperties": false,
+      "properties": {
+        "strategy": { "type": "string", "enum": ["exact","semantic","keyword","hybrid","symbol","log_failure"] },
+        "scope": { "type": "string", "enum": ["file","directory","kb","symbol_table","log"] },
+        "target": { "type": "string" },
+        "line_range": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 0 } },
+        "max_tokens": { "type": "integer", "maximum": 2000 },
+        "top_k": { "type": "integer", "minimum": 1, "maximum": 20 },
+        "filter": { "type": "object" }
+      }
+    },
+    "CommandExec": {
+      "type": "object",
+      "required": ["cmd", "capped"],
+      "additionalProperties": false,
+      "properties": {
+        "cmd": { "type": "string", "maxLength": 512 },
+        "args": { "type": "array", "items": { "type": "string" } },
+        "capped": { "type": "boolean", "const": true },
+        "timeout_ms": { "type": "integer", "minimum": 100, "maximum": 30000 },
+        "working_dir": { "type": "string" },
+        "env": { "type": "object", "additionalProperties": { "type": "string" } },
+        "output_lines": { "type": "integer", "maximum": 50 }
+      }
+    },
+    "ToolCall": {
+      "type": "object",
+      "required": ["tool_name", "capped"],
+      "additionalProperties": false,
+      "properties": {
+        "tool_name": { "type": "string" },
+        "parameters": { "type": "object" },
+        "capped": { "type": "boolean", "const": true },
+        "max_output": { "type": "integer", "maximum": 1000 }
+      }
+    },
+    "FileOp": {
+      "type": "object",
+      "required": ["op", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "op": { "type": "string", "enum": ["write","append","delete","stat"] },
+        "path": { "type": "string" },
+        "line_start": { "type": "integer", "minimum": 0 },
+        "line_end": { "type": "integer", "minimum": 0 },
+        "content": { "type": "string" },
+        "encoding": { "type": "string", "default": "utf-8" }
+      }
+    },
+    "LogOp": {
+      "type": "object",
+      "required": ["op"],
+      "additionalProperties": false,
+      "properties": {
+        "op": { "type": "string", "enum": ["write","query_failure","tail","stat"] },
+        "level": { "type": "string", "enum": ["debug","info","warn","error","fatal"] },
+        "message": { "type": "string" },
+        "domain": { "type": "string" },
+        "tail_lines": { "type": "integer", "maximum": 20 },
+        "filter_level": { "type": "string", "enum": ["warn","error","fatal"] }
+      }
+    },
+    "KnowledgeNode": {
+      "type": "object",
+      "required": ["op", "id"],
+      "additionalProperties": false,
+      "properties": {
+        "op": { "type": "string", "enum": ["add_node","update_node","add_edge","remove_node"] },
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "label": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "phase": { "type": "array", "items": { "type": "string" } },
+        "symbols": { "type": "array", "items": { "type": "string" } },
+        "edge_to": { "type": "string" },
+        "edge_kind": { "type": "string" }
+      }
+    },
+    "DaemonOp": {
+      "type": "object",
+      "required": ["daemon_id"],
+      "additionalProperties": false,
+      "properties": {
+        "daemon_id": { "type": "string" }
+      }
+    },
+    "AgentError": {
+      "type": "object",
+      "required": ["code", "message"],
+      "additionalProperties": false,
+      "properties": {
+        "code": { "type": "string" },
+        "message": { "type": "string" },
+        "domain": { "type": "string" },
+        "fatal": { "type": "boolean" }
+      }
+    },
+    "Symbol": {
+      "type": "object",
+      "required": ["name", "kind", "file", "line"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "kind": { "type": "string", "enum": ["class","method","field","interface","enum","const","struct","prefab","scene","asset"] },
+        "file": { "type": "string" },
+        "line": { "type": "integer" },
+        "namespace": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "RetrievedChunk": {
+      "type": "object",
+      "required": ["source", "score", "content"],
+      "additionalProperties": false,
+      "properties": {
+        "source": { "type": "string" },
+        "score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "content": { "type": "string", "maxLength": 2000 },
+        "line_start": { "type": "integer" },
+        "line_end": { "type": "integer" },
+        "strategy": { "type": "string" }
+      }
+    },
+    "InputSource": {
+      "type": "string",
+      "enum": ["json_payload","symbol_index","knowledge_base","knowledge_graph","retrieval_result","daemon_event"]
+    }
+  },
+  "x-enforcement": {
+    "engine": "gateway/schema_guard.py + gateway/enforcement.py",
+    "direct_file_read": "BLOCKED_BY_CODE",
+    "direct_code_read": "BLOCKED_BY_CODE",
+    "note": "FileOp.op enum intentionally excludes 'read'. There is no code path in gateway/handlers.py that returns raw file bytes/text to the caller. This is enforced by the absence of the capability, not by a policy flag.",
+    "allowed_claude_input": ["json_payload","symbol_index","knowledge_base","knowledge_graph","retrieval_result","daemon_event"],
+    "forbidden_claude_input": ["raw_file","raw_code","file_path_read","directory_listing_read"]
+  }
+}

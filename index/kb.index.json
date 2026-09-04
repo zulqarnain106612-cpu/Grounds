@@ -1,0 +1,6 @@
+{
+  "version": "1.1.0",
+  "built_at": "2026-09-04T07:05:10.050817Z",
+  "note": "Empty seed for a blank repo. Populated via knowledge_update / write actions through gateway/kb_store.py as the project grows. Never hand-edit.",
+  "chunks": []
+}

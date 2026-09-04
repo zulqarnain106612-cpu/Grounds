@@ -1,0 +1,23 @@
+name: agent-schema-enforcement
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Validate schema, config, examples, handler coverage
+        run: python -m gateway.validate_repo
+      - name: Run test suite
+        run: python -m pytest tests/ -q
+      - name: Rebuild symbol index and fail if stale
+        run: |
+          python -m gateway.symbol_scanner
+          git diff --exit-code symbols/index.json || \
+            (echo "::error::symbols/index.json is stale - commit hooks were skipped locally" && exit 1)

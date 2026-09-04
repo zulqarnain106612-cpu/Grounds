@@ -1,0 +1,28 @@
+{
+  "version": "1.1.0",
+  "project": "JetFighter",
+  "engine": "Unity 2022 LTS",
+  "language": "C# (IL2CPP + Burst)",
+  "current_phase": "1",
+  "schema": "schema/agent.schema.json",
+  "source_globs": ["Assets/_Game/Scripts/**/*.cs"],
+  "log_dir": "logs",
+  "kb_index": "index/kb.index.json",
+  "symbol_index": "symbols/index.json",
+  "knowledge_graph": "knowledge/graph.json",
+  "enforcement": {
+    "input_must_be_json": true,
+    "output_must_be_json": true,
+    "reject_non_json": true,
+    "cap_all_commands": true,
+    "cap_all_tool_calls": true,
+    "max_command_output_lines": 50,
+    "max_log_tail_lines": 20,
+    "max_tool_output_tokens": 1000,
+    "default_command_timeout_ms": 5000,
+    "forbidden_cmd_patterns_file": "tools/patterns.json"
+  },
+  "daemons_config": "daemons/registry.json",
+  "retrieval_config": "retrieval/strategies.json",
+  "patterns_config": "tools/patterns.json"
+}
