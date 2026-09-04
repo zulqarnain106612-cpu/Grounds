@@ -16,6 +16,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   manifest:
@@ -70,15 +71,27 @@ jobs:
           name: manifest
           path: index/manifest.json
 
-      - name: Commit manifest
+      # main is protected by a ruleset requiring changes to arrive via pull
+      # request, so the refreshed manifest is proposed on a branch.
+      - name: Propose refreshed manifest
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.commit != 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index/manifest.json
           if git diff --cached --quiet; then
-            echo "manifest already up to date"
-          else
-            git commit -m "chore(manifest): refresh content manifest [skip ci]"
-            git push
+            echo "manifest already up to date; nothing to propose"
+            exit 0
           fi
+          BRANCH="chore/manifest-${{ github.run_id }}"
+          git checkout -b "$BRANCH"
+          git commit -m "chore(manifest): refresh content manifest [skip ci]"
+          git push origin "$BRANCH"
+          gh pr create \
+            --base "${{ github.ref_name }}" \
+            --head "$BRANCH" \
+            --title "chore(manifest): refresh content manifest" \
+            --body "Automated manifest rebuild from run ${{ github.run_id }}. Every sha256 was verified against the working tree before this PR was opened."
+          echo "opened PR from $BRANCH" >> "$GITHUB_STEP_SUMMARY"
