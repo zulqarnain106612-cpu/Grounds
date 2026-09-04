@@ -16,6 +16,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   ingest:
@@ -70,15 +71,28 @@ jobs:
             knowledge/graph.json
             symbols/index.json
 
-      - name: Commit refreshed indexes
+      # main is protected by a ruleset requiring changes to arrive via pull
+      # request, so refreshed indexes are proposed on a branch rather than
+      # pushed straight to the base ref.
+      - name: Propose refreshed indexes
         if: github.event.inputs.commit != 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index/kb.index.json index/manifest.json knowledge/graph.json symbols/index.json
           if git diff --cached --quiet; then
-            echo "indexes already up to date"
-          else
-            git commit -m "chore(ingest): refresh kb index, graph, symbols, manifest [skip ci]"
-            git push
+            echo "indexes already up to date; nothing to propose"
+            exit 0
           fi
+          BRANCH="chore/ingest-${{ github.run_id }}"
+          git checkout -b "$BRANCH"
+          git commit -m "chore(ingest): refresh kb index, graph, symbols, manifest [skip ci]"
+          git push origin "$BRANCH"
+          gh pr create \
+            --base "${{ github.ref_name }}" \
+            --head "$BRANCH" \
+            --title "chore(ingest): refresh generated indexes" \
+            --body "Automated ingest from run ${{ github.run_id }}. Regenerates \`index/kb.index.json\`, \`index/manifest.json\`, \`knowledge/graph.json\` and \`symbols/index.json\`. Retrieval was verified against the rebuilt KB before this PR was opened."
+          echo "opened PR from $BRANCH" >> "$GITHUB_STEP_SUMMARY"
