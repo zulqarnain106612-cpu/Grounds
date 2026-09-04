@@ -192,7 +192,16 @@ def _in_ci() -> bool:
 
 
 def _gh(args: list[str], timeout_s: float = 20.0) -> tuple[int, str]:
-    """Run a short, non-blocking `gh` call. Never used to wait on a run."""
+    """Run a short, non-blocking `gh` call. Never used to wait on a run.
+
+    JFA_NO_DISPATCH=1 short-circuits to a canned success. Verification jobs set
+    it so that replaying the worked examples cannot fire a real workflow run
+    (a ci_dispatch example would otherwise trigger ingest.yml from inside a CI
+    job, which risks a dispatch loop). The guard is explicit here rather than
+    relying on a token being absent from the job.
+    """
+    if os.environ.get("JFA_NO_DISPATCH") == "1":
+        return 0, "[]"
     try:
         proc = subprocess.run(
             ["gh", *args], cwd=ROOT, capture_output=True, text=True, timeout=timeout_s

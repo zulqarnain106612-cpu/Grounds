@@ -29,6 +29,8 @@ jobs:
         run: python -m gateway.verify_retrieval
 
       - name: Assert every schema action round-trips through the gateway
+        env:
+          JFA_NO_DISPATCH: "1"   # replaying examples must never fire a real workflow run
         run: |
           python - <<'PY'
           import json, sys

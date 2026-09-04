@@ -22,18 +22,16 @@ jobs:
         run: python -m gateway.validate_repo
       - name: Run test suite
         run: python -m pytest tests/ -q
-      - name: Rebuild symbol index and fail if stale
+      - name: Rebuild indexes and fail if stale
         run: |
           python -m gateway.symbol_scanner
-          git diff --exit-code symbols/index.json || \
-            (echo "::error::symbols/index.json is stale - commit hooks were skipped locally" && exit 1)
-      - name: Rebuild KB index and graph and fail if stale
-        run: |
           python -m gateway.ingest
           python - <<'PY'
           import json, subprocess, sys
-          # built_at/updated_at move every run; compare content only.
-          for path, keys in (("index/kb.index.json", ["chunks", "chunk_count"]),
+          # updated_at/built_at move on every run, so compare content only --
+          # diffing the whole file would fail unconditionally.
+          for path, keys in (("symbols/index.json", ["symbols"]),
+                             ("index/kb.index.json", ["chunks", "chunk_count"]),
                              ("knowledge/graph.json", ["graph"])):
               head = subprocess.run(["git", "show", f"HEAD:{path}"],
                                     capture_output=True, text=True)
@@ -50,5 +48,5 @@ jobs:
                       print(f"::error::{path} is stale: '{k}' differs from a fresh ingest. "
                             f"Run the ingest workflow and commit the result.")
                       sys.exit(1)
-          print("kb index and graph are fresh")
+          print("symbol index, kb index and graph are all fresh")
           PY

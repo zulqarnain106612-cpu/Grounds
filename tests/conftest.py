@@ -44,6 +44,13 @@ def isolated_repo(tmp_path, monkeypatch):
 
     monkeypatch.setattr(handlers, "ROOT", fake_root)
 
+    # The CI actions (ci_dispatch/ci_status/ingest/manifest) shell out to `gh`.
+    # Tests must never touch the network or depend on the tmp copy being a git
+    # repo, so `_gh` is stubbed to a deterministic success here. Tests that care
+    # about dispatch behaviour override this with their own stub -- see
+    # tests/test_ci_policy.py, which asserts what is and is not dispatched.
+    monkeypatch.setattr(handlers, "_gh", lambda args, timeout_s=20.0: (0, "[]"))
+
     monkeypatch.setattr(symbol_scanner, "ROOT", fake_root)
     monkeypatch.setattr(symbol_scanner, "SYMBOLS_PATH", fake_root / "symbols" / "index.json")
     monkeypatch.setattr(symbol_scanner, "CONFIG_PATH", fake_root / "config" / "agent.config.json")
