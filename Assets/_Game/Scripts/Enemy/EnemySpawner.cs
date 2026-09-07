@@ -229,20 +229,46 @@ namespace JetFighter.Enemy
             return pool;
         }
 
+        // Resolved once rather than per frame. Update runs every frame for the
+        // whole run, and FindFirstObjectByType walks the scene -- twice per
+        // frame it is a cost that never appears as one obvious slow frame,
+        // which is the kind the profiling pass is meant to find.
+        private JetFighter.PowerUp.PowerUpController cachedPowerUps;
+        private JetFighter.Weapon.PrimaryGunController cachedGun;
+
+        /// <summary>
+        /// Supplies the player components directly. Preferred over the lookup
+        /// below -- a scene that wires this up never searches at all.
+        /// </summary>
+        public void BindPlayer(JetFighter.PowerUp.PowerUpController powerUps,
+            JetFighter.Weapon.PrimaryGunController gun)
+        {
+            cachedPowerUps = powerUps;
+            cachedGun = gun;
+        }
+
         private float CurrentPowerLevel()
         {
-            var powerUps = FindFirstObjectByType<JetFighter.PowerUp.PowerUpController>();
-            return powerUps != null ? powerUps.PlayerPowerLevel : 0f;
+            // Re-resolved only when the reference has gone away, which happens
+            // once per scene load rather than once per frame.
+            if (cachedPowerUps == null)
+            {
+                cachedPowerUps = FindFirstObjectByType<JetFighter.PowerUp.PowerUpController>();
+            }
+            return cachedPowerUps != null ? cachedPowerUps.PlayerPowerLevel : 0f;
         }
 
         private float CurrentPlayerDps()
         {
-            var gun = FindFirstObjectByType<JetFighter.Weapon.PrimaryGunController>();
-            if (gun == null || gun.WeaponDef == null)
+            if (cachedGun == null)
+            {
+                cachedGun = FindFirstObjectByType<JetFighter.Weapon.PrimaryGunController>();
+            }
+            if (cachedGun == null || cachedGun.WeaponDef == null)
             {
                 return 0f;
             }
-            return gun.EffectiveDamage / Mathf.Max(0.01f, gun.EffectiveCooldownSeconds);
+            return cachedGun.EffectiveDamage / Mathf.Max(0.01f, cachedGun.EffectiveCooldownSeconds);
         }
     }
 }
