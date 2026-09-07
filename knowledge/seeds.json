@@ -179,6 +179,14 @@
       "symbols": ["DropTable", "EnemyDef", "EnemyHealth", "Roll", "Select"]
     },
     {
+      "id": "phase3_enemy_spawner_waves",
+      "type": "system",
+      "label": "Archetype-Threshold Enemy Spawner",
+      "tags": ["enemy", "phase3"],
+      "phase": ["3"],
+      "symbols": ["EnemySpawner", "SpawnOne", "ChooseKillable", "SetScaledHealth"]
+    },
+    {
       "id": "phase3_player_stats_runtime",
       "type": "system",
       "label": "Runtime Player Stats (effective values, assets untouched)",
@@ -237,6 +245,9 @@
     {"from": "phase3_powerup_core", "to": "cycle:3", "kind": "part_of"},
     {"from": "phase3_enemy_drop_tables", "to": "cycle:3", "kind": "part_of"},
     {"from": "phase3_difficulty_scaling", "to": "cycle:3", "kind": "part_of"},
+    {"from": "phase3_enemy_spawner_waves", "to": "cycle:3", "kind": "part_of"},
+    {"from": "phase3_enemy_spawner_waves", "to": "domain:enemy", "kind": "delivers"},
+    {"from": "phase3_enemy_spawner_waves", "to": "phase3_difficulty_scaling", "kind": "depends_on"},
     {"from": "phase3_difficulty_scaling", "to": "domain:enemy", "kind": "delivers"},
     {"from": "phase3_difficulty_scaling", "to": "phase3_powerup_core", "kind": "depends_on"},
     {"from": "phase3_enemy_drop_tables", "to": "domain:enemy", "kind": "delivers"},

@@ -28,10 +28,18 @@ namespace JetFighter.Enemy
         public UnityEvent<PowerUpDef> OnDropped = new UnityEvent<PowerUpDef>();
 
         private float currentHealth;
+        private float scaledMaxHealth;
 
         public float CurrentHealth => currentHealth;
 
-        public float MaxHealth => def != null ? def.maxHealth : 0f;
+        /// <summary>
+        /// Effective max health: the difficulty-scaled value when one was set,
+        /// otherwise the archetype's authored value.
+        /// </summary>
+        public float MaxHealth => scaledMaxHealth > 0f ? scaledMaxHealth : (def != null ? def.maxHealth : 0f);
+
+        /// <summary>The archetype's authored health, unscaled.</summary>
+        public float AuthoredMaxHealth => def != null ? def.maxHealth : 0f;
 
         public bool IsDead => currentHealth <= 0f;
 
@@ -60,7 +68,24 @@ namespace JetFighter.Enemy
         /// </summary>
         public void ResetHealth()
         {
+            scaledMaxHealth = 0f;
             currentHealth = MaxHealth;
+        }
+
+        /// <summary>
+        /// Overrides max health for this instance, for the difficulty
+        /// multiplier.
+        ///
+        /// On the instance, never written back to the EnemyDef -- the same
+        /// rule PlayerStatsRuntime follows, and for the same reason: a
+        /// ScriptableObject edited in play mode keeps the change in the
+        /// editor, so one scaled spawn during testing would become the
+        /// archetype's authored health.
+        /// </summary>
+        public void SetScaledHealth(float maxHealthForThisInstance)
+        {
+            scaledMaxHealth = Mathf.Max(1f, maxHealthForThisInstance);
+            currentHealth = scaledMaxHealth;
         }
 
         public void ApplyDamage(float amount)
