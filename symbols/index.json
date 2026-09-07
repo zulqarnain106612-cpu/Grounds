@@ -1,7 +1,48 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-06T23:20:00.243250Z",
+  "updated_at": "2026-09-07T01:18:50.019540Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
-  "symbols": []
+  "symbols": [
+    {
+      "name": "QualityTierManager",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Build/QualityTierManager.cs",
+      "line": 12,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "Tier",
+      "kind": "enum",
+      "file": "Assets/_Game/Scripts/Build/QualityTierManager.cs",
+      "line": 14,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "Awake",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Build/QualityTierManager.cs",
+      "line": 32,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "DetectTier",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Build/QualityTierManager.cs",
+      "line": 45,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "ApplySettings",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Build/QualityTierManager.cs",
+      "line": 68,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    }
+  ]
 }
