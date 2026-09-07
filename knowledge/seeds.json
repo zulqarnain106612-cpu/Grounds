@@ -217,6 +217,14 @@
       "tags": ["network", "phase4", "adr-005"],
       "phase": ["4"],
       "symbols": ["INetworkTransport", "LocalLoopbackTransport", "TransportState", "SendState", "Pump"]
+    },
+    {
+      "id": "phase4_player_state_sync",
+      "type": "system",
+      "label": "Player Position + Fire Sync (loopback-first)",
+      "tags": ["network", "phase4", "adr-005"],
+      "phase": ["4"],
+      "symbols": ["NetworkedPlayerState", "NetworkMessage", "PlayerStatePayload", "Broadcast"]
     }
   ],
   "edges": [
@@ -264,6 +272,9 @@
     {"from": "phase3_enemy_spawner_waves", "to": "cycle:3", "kind": "part_of"},
     {"from": "phase3_economy_coins", "to": "cycle:3", "kind": "part_of"},
     {"from": "phase4_network_abstraction", "to": "cycle:4", "kind": "part_of"},
+    {"from": "phase4_player_state_sync", "to": "cycle:4", "kind": "part_of"},
+    {"from": "phase4_player_state_sync", "to": "domain:network", "kind": "delivers"},
+    {"from": "phase4_player_state_sync", "to": "phase4_network_abstraction", "kind": "depends_on"},
     {"from": "phase4_network_abstraction", "to": "domain:network", "kind": "delivers"},
     {"from": "phase3_economy_coins", "to": "domain:scene", "kind": "delivers"},
     {"from": "phase3_economy_coins", "to": "phase2_enemy_core", "kind": "depends_on"},
