@@ -106,7 +106,7 @@ show, and the evidence a passing run has to produce.
 
 | Done | Branch | Domain | Requirement | ADR | Verified by | Seed node |
 |---|---|---|---|---|---|---|
-| [ ] | `phase5/product-catalog` | scene | Roadmap §5 — data-only pricing | ADR-004 | Price changes touch no code | `phase5_product_catalog` |
+| [x] | `phase5/product-catalog` | scene | Roadmap §5 — data-only pricing | ADR-004 | Price changes touch no code | `phase5_product_catalog` |
 | [ ] | `phase5/iap-integration` | scene | Roadmap §5 — IAP ladder | ADR-004 | Sandbox purchase credits gems via the Phase 3 `Wallet` | `phase5_iap_integration` |
 | [ ] | `phase5/store-ui` | ui | Roadmap §5 — dual-currency store | ADR-004 | Both currencies purchase and deduct correctly | `phase5_store_ui` |
 | [ ] | `phase5/ads-integration` | scene | Roadmap §5 — rewarded + interstitial, remove-ads IAP | — | Remove-ads suppresses interstitials permanently | `phase5_ads_integration` |
