@@ -115,11 +115,11 @@ namespace JetFighter.UI.Input
         /// </summary>
         public static bool IsInRegion(Vector2 screenPosition, float screenWidth, float regionFraction)
         {
-            if (screenWidth <= 0f)
-            {
-                return false;
-            }
-            return screenPosition.x >= 0f && screenPosition.x < screenWidth * regionFraction;
+            // Delegated to ScreenRegions so this half and the right hand's
+            // half cannot drift apart. Two copies of the divide either leave
+            // a column no hand answers or one both hands claim, and neither
+            // shows up in a screenshot.
+            return ScreenRegions.IsInLeft(screenPosition, screenWidth, regionFraction);
         }
 
         /// <summary>Offset over radius, clamped to the unit circle.</summary>

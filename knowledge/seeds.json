@@ -131,6 +131,14 @@
       "symbols": ["EnemyHealthBarUI", "ColorFor", "Refresh"]
     },
     {
+      "id": "phase2_right_hand_targeting",
+      "type": "system",
+      "label": "Right-Hand Targeting Reticle (ground-only)",
+      "tags": ["ui", "input", "phase2", "adr-002"],
+      "phase": ["2"],
+      "symbols": ["TargetReticleInput", "ScreenRegions", "ITargetInput", "Aim"]
+    },
+    {
       "id": "phase2_weapon_bullet_damage",
       "type": "system",
       "label": "Bullet Damage Pipeline",
@@ -175,6 +183,9 @@
     {"from": "phase2_enemy_core", "to": "cycle:2", "kind": "part_of"},
     {"from": "phase2_enemy_healthbar_ui", "to": "cycle:2", "kind": "part_of"},
     {"from": "phase2_weapon_bullet_damage", "to": "cycle:2", "kind": "part_of"},
+    {"from": "phase2_right_hand_targeting", "to": "cycle:2", "kind": "part_of"},
+    {"from": "phase2_right_hand_targeting", "to": "domain:ui", "kind": "delivers"},
+    {"from": "phase2_right_hand_targeting", "to": "phase1_input_joystick_mapping", "kind": "depends_on"},
     {"from": "phase2_weapon_bullet_damage", "to": "domain:weapon", "kind": "delivers"},
     {"from": "phase2_weapon_bullet_damage", "to": "phase2_enemy_core", "kind": "depends_on"},
     {"from": "phase2_enemy_healthbar_ui", "to": "domain:ui", "kind": "delivers"},
