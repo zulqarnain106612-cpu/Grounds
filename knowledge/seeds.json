@@ -251,6 +251,14 @@
       "symbols": ["NetworkedPlayerState", "NetworkMessage", "PlayerStatePayload", "Broadcast"]
     },
     {
+      "id": "phase5_ads_integration",
+      "type": "system",
+      "label": "Rewarded Continue + Interstitials (remove-ads honoured)",
+      "tags": ["scene", "monetization", "phase5"],
+      "phase": ["5"],
+      "symbols": ["AdsManager", "RemoveAdsFlag", "ContinueOnDeathUI", "AdOutcome"]
+    },
+    {
       "id": "phase5_iap_integration",
       "type": "system",
       "label": "Unity IAP + Gem Crediting (idempotent per transaction)",
@@ -327,6 +335,9 @@
     {"from": "phase5_product_catalog", "to": "cycle:5", "kind": "part_of"},
     {"from": "phase5_iap_integration", "to": "cycle:5", "kind": "part_of"},
     {"from": "phase5_store_ui", "to": "cycle:5", "kind": "part_of"},
+    {"from": "phase5_ads_integration", "to": "cycle:5", "kind": "part_of"},
+    {"from": "phase5_ads_integration", "to": "domain:scene", "kind": "delivers"},
+    {"from": "phase5_ads_integration", "to": "phase5_iap_integration", "kind": "depends_on"},
     {"from": "phase5_store_ui", "to": "domain:ui", "kind": "delivers"},
     {"from": "phase5_store_ui", "to": "phase5_product_catalog", "kind": "depends_on"},
     {"from": "phase5_iap_integration", "to": "domain:scene", "kind": "delivers"},
