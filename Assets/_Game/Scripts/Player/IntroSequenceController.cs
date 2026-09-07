@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using JetFighter.Analytics;
 using JetFighter.UI.Input;
 using JetFighter.Weapon;
 
@@ -183,6 +184,11 @@ namespace JetFighter.Player
 
             if (next == State.PlayerControl)
             {
+                // Logged at PlayerControl rather than at Begin: a run the
+                // player never got control of is not a run, and counting it
+                // would inflate every funnel that starts here.
+                AnalyticsService.LogEvent(AnalyticsEvents.RunStart,
+                    AnalyticsEvents.ParamIsCoop, false);
                 OnPlayerControl?.Invoke();
             }
         }

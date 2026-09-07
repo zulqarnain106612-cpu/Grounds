@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using JetFighter.Analytics;
 
 namespace JetFighter.Enemy
 {
@@ -39,6 +40,50 @@ namespace JetFighter.Enemy
         {
             get => curve;
             set => curve = value;
+        }
+
+        private int highestTierReported = -1;
+
+        /// <summary>
+        /// Reports a newly reached difficulty tier, once each.
+        ///
+        /// Instance-level rather than inside the static curve function: the
+        /// curve is called every spawn, and an event per spawn would be tens
+        /// of thousands per session -- past Firebase's per-day limits and
+        /// useless besides. What answers a question is the tier a player
+        /// reached, once.
+        ///
+        /// Only ever climbs. A tier re-reported when power falls and rises
+        /// again would make "reached tier 3" mean "was at tier 3 at some
+        /// point, repeatedly", which no funnel can use.
+        /// </summary>
+        public void ReportTierIfNew(float playerPowerLevel)
+        {
+            if (curve == null)
+            {
+                return;
+            }
+            int tier = GetUnlockedArchetypes(curve, playerPowerLevel).Count;
+            if (tier <= highestTierReported)
+            {
+                return;
+            }
+            highestTierReported = tier;
+            AnalyticsService.LogEvent(AnalyticsEvents.DifficultyTierReached,
+                new System.Collections.Generic.Dictionary<string, object>
+                {
+                    { AnalyticsEvents.ParamTier, tier },
+                    { AnalyticsEvents.ParamPowerLevel, playerPowerLevel },
+                });
+        }
+
+        /// <summary>Highest tier reported this run. Reset between runs.</summary>
+        public int HighestTierReported => highestTierReported;
+
+        /// <summary>Clears the reported tier so a new run starts from nothing.</summary>
+        public void ResetTierReporting()
+        {
+            highestTierReported = -1;
         }
 
         /// <summary>
