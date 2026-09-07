@@ -15,6 +15,8 @@ import pytest
 
 from gateway import symbol_scanner
 
+from tests._csharp import mentions
+
 REAL_ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = REAL_ROOT / "Assets" / "_Game" / "Scripts"
 CONSTRAINT = SCRIPTS / "Physics" / "PlaneConstraint.cs"
@@ -48,10 +50,9 @@ def test_it_is_a_post_solve_correction_not_a_joint():
     """Roadmap section 3 point 2, and the reason ADR-001 is satisfiable at
     all: joints resolve through the solver and introduce jitter that fights
     the arcade feel."""
-    source = CONSTRAINT.read_text()
     for joint in ("ConfigurableJoint", "FixedJoint", "HingeJoint"):
-        assert joint not in source
-    assert "RigidbodyConstraints" not in source, \
+        assert not mentions(CONSTRAINT, joint)
+    assert not mentions(CONSTRAINT, "RigidbodyConstraints"), \
         "freezing an axis via RigidbodyConstraints is the solver path this avoids"
 
 
