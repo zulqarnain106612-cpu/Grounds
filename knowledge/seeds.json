@@ -1,0 +1,86 @@
+{
+  "version": "1.1.0",
+  "note": "Hand-authored, unlike every other file under knowledge/. gateway/ingest.py:build_graph() unions these into the generated graph, so durable phase knowledge survives an ingest. See docs/DECISIONS.md ADR-008 and docs/SDLC_SPIRAL.md section 6.",
+  "nodes": [
+    {
+      "id": "cycle:0",
+      "type": "cycle",
+      "label": "Cycle 0 - Harness Bootstrap",
+      "tags": ["cycle", "build_pipeline", "knowledge_base", "ci"],
+      "phase": ["0"],
+      "symbols": []
+    },
+    {
+      "id": "cycle:1",
+      "type": "cycle",
+      "label": "Cycle 1 - Constrained-Physics Flight Feel",
+      "tags": ["cycle", "player", "physics", "ui", "weapon"],
+      "phase": ["1"],
+      "symbols": []
+    },
+    {
+      "id": "cycle:2",
+      "type": "cycle",
+      "label": "Cycle 2 - Combat Core",
+      "tags": ["cycle", "enemy", "weapon", "ui", "player"],
+      "phase": ["2"],
+      "symbols": []
+    },
+    {
+      "id": "cycle:3",
+      "type": "cycle",
+      "label": "Cycle 3 - Endless Loop and Scaling",
+      "tags": ["cycle", "enemy", "asset", "player", "scene"],
+      "phase": ["3"],
+      "symbols": []
+    },
+    {
+      "id": "cycle:4",
+      "type": "cycle",
+      "label": "Cycle 4 - Two-Player P2P",
+      "tags": ["cycle", "network", "enemy"],
+      "phase": ["4"],
+      "symbols": []
+    },
+    {
+      "id": "cycle:5",
+      "type": "cycle",
+      "label": "Cycle 5 - Economy and Monetization",
+      "tags": ["cycle", "scene", "ui"],
+      "phase": ["5"],
+      "symbols": []
+    },
+    {
+      "id": "cycle:6",
+      "type": "cycle",
+      "label": "Cycle 6 - iOS Hardening and Analytics",
+      "tags": ["cycle", "build_pipeline", "scene", "ui", "physics"],
+      "phase": ["6"],
+      "symbols": []
+    }
+  ],
+  "edges": [
+    {"from": "cycle:0", "to": "domain:build_pipeline", "kind": "delivers"},
+    {"from": "cycle:0", "to": "domain:knowledge_base", "kind": "delivers"},
+    {"from": "cycle:0", "to": "domain:ci", "kind": "delivers"},
+    {"from": "cycle:1", "to": "domain:physics", "kind": "delivers"},
+    {"from": "cycle:1", "to": "domain:player", "kind": "delivers"},
+    {"from": "cycle:1", "to": "domain:ui", "kind": "delivers"},
+    {"from": "cycle:1", "to": "domain:weapon", "kind": "delivers"},
+    {"from": "cycle:2", "to": "domain:enemy", "kind": "delivers"},
+    {"from": "cycle:2", "to": "domain:weapon", "kind": "delivers"},
+    {"from": "cycle:2", "to": "domain:ui", "kind": "delivers"},
+    {"from": "cycle:3", "to": "domain:asset", "kind": "delivers"},
+    {"from": "cycle:3", "to": "domain:enemy", "kind": "delivers"},
+    {"from": "cycle:3", "to": "domain:scene", "kind": "delivers"},
+    {"from": "cycle:4", "to": "domain:network", "kind": "delivers"},
+    {"from": "cycle:5", "to": "domain:scene", "kind": "delivers"},
+    {"from": "cycle:6", "to": "domain:build_pipeline", "kind": "delivers"},
+    {"from": "cycle:1", "to": "cycle:0", "kind": "depends_on"},
+    {"from": "cycle:2", "to": "cycle:1", "kind": "depends_on"},
+    {"from": "cycle:3", "to": "cycle:2", "kind": "depends_on"},
+    {"from": "cycle:4", "to": "cycle:3", "kind": "depends_on"},
+    {"from": "cycle:5", "to": "cycle:3", "kind": "depends_on"},
+    {"from": "cycle:6", "to": "cycle:5", "kind": "depends_on"}
+  ]
+}

@@ -10,6 +10,7 @@ _ENV_ROOT = os.environ.get("JFA_REPO_ROOT")
 ROOT = Path(_ENV_ROOT) if _ENV_ROOT else Path(__file__).resolve().parent.parent
 KB_PATH = ROOT / "index" / "kb.index.json"
 GRAPH_PATH = ROOT / "knowledge" / "graph.json"
+SEEDS_PATH = ROOT / "knowledge" / "seeds.json"
 CONFIG_PATH = ROOT / "config" / "agent.config.json"
 
 MAX_SUMMARY_LEN = 2000  # matches RetrievedChunk.content maxLength in the schema
@@ -234,11 +235,37 @@ def build_kb_index(repo_root: Path | None = None) -> dict:
     return index
 
 
+def _load_seeds(repo_root: Path) -> tuple[list[dict], list[dict]]:
+    """Hand-authored durable nodes/edges from knowledge/seeds.json.
+
+    build_graph() rewrites knowledge/graph.json wholesale, so a node added at
+    runtime through `knowledge_update` is erased by the next ingest -- and the
+    ingest workflow runs nightly. Seeds are a tracked *input* instead, so a
+    fresh ingest reproduces them byte-identically and the CI staleness check
+    keeps working unchanged. See docs/DECISIONS.md ADR-008.
+
+    A malformed seeds file raises rather than degrading to empty: silently
+    dropping durable knowledge is the failure this file exists to prevent.
+    """
+    path = repo_root / "knowledge" / "seeds.json"
+    if not path.exists():
+        return [], []
+    data = json.loads(path.read_text())
+    nodes = [n for n in (data.get("nodes") or []) if isinstance(n, dict) and n.get("id")]
+    edges = [
+        e for e in (data.get("edges") or [])
+        if isinstance(e, dict) and e.get("from") and e.get("to")
+    ]
+    return nodes, edges
+
+
 def build_graph(repo_root: Path | None = None) -> dict:
     """Derive the knowledge graph from the freshly built KB index.
 
-    Nodes: one per schema domain, plus one per ingested chunk kind.
-    Edges: chunk-kind -> domain where a chunk's tags name that domain.
+    Nodes: one per schema domain, plus one per ingested chunk kind, plus the
+    hand-authored durable nodes in knowledge/seeds.json.
+    Edges: chunk-kind -> domain where a chunk's tags name that domain, plus the
+    seed file's own edges.
     """
     repo_root = repo_root or ROOT
     kb = json.loads((repo_root / "index" / "kb.index.json").read_text())
@@ -264,7 +291,21 @@ def build_graph(repo_root: Path | None = None) -> dict:
                 if key not in seen:
                     seen.add(key)
                     edges.append({"from": key[0], "to": key[1], "kind": "covers"})
-    edges.sort(key=lambda e: (e["from"], e["to"]))
+    seed_nodes, seed_edges = _load_seeds(repo_root)
+    # A hand-authored node is the more specific statement, so it wins on an id
+    # collision with a derived one. Sorted so ingest stays byte-deterministic.
+    seed_ids = {n["id"] for n in seed_nodes}
+    nodes = [n for n in nodes if n["id"] not in seed_ids]
+    nodes += sorted(seed_nodes, key=lambda n: n["id"])
+
+    for edge in seed_edges:
+        edges.append({
+            "from": edge["from"], "to": edge["to"], "kind": edge.get("kind", "related"),
+        })
+    deduped: dict[tuple[str, str, str], dict] = {}
+    for edge in edges:
+        deduped.setdefault((edge["from"], edge["to"], edge["kind"]), edge)
+    edges = sorted(deduped.values(), key=lambda e: (e["from"], e["to"], e["kind"]))
 
     graph = {
         "version": "1.1.0",

@@ -111,3 +111,87 @@ def test_manifest_counts_match_reality(ingested, monkeypatch):
     assert m["counts"]["graph_nodes"] == len(graph["graph"]["nodes"])
     assert m["counts"]["graph_edges"] == len(graph["graph"]["edges"])
     assert m["counts"]["files"] == len(m["files"])
+
+
+# --- durable knowledge (ADR-008) -------------------------------------------
+# Every phase spec ends with a `knowledge_update` node tagged by phase, and
+# roadmap section 9 makes phase-scoped retrieval the justification for
+# cell-scoped branching. build_graph() rewrites the graph wholesale, so those
+# nodes only survive if they come from a tracked input. These tests pin that.
+
+def _graph_nodes(isolated_repo):
+    return json.loads(
+        (isolated_repo / "knowledge" / "graph.json").read_text()
+    )["graph"]["nodes"]
+
+
+def test_seed_nodes_survive_a_graph_rebuild(ingested):
+    """The regression this layer exists to prevent."""
+    isolated_repo, _, graph = ingested
+    seeds = json.loads((isolated_repo / "knowledge" / "seeds.json").read_text())
+    seeded_ids = {n["id"] for n in seeds["nodes"]}
+    assert seeded_ids, "seeds.json must not be empty -- an empty file proves nothing"
+
+    node_ids = {n["id"] for n in graph["graph"]["nodes"]}
+    assert seeded_ids <= node_ids
+
+    # and again after a second rebuild, which is when the wholesale overwrite bites
+    ingest.build_kb_index(isolated_repo)
+    ingest.build_graph(isolated_repo)
+    assert seeded_ids <= {n["id"] for n in _graph_nodes(isolated_repo)}
+
+
+def test_seed_edges_are_merged_and_deduplicated(ingested):
+    isolated_repo, _, graph = ingested
+    seeds = json.loads((isolated_repo / "knowledge" / "seeds.json").read_text())
+    keys = [(e["from"], e["to"], e["kind"]) for e in graph["graph"]["edges"]]
+    for edge in seeds["edges"]:
+        assert (edge["from"], edge["to"], edge.get("kind", "related")) in keys
+    assert len(keys) == len(set(keys)), "duplicate edges would grow the graph on every ingest"
+
+
+def test_graph_stays_byte_deterministic_with_seeds(ingested):
+    """CI's staleness check diffs the 'graph' key, so a moving node or edge
+    order would fail enforce.yml on every run."""
+    isolated_repo, _, first = ingested
+    ingest.build_kb_index(isolated_repo)
+    second = ingest.build_graph(isolated_repo)
+    assert first["graph"] == second["graph"]
+
+
+def test_runtime_knowledge_nodes_are_transient_but_seeds_are_not(ingested):
+    """The documented split: knowledge_update is session state, seeds.json is
+    durable. A cell that never promotes its node loses it -- that is why
+    promotion is a required step, not a nicety."""
+    isolated_repo, _, _ = ingested
+    kb_store.apply_knowledge_op({
+        "op": "add_node", "id": "phase1_runtime_only",
+        "type": "system", "label": "Runtime Only", "phase": ["1"],
+    })
+    assert "phase1_runtime_only" in {n["id"] for n in _graph_nodes(isolated_repo)}
+
+    ingest.build_kb_index(isolated_repo)
+    ingest.build_graph(isolated_repo)
+    after = {n["id"] for n in _graph_nodes(isolated_repo)}
+    assert "phase1_runtime_only" not in after
+    assert "cycle:1" in after, "a seeded node must outlive the rebuild that erased the runtime one"
+
+
+def test_missing_seeds_file_degrades_to_a_derived_graph(ingested):
+    """An older checkout without seeds.json must still ingest cleanly."""
+    isolated_repo, _, _ = ingested
+    (isolated_repo / "knowledge" / "seeds.json").unlink()
+    ingest.build_kb_index(isolated_repo)
+    graph = ingest.build_graph(isolated_repo)
+    ids = {n["id"] for n in graph["graph"]["nodes"]}
+    assert "domain:player" in ids
+    assert not any(i.startswith("cycle:") for i in ids)
+
+
+def test_malformed_seeds_file_fails_loudly(ingested):
+    """Degrading to an empty list here would silently drop durable knowledge --
+    exactly the failure mode this layer was added to fix."""
+    isolated_repo, _, _ = ingested
+    (isolated_repo / "knowledge" / "seeds.json").write_text("{ not json")
+    with pytest.raises(json.JSONDecodeError):
+        ingest.build_graph(isolated_repo)

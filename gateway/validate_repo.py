@@ -15,6 +15,7 @@ JSON_FILES = [
     "daemons/registry.json",
     "tools/patterns.json",
     "knowledge/graph.json",
+    "knowledge/seeds.json",
     "symbols/index.json",
     "index/kb.index.json",
 ]
