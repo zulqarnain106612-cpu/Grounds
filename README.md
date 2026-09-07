@@ -49,6 +49,8 @@ This is enforced by the shape of the contract, not by a policy flag:
 | `manifest.yml` | dispatch, push to main | Rebuilds `index/manifest.json` and verifies every sha256 against the working tree; on dispatch it opens a PR with the result |
 | `review.yml` | PR, dispatch | Structural review: action/example/handler parity, config paths resolve, no handler blocks on CI |
 | `retrieval-verify.yml` | push, PR, dispatch | Live retrieval probes through the gateway, all-actions round-trip, and the no-raw-file-read guarantee |
+| `coverage.yml` | push, PR, dispatch | Measures line and branch coverage, gates every module and file, and uploads the report the `Coverage` ruleset evaluates |
+| `unity-test.yml` | push/PR touching the Unity project, dispatch | Runs the C# EditMode and PlayMode suites. Fails — never skips — without a Unity licence, and fails when zero tests are discovered |
 
 Staleness checks compare **content keys only**. Every generated index carries a
 moving `updated_at`/`built_at`, so diffing whole files would fail on every run.
@@ -129,7 +131,7 @@ ProjectSettings/, Packages/  Unity project files (Unity 6 LTS, ADR-009)
 tests/        pytest suite backing every claim in docs/ENFORCEMENT.md
 docs/         SCHEMA.md (generated), ENFORCEMENT.md, EXTENDING.md
 .githooks/    pre-commit (fast syntax checks), pre-push (no-op)
-.github/      the five workflows above
+.github/      the workflows above
 ```
 
 Files under `knowledge/`, `symbols/` and `index/` are generated — never
