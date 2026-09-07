@@ -211,6 +211,14 @@
       "symbols": ["PowerUpDef", "PowerUpController", "PowerUpPickup", "PlayerPowerLevel", "MultiplierFor"]
     },
     {
+      "id": "phase4_host_authoritative_enemies",
+      "type": "system",
+      "label": "Host-Authoritative Enemy State",
+      "tags": ["enemy", "network", "phase4", "adr-005"],
+      "phase": ["4"],
+      "symbols": ["HostAuthority", "NetworkedEnemyState", "EnemyStatePayload", "SetNetworkedHealth"]
+    },
+    {
       "id": "phase4_network_abstraction",
       "type": "system",
       "label": "INetworkTransport Seam + Loopback Transport",
@@ -273,6 +281,9 @@
     {"from": "phase3_economy_coins", "to": "cycle:3", "kind": "part_of"},
     {"from": "phase4_network_abstraction", "to": "cycle:4", "kind": "part_of"},
     {"from": "phase4_player_state_sync", "to": "cycle:4", "kind": "part_of"},
+    {"from": "phase4_host_authoritative_enemies", "to": "cycle:4", "kind": "part_of"},
+    {"from": "phase4_host_authoritative_enemies", "to": "domain:enemy", "kind": "delivers"},
+    {"from": "phase4_host_authoritative_enemies", "to": "phase4_network_abstraction", "kind": "depends_on"},
     {"from": "phase4_player_state_sync", "to": "domain:network", "kind": "delivers"},
     {"from": "phase4_player_state_sync", "to": "phase4_network_abstraction", "kind": "depends_on"},
     {"from": "phase4_network_abstraction", "to": "domain:network", "kind": "delivers"},
