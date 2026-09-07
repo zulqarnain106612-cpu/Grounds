@@ -28,6 +28,14 @@ namespace JetFighter.Weapon
         [Min(1)]
         public int poolCapacity = 32;
 
+        [Tooltip("Projectile travel speed, in units/second.")]
+        [Min(0.1f)]
+        public float projectileSpeed = 40f;
+
+        [Tooltip("Seconds before an unspent projectile returns itself to the pool.")]
+        [Min(0.1f)]
+        public float projectileLifetime = 3f;
+
         /// <summary>Seconds between shots. Guarded so a zero rate cannot divide by zero.</summary>
         public float CooldownSeconds => 1f / Mathf.Max(0.01f, fireRatePerSecond);
     }

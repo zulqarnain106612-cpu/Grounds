@@ -69,6 +69,17 @@ namespace JetFighter.Weapon
             set => muzzleTransform = value;
         }
 
+        /// <summary>
+        /// Whether Update drives the gun. Turned off by the intro sequence
+        /// (Phase 2) so the gun is silent until Go, and by tests that need to
+        /// place every shot themselves.
+        /// </summary>
+        public bool AutoFire
+        {
+            get => autoFire;
+            set => autoFire = value;
+        }
+
         private void Awake()
         {
             EnsurePool();
@@ -130,6 +141,15 @@ namespace JetFighter.Weapon
         }
 
         /// <summary>
+        /// Returns a spent projectile. Assigned to each bullet as it launches,
+        /// so the gun never has to track what is in flight.
+        /// </summary>
+        private void ReleaseProjectile(GameObject projectile)
+        {
+            pool?.Release(projectile);
+        }
+
+        /// <summary>
         /// Takes one projectile from the pool and positions it at the muzzle.
         /// No Instantiate and no Destroy on this path -- that is the cell's
         /// acceptance criterion, not an optimisation.
@@ -144,6 +164,17 @@ namespace JetFighter.Weapon
             GameObject bullet = pool.Get();
             Transform origin = muzzleTransform != null ? muzzleTransform : transform;
             bullet.transform.SetPositionAndRotation(origin.position, origin.rotation);
+
+            // Armed on every Get, not once at spawn: a recycled bullet still
+            // carrying the previous shot's countdown would expire mid-screen.
+            // EffectiveDamage is read here, so the shot carries the player's
+            // multiplier as it was at fire time.
+            var projectile = bullet.GetComponent<Bullet>();
+            if (projectile != null)
+            {
+                projectile.OnFinished = ReleaseProjectile;
+                projectile.Launch(EffectiveDamage, weaponDef.projectileSpeed, weaponDef.projectileLifetime);
+            }
         }
     }
 }

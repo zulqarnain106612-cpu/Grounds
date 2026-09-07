@@ -37,6 +37,9 @@ namespace JetFighter.Tests.PlayMode
             gunObject.transform.position = new Vector3(2f, 3f, 0f);
             gun = gunObject.AddComponent<PrimaryGunController>();
             gun.WeaponDef = weapon;
+            // Off by default here so each test places its own shots; the
+            // autofire test turns it back on explicitly.
+            gun.AutoFire = false;
             gun.EnsurePool();
         }
 
@@ -117,6 +120,7 @@ namespace JetFighter.Tests.PlayMode
         [UnityTest]
         public IEnumerator AutoFireRunsFromUpdateWithoutBeingDriven()
         {
+            gun.AutoFire = true;
             int before = gun.ShotsFired;
             yield return new WaitForSeconds(0.3f);
             Assert.Greater(gun.ShotsFired, before, "the gun only fires when a test calls Tick");

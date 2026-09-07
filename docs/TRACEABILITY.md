@@ -64,7 +64,7 @@ leaves the locked plane, responsive on-device.
 | [x] | *(retrofit)* gun reads `PlayerStatsRuntime` | weapon | Phase 2 spec, cross-phase note | — | Runs **before** the cells below. Landed as the `IPlayerStats` seam — `PlayerStatsRuntime` itself is Cycle 3, so the interface ships here and the implementation ships in its own cell, with no weapon code changing then | — |
 | [x] | `phase2/enemy-core` | enemy | Roadmap §2 `enemy` — data-driven `EnemyDef`, damage events | — | Damage pipeline unit-tested through `IDamageable` | `phase2_enemy_core` |
 | [x] | `phase2/enemy-healthbar-ui` | ui | Roadmap §2 `enemy` — event-driven world-space bar | — | Bar updates on event, not per-frame polling | `phase2_enemy_healthbar_ui` |
-| [ ] | `phase2/weapon-bullet-damage` | weapon | Roadmap §2 `weapon` — bullet damage pipeline | — | Bullet applies damage via `IDamageable` | `phase2_weapon_bullet_damage` |
+| [x] | `phase2/weapon-bullet-damage` | weapon | Roadmap §2 `weapon` — bullet damage pipeline | — | Bullet applies damage via `IDamageable` | `phase2_weapon_bullet_damage` |
 | [ ] | `phase2/right-hand-targeting` | ui | Roadmap §2 `ui` — independent right-hand surface | **ADR-002** | Right-half touches move the reticle; left-half touches have zero targeting effect | `phase2_right_hand_targeting` |
 | [ ] | `phase2/missile-system` | weapon | Roadmap §2 `weapon` — ground-locked missiles | **ADR-002** | Missile destroys targeted ground enemy; cooldown holds; pool bounded under soak | `phase2_missile_system` |
 | [ ] | `phase2/intro-sequence` | player | Roadmap §2 `player` — spawn/countdown state machine | — | Control hands off to physics only at `Go` | `phase2_intro_sequence` |
