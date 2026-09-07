@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using JetFighter.PowerUp;
 using JetFighter.Shared;
 
 namespace JetFighter.Enemy
@@ -22,6 +23,9 @@ namespace JetFighter.Enemy
 
         [Tooltip("Fires once, when health reaches zero.")]
         public UnityEvent OnDied = new UnityEvent();
+
+        [Tooltip("Fires once on death with whatever the drop table rolled. Never fires with null.")]
+        public UnityEvent<PowerUpDef> OnDropped = new UnityEvent<PowerUpDef>();
 
         private float currentHealth;
 
@@ -85,8 +89,47 @@ namespace JetFighter.Enemy
         /// </summary>
         public void Die()
         {
+            RollDrop();
             OnDied.Invoke();
             gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// Rolls the drop table and announces the result.
+        ///
+        /// Announced rather than spawned here: EnemyHealth knows about damage,
+        /// not about where pickups come from or which pool owns them. The
+        /// spawner listening to this is the same split the health bar already
+        /// uses, and it is what lets Phase 4 make the host the only roller
+        /// without touching this class.
+        ///
+        /// Rolled before OnDied so a listener that deactivates the enemy
+        /// cannot cancel the drop.
+        /// </summary>
+        private void RollDrop()
+        {
+            if (def == null || def.dropTable == null)
+            {
+                return;
+            }
+            PowerUpDef dropped = def.dropTable.Roll(NextRoll(), NextRoll());
+            if (dropped != null)
+            {
+                OnDropped.Invoke(dropped);
+            }
+        }
+
+        /// <summary>
+        /// Source of randomness for drops. Overridable so a test can make the
+        /// distribution deterministic, and so Phase 4 can drive both clients
+        /// from one seed -- a drop each client rolled separately is a desync
+        /// with loot in it.
+        /// </summary>
+        public System.Func<float> RollSource { get; set; }
+
+        private float NextRoll()
+        {
+            return RollSource != null ? RollSource() : UnityEngine.Random.value;
         }
     }
 }

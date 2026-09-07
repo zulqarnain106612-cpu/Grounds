@@ -5,10 +5,10 @@ namespace JetFighter.Enemy
     /// <summary>
     /// One enemy archetype, as data.
     ///
-    /// Phase 3 adds a drop table and difficulty scaling reads from here. That
-    /// field is deliberately absent now: this phase proves the
-    /// damage/health/UI pipeline, and a data shape carrying fields nothing
-    /// reads is how a schema quietly becomes fiction.
+    /// The drop table arrives here in Cycle 3 rather than in a lookup keyed
+    /// by enemy type somewhere in code: a designer retuning drop rates opens
+    /// the asset that already describes the enemy and edits the numbers next
+    /// to it, with no code change anywhere.
     /// </summary>
     [CreateAssetMenu(menuName = "JetFighter/Enemy", fileName = "EnemyDef")]
     public class EnemyDef : ScriptableObject
@@ -27,5 +27,8 @@ namespace JetFighter.Enemy
         [Tooltip("Distance from its target at which the enemy stops approaching and loiters.")]
         [Min(0f)]
         public float loiterDistance = 8f;
+
+        [Tooltip("What this enemy may drop, as weights. Data only -- retuning needs no code change.")]
+        public DropTable dropTable = new DropTable();
     }
 }
