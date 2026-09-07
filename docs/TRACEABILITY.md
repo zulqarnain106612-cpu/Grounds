@@ -76,7 +76,7 @@ animates and colours correctly, missile locks and destroys a ground target.
 
 | Done | Branch | Domain | Requirement | ADR | Verified by | Seed node |
 |---|---|---|---|---|---|---|
-| [ ] | `phase3/player-stats-runtime` | player | Roadmap §2 `asset` — power-ups mutate player stats | — | Stat changes observable at runtime | `phase3_player_stats_runtime` |
+| [x] | `phase3/player-stats-runtime` | player | Roadmap §2 `asset` — power-ups mutate player stats | — | Stat changes observable at runtime | `phase3_player_stats_runtime` |
 | [ ] | `phase3/powerup-core` | asset | Roadmap §2 `asset` — stacking with a hard cap | **ADR-003** | Multiplicative stacking never exceeds the cap | `phase3_powerup_core` |
 | [ ] | `phase3/enemy-drop-tables` | enemy | Roadmap §2 `asset` — weighted drops, data-only balancing | — | Drop weights are retunable with no code change | `phase3_enemy_drop_tables` |
 | [ ] | `phase3/difficulty-scaling` | enemy | Roadmap §4 — bounded DDA | — | Time-to-kill never exceeds the ceiling across a `PlayerPowerLevel` sweep | `phase3_difficulty_scaling` |

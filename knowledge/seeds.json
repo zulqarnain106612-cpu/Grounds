@@ -161,6 +161,14 @@
       "tags": ["weapon", "phase2"],
       "phase": ["2"],
       "symbols": ["Bullet", "HandleHit", "Launch", "PrimaryGunController"]
+    },
+    {
+      "id": "phase3_player_stats_runtime",
+      "type": "system",
+      "label": "Runtime Player Stats (effective values, assets untouched)",
+      "tags": ["player", "phase3"],
+      "phase": ["3"],
+      "symbols": ["PlayerStatsRuntime", "IFlightStats", "FlightStatsSnapshot", "IPlayerStats"]
     }
   ],
   "edges": [
@@ -201,6 +209,9 @@
     {"from": "phase2_weapon_bullet_damage", "to": "cycle:2", "kind": "part_of"},
     {"from": "phase2_right_hand_targeting", "to": "cycle:2", "kind": "part_of"},
     {"from": "phase2_missile_system", "to": "cycle:2", "kind": "part_of"},
+    {"from": "phase3_player_stats_runtime", "to": "cycle:3", "kind": "part_of"},
+    {"from": "phase3_player_stats_runtime", "to": "domain:player", "kind": "delivers"},
+    {"from": "phase3_player_stats_runtime", "to": "phase1_player_flight_rigidbody", "kind": "depends_on"},
     {"from": "phase2_intro_sequence", "to": "cycle:2", "kind": "part_of"},
     {"from": "phase2_intro_sequence", "to": "domain:player", "kind": "delivers"},
     {"from": "phase2_intro_sequence", "to": "phase1_player_flight_rigidbody", "kind": "depends_on"},
