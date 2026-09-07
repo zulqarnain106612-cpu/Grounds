@@ -94,10 +94,13 @@ difficulty escalates and stays beatable.
 | [x] | `phase4/player-state-sync` | network | Roadmap §6 — position/fire sync | ADR-005 | Passes over loopback before any device is involved | `phase4_player_state_sync` |
 | [x] | `phase4/host-authoritative-enemies` | enemy | Roadmap §6 — one authority for enemy state | ADR-005 | No enemy-HP divergence over loopback | `phase4_host_authoritative_enemies` |
 | [x] | `phase4/gamekit-transport` | network | Roadmap §6 — GameKit as an implementation, not a dependency | ADR-005 | **Zero gameplay-code changes** when swapping transport — this is the abstraction's own test | `phase4_gamekit_transport` |
-| [ ] | `phase4/network-soak-test` | network | Roadmap §11 R4 | ADR-005 | Two physical devices, full co-op run, no visible desync; brief interruption crashes neither client | `phase4_network_soak_test` |
+| [ ] | `phase4/network-soak-test` | network | Roadmap §11 R4 | ADR-005 | Two physical devices, full co-op run, no visible desync; brief interruption crashes neither client. **Deliberately still open:** the automated half shipped (latency, jitter, 50% loss, 20 interruptions, a 5-minute run with divergence checked every frame — `NetworkSoakTests`), and the device half is `docs/DEVICE_SOAK_PROCEDURE.md`, which needs two provisioned devices and `UNITY_LICENSE`. Ticking on the automated half alone would be the green lie Cycle 0 was built to prevent | `phase4_network_soak_test` |
 
 **Cycle gate:** two physical iOS devices complete a co-op run with no visible
-enemy-health desync.
+enemy-health desync. **Not yet met** — every cell below it is closed and the
+soak harness exists, but the gate itself is a device observation. See
+`docs/DEVICE_SOAK_PROCEDURE.md` for what is automated, what only devices can
+show, and the evidence a passing run has to produce.
 
 ## Cycle 5 — Economy and monetization  *(risk R6)*
 

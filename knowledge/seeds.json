@@ -235,6 +235,14 @@
       "symbols": ["INetworkTransport", "LocalLoopbackTransport", "TransportState", "SendState", "Pump"]
     },
     {
+      "id": "phase4_network_soak_test",
+      "type": "system",
+      "label": "Network Soak Harness (device half still owed)",
+      "tags": ["network", "phase4", "adr-005", "risk-r4", "open"],
+      "phase": ["4"],
+      "symbols": ["LocalLoopbackTransport", "NetworkSoakTests"]
+    },
+    {
       "id": "phase4_player_state_sync",
       "type": "system",
       "label": "Player Position + Fire Sync (loopback-first)",
@@ -291,6 +299,9 @@
     {"from": "phase4_player_state_sync", "to": "cycle:4", "kind": "part_of"},
     {"from": "phase4_host_authoritative_enemies", "to": "cycle:4", "kind": "part_of"},
     {"from": "phase4_gamekit_transport", "to": "cycle:4", "kind": "part_of"},
+    {"from": "phase4_network_soak_test", "to": "cycle:4", "kind": "part_of"},
+    {"from": "phase4_network_soak_test", "to": "domain:network", "kind": "delivers"},
+    {"from": "phase4_network_soak_test", "to": "phase4_gamekit_transport", "kind": "depends_on"},
     {"from": "phase4_gamekit_transport", "to": "domain:network", "kind": "delivers"},
     {"from": "phase4_gamekit_transport", "to": "phase4_network_abstraction", "kind": "depends_on"},
     {"from": "phase4_host_authoritative_enemies", "to": "domain:enemy", "kind": "delivers"},

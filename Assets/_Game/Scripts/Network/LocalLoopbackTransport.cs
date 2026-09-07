@@ -21,7 +21,14 @@ namespace JetFighter.Network
     /// </summary>
     public class LocalLoopbackTransport : INetworkTransport
     {
-        private readonly Queue<byte[]> inbox = new Queue<byte[]>();
+        private readonly Queue<Pending> inbox = new Queue<Pending>();
+
+        /// <summary>A payload and the number of pumps left before it lands.</summary>
+        private struct Pending
+        {
+            public byte[] Payload;
+            public int PumpsRemaining;
+        }
         private LocalLoopbackTransport peer;
         private TransportState state = TransportState.Disconnected;
 
@@ -52,6 +59,24 @@ namespace JetFighter.Network
         public float LossRate { get; set; }
 
         private int sendCounter;
+
+        /// <summary>
+        /// Pumps a payload waits before delivery. Zero is the old behaviour.
+        ///
+        /// Latency is what separates a soak from a round-trip test: every
+        /// ordering bug in the sync layer needs two messages in flight at once
+        /// to show up, and with instant delivery there is never more than one.
+        /// </summary>
+        public int LatencyPumps { get; set; }
+
+        /// <summary>
+        /// Extra pumps added to every other message, modelling jitter.
+        ///
+        /// Deterministic, like the loss model: this is what actually reorders
+        /// packets, and a reordering bug that appears one run in five is one
+        /// nobody will believe.
+        /// </summary>
+        public int JitterPumps { get; set; }
 
         /// <summary>Messages waiting to be delivered by <see cref="Pump"/>.</summary>
         public int PendingCount => inbox.Count;
@@ -103,7 +128,8 @@ namespace JetFighter.Network
             // otherwise mutate a message already in flight.
             var copy = new byte[payload.Length];
             Buffer.BlockCopy(payload, 0, copy, 0, payload.Length);
-            peer.inbox.Enqueue(copy);
+            int delay = Math.Max(0, LatencyPumps) + (sendCounter % 2 == 0 ? Math.Max(0, JitterPumps) : 0);
+            peer.inbox.Enqueue(new Pending { Payload = copy, PumpsRemaining = delay });
             return true;
         }
 
@@ -114,11 +140,21 @@ namespace JetFighter.Network
         /// </summary>
         public int Pump()
         {
+            int waiting = inbox.Count;
             int delivered = 0;
-            while (inbox.Count > 0)
+            // Each message is examined once per pump. Anything still in
+            // flight goes back on the queue, so ordering is preserved except
+            // where jitter deliberately breaks it -- which is the point.
+            for (int i = 0; i < waiting; i++)
             {
-                byte[] payload = inbox.Dequeue();
-                OnStateReceived?.Invoke(payload);
+                Pending pending = inbox.Dequeue();
+                if (pending.PumpsRemaining > 0)
+                {
+                    pending.PumpsRemaining--;
+                    inbox.Enqueue(pending);
+                    continue;
+                }
+                OnStateReceived?.Invoke(pending.Payload);
                 delivered++;
             }
             return delivered;
