@@ -67,7 +67,7 @@ leaves the locked plane, responsive on-device.
 | [x] | `phase2/weapon-bullet-damage` | weapon | Roadmap §2 `weapon` — bullet damage pipeline | — | Bullet applies damage via `IDamageable` | `phase2_weapon_bullet_damage` |
 | [x] | `phase2/right-hand-targeting` | ui | Roadmap §2 `ui` — independent right-hand surface | **ADR-002** | Right-half touches move the reticle; left-half touches have zero targeting effect | `phase2_right_hand_targeting` |
 | [x] | `phase2/missile-system` | weapon | Roadmap §2 `weapon` — ground-locked missiles | **ADR-002** | Missile destroys targeted ground enemy; cooldown holds; pool bounded under soak | `phase2_missile_system` |
-| [ ] | `phase2/intro-sequence` | player | Roadmap §2 `player` — spawn/countdown state machine | — | Control hands off to physics only at `Go` | `phase2_intro_sequence` |
+| [x] | `phase2/intro-sequence` | player | Roadmap §2 `player` — spawn/countdown state machine | — | Control hands off to physics only at `Go` | `phase2_intro_sequence` |
 
 **Cycle gate:** one full engagement loop — gun kills air enemy, health bar
 animates and colours correctly, missile locks and destroys a ground target.
