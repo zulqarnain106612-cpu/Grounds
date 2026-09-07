@@ -1,9 +1,12 @@
 """Ingest must produce a KB that retrieval can actually serve from."""
 import json
+from pathlib import Path
 
 import pytest
 
 from gateway import gateway, ingest, kb_store, manifest
+
+REAL_ROOT = Path(__file__).resolve().parent.parent
 
 
 @pytest.fixture
@@ -195,3 +198,114 @@ def test_malformed_seeds_file_fails_loudly(ingested):
     (isolated_repo / "knowledge" / "seeds.json").write_text("{ not json")
     with pytest.raises(json.JSONDecodeError):
         ingest.build_graph(isolated_repo)
+
+
+# --- seeds.json is hand-authored, so it is the file that can be wrong -------
+#
+# Everything else under knowledge/ is generated and cannot drift from its
+# generator. seeds.json is typed by a person, is unreachable from the request
+# schema, and is only read by the nightly ingest -- so before these tests a
+# structurally broken entry was dropped in silence and the author found out
+# never. These pin that every such entry now fails loudly and early.
+
+def _seeds(isolated_repo, doc):
+    (isolated_repo / "knowledge" / "seeds.json").write_text(json.dumps(doc))
+
+
+def test_seeds_document_must_be_an_object(ingested):
+    isolated_repo, _, _ = ingested
+    _seeds(isolated_repo, ["not", "a", "document"])
+    with pytest.raises(ingest.SeedsError, match="must be a JSON object"):
+        ingest.build_graph(isolated_repo)
+
+
+@pytest.mark.parametrize("key", ["nodes", "edges"])
+def test_seeds_collections_must_be_arrays(ingested, key):
+    isolated_repo, _, _ = ingested
+    _seeds(isolated_repo, {"nodes": [], "edges": [], key: {"id": "x"}})
+    with pytest.raises(ingest.SeedsError, match=f"'{key}' must be an array"):
+        ingest.build_graph(isolated_repo)
+
+
+def test_a_node_that_is_not_an_object_is_rejected(ingested):
+    isolated_repo, _, _ = ingested
+    _seeds(isolated_repo, {"nodes": ["cycle:0"], "edges": []})
+    with pytest.raises(ingest.SeedsError, match=r"nodes\[0\]: must be an object"):
+        ingest.build_graph(isolated_repo)
+
+
+@pytest.mark.parametrize("bad_id", [None, "", "   ", 7])
+def test_a_node_without_a_usable_id_is_rejected(ingested, bad_id):
+    """The old filter dropped exactly these and carried on."""
+    isolated_repo, _, _ = ingested
+    _seeds(isolated_repo, {"nodes": [{"id": bad_id, "label": "Ghost"}], "edges": []})
+    with pytest.raises(ingest.SeedsError, match="'id' must be a non-empty string"):
+        ingest.build_graph(isolated_repo)
+
+
+def test_duplicate_node_ids_are_rejected(ingested):
+    """Last-one-wins would make the graph depend on file order."""
+    isolated_repo, _, _ = ingested
+    _seeds(isolated_repo, {"nodes": [{"id": "cycle:0"}, {"id": "cycle:0"}], "edges": []})
+    with pytest.raises(ingest.SeedsError, match="duplicate node id 'cycle:0'"):
+        ingest.build_graph(isolated_repo)
+
+
+def test_an_edge_that_is_not_an_object_is_rejected(ingested):
+    isolated_repo, _, _ = ingested
+    _seeds(isolated_repo, {"nodes": [], "edges": ["cycle:0 -> domain:player"]})
+    with pytest.raises(ingest.SeedsError, match=r"edges\[0\]: must be an object"):
+        ingest.build_graph(isolated_repo)
+
+
+@pytest.mark.parametrize("field", ["from", "to"])
+def test_an_edge_missing_an_endpoint_is_rejected(ingested, field):
+    isolated_repo, _, _ = ingested
+    edge = {"from": "cycle:0", "to": "domain:player", "kind": "delivers"}
+    edge[field] = ""
+    _seeds(isolated_repo, {"nodes": [], "edges": [edge]})
+    with pytest.raises(ingest.SeedsError, match=f"'{field}' must be a non-empty string"):
+        ingest.build_graph(isolated_repo)
+
+
+def test_an_edge_with_a_non_string_kind_is_rejected(ingested):
+    isolated_repo, _, _ = ingested
+    _seeds(isolated_repo, {"nodes": [], "edges": [
+        {"from": "domain:player", "to": "domain:physics", "kind": 3}]})
+    with pytest.raises(ingest.SeedsError, match="'kind' must be a non-empty string"):
+        ingest.build_graph(isolated_repo)
+
+
+def test_an_edge_may_omit_kind_entirely(ingested):
+    """Optional, and build_graph defaults it to 'related' -- so omitting it is
+    not the same as setting it to junk."""
+    isolated_repo, _, _ = ingested
+    _seeds(isolated_repo, {"nodes": [], "edges": [
+        {"from": "domain:player", "to": "domain:physics"}]})
+    graph = ingest.build_graph(isolated_repo)
+    assert {"from": "domain:player", "to": "domain:physics", "kind": "related"} \
+        in graph["graph"]["edges"]
+
+
+@pytest.mark.parametrize("bad_edge", [
+    {"from": "cycle:0", "to": "domain:build-pipeline", "kind": "delivers"},
+    {"from": "cycle:99", "to": "domain:player", "kind": "delivers"},
+])
+def test_an_edge_pointing_at_no_node_is_rejected(ingested, bad_edge):
+    """A dangling edge does not crash anything -- retrieval just traverses
+    nothing, and `domain:build-pipeline` reviews identically to
+    `domain:build_pipeline`."""
+    isolated_repo, _, _ = ingested
+    _seeds(isolated_repo, {"nodes": [{"id": "cycle:0"}], "edges": [bad_edge]})
+    with pytest.raises(ingest.SeedsError, match="matches no node"):
+        ingest.build_graph(isolated_repo)
+
+
+def test_the_committed_seeds_file_passes_its_own_validator():
+    """The shipped file, not a fixture -- the checks are worthless if the real
+    seeds.json could not survive them."""
+    seeds = json.loads((REAL_ROOT / "knowledge" / "seeds.json").read_text())
+    nodes, edges = ingest.parse_seeds(seeds)
+    assert nodes and edges
+    ids = [n["id"] for n in nodes]
+    assert ids == sorted(ids), "seeds.json is documented as sorted by id"

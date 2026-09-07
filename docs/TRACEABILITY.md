@@ -36,7 +36,7 @@ state, not an oversight — the scaffold exists, the gameplay code does not.
 | Done | Branch | Domain | Requirement | ADR | Verified by | Seed node |
 |---|---|---|---|---|---|---|
 | [x] | `phase1/build-ios-scaffold` | build_pipeline | Roadmap §8 Phase 1 build_pipeline — iOS project scaffold | ADR-009 | `symbols/index.json` non-empty after ingest | `phase1_build_ios_scaffold` |
-| [ ] | `phase0/knowledge_base-seeds-layer` | knowledge_base | *Gap-fill* — durable phase nodes survive ingest | ADR-008 | `enforce.yml` green with seeds committed; seeded node present after a fresh ingest | `phase0_knowledge_base_seeds_layer` |
+| [x] | `phase0/knowledge_base-seeds-layer` | knowledge_base | *Gap-fill* — durable phase nodes survive ingest | ADR-008 | `enforce.yml` green with seeds committed; seeded node present after a fresh ingest | `phase0_knowledge_base_seeds_layer` |
 | [ ] | `phase0/ci-unity-test-workflow` | ci | *Gap-fill* — C# tests have somewhere to run | ADR-010 | Unity test workflow green on a trivial passing test | `phase0_ci_unity_test_workflow` |
 
 ## Cycle 1 — Constrained-physics flight feel  *(risk R1)*

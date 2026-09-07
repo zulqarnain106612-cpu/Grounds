@@ -68,6 +68,13 @@ tests are not project symbols and should not pollute retrieval.
 Sorted by `id` on write, so a fresh ingest reproduces the file
 byte-identically and `enforce.yml`'s staleness check keeps working unchanged.
 
+Validated by `gateway/validate_repo.py` on every push, using the same
+`gateway/ingest.py:parse_seeds()` the ingest itself runs: a node with no
+usable `id`, a duplicate id, or an edge whose endpoint names no node fails
+the PR. It is the only hand-authored file under `knowledge/`, so it is the
+only one that can be wrong, and a broken entry that merely disappeared would
+be the exact failure ADR-008 exists to prevent.
+
 ### `gateway/ingest.py:build_graph()` — modified
 
 Unions `knowledge/seeds.json` into the derived graph after the domain and

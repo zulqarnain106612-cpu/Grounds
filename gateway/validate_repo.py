@@ -67,8 +67,43 @@ def main() -> int:
     if unhandled:
         failures.append(f"actions with no handler in gateway/handlers.py: {sorted(unhandled)}")
 
+    # 6. knowledge/seeds.json is the one hand-authored file under knowledge/,
+    #    so it is the one that can be wrong. Checking it here fails the PR that
+    #    introduced the mistake instead of the nightly ingest hours later.
+    failures.extend(_validate_seeds(schema))
+
     _report(failures)
     return 1 if failures else 0
+
+
+def _validate_seeds(schema: dict) -> list[str]:
+    """Structure of knowledge/seeds.json, plus every edge endpoint resolving.
+
+    The endpoint check needs the ids ingest will derive, not just the seeded
+    ones: an edge into `domain:player` is legitimate even though no seed node
+    declares it. Derived ids are `domain:<schema domain>` and `kind:<chunk
+    kind>`, so they are reconstructed here from the same two sources ingest
+    uses -- the schema enum and the committed KB index.
+    """
+    from . import ingest
+
+    try:
+        data = json.loads((ROOT / "knowledge" / "seeds.json").read_text())
+        nodes, edges = ingest.parse_seeds(data)
+    except ingest.SeedsError as e:
+        return [str(e)]
+
+    domains = schema["properties"]["intent"]["properties"]["domain"]["enum"]
+    kb = json.loads((ROOT / "index" / "kb.index.json").read_text())
+    known = {n["id"] for n in nodes}
+    known |= {f"domain:{d}" for d in domains}
+    known |= {f"kind:{c['kind']}" for c in kb.get("chunks", [])}
+
+    try:
+        ingest.check_seed_edges(edges, known)
+    except ingest.SeedsError as e:
+        return [str(e)]
+    return []
 
 
 def _report(failures: list[str]) -> None:
