@@ -169,6 +169,14 @@
       "tags": ["player", "phase3"],
       "phase": ["3"],
       "symbols": ["PlayerStatsRuntime", "IFlightStats", "FlightStatsSnapshot", "IPlayerStats"]
+    },
+    {
+      "id": "phase3_powerup_core",
+      "type": "system",
+      "label": "Power-Up Stacking with a Hard Cap",
+      "tags": ["asset", "player", "phase3", "adr-003"],
+      "phase": ["3"],
+      "symbols": ["PowerUpDef", "PowerUpController", "PowerUpPickup", "PlayerPowerLevel", "MultiplierFor"]
     }
   ],
   "edges": [
@@ -210,6 +218,9 @@
     {"from": "phase2_right_hand_targeting", "to": "cycle:2", "kind": "part_of"},
     {"from": "phase2_missile_system", "to": "cycle:2", "kind": "part_of"},
     {"from": "phase3_player_stats_runtime", "to": "cycle:3", "kind": "part_of"},
+    {"from": "phase3_powerup_core", "to": "cycle:3", "kind": "part_of"},
+    {"from": "phase3_powerup_core", "to": "domain:asset", "kind": "delivers"},
+    {"from": "phase3_powerup_core", "to": "phase3_player_stats_runtime", "kind": "depends_on"},
     {"from": "phase3_player_stats_runtime", "to": "domain:player", "kind": "delivers"},
     {"from": "phase3_player_stats_runtime", "to": "phase1_player_flight_rigidbody", "kind": "depends_on"},
     {"from": "phase2_intro_sequence", "to": "cycle:2", "kind": "part_of"},
