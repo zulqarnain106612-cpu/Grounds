@@ -57,14 +57,16 @@ def test_the_flight_model_is_free_of_engine_singletons(indexed):
         assert forbidden not in tail, f"the pure section reaches for {forbidden}"
 
 
-def test_this_branch_is_deliberately_unconstrained():
-    """docs/PHASE1_TECHNICAL_SPEC.md section 3: inertia and banking are
-    validated in free 3D space *before* the plane lock, so a bad feel later
-    has exactly one possible cause. A constraint sneaking in here would make
-    the next branch's own test pass before that branch existed."""
-    assert not (REAL_ROOT / "Assets" / "_Game" / "Scripts" / "Physics" / "PlaneConstraint.cs").exists()
-    # Comments may name it -- the controller's own docstring explains why the
-    # lock is absent. Only executable lines are the concern here.
+def test_the_flight_model_knows_nothing_about_the_constraint():
+    """docs/PHASE1_TECHNICAL_SPEC.md section 3: inertia and banking were
+    validated in free 3D space before the plane lock existed, so a bad feel
+    has exactly one possible cause.
+
+    The constraint has since landed in its own branch, and it works by
+    correcting the body after the solve -- so the controller must still hold
+    no reference to it. A JetController that special-cased the locked axis
+    would put the plane rule in two places, and the two would drift.
+    """
     code = [l for l in CONTROLLER.read_text().splitlines()
             if not l.lstrip().startswith(("//", "///", "*", "/*"))]
     assert not any("PlaneConstraint" in l for l in code)

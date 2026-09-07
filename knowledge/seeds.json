@@ -83,6 +83,14 @@
       "symbols": ["QualityTierManager", "DetectTier", "ApplySettings"]
     },
     {
+      "id": "phase1_physics_plane_constraint",
+      "type": "system",
+      "label": "2D-Plane Physics Constraint (Z-locked, post-solve)",
+      "tags": ["physics", "phase1", "adr-001"],
+      "phase": ["1"],
+      "symbols": ["PlaneConstraint", "Apply", "DeviationFrom", "WithComponent"]
+    },
+    {
       "id": "phase1_player_flight_rigidbody",
       "type": "system",
       "label": "Jet Flight Rigidbody Controller (unconstrained)",
@@ -121,6 +129,9 @@
     {"from": "phase0_knowledge_base_seeds_layer", "to": "domain:knowledge_base", "kind": "delivers"},
     {"from": "phase1_build_ios_scaffold", "to": "cycle:0", "kind": "part_of"},
     {"from": "phase1_player_flight_rigidbody", "to": "cycle:1", "kind": "part_of"},
+    {"from": "phase1_physics_plane_constraint", "to": "cycle:1", "kind": "part_of"},
+    {"from": "phase1_physics_plane_constraint", "to": "domain:physics", "kind": "delivers"},
+    {"from": "phase1_physics_plane_constraint", "to": "phase1_player_flight_rigidbody", "kind": "depends_on"},
     {"from": "phase1_player_flight_rigidbody", "to": "domain:player", "kind": "delivers"},
     {"from": "phase1_player_flight_rigidbody", "to": "phase1_build_ios_scaffold", "kind": "depends_on"},
     {"from": "phase1_build_ios_scaffold", "to": "domain:build_pipeline", "kind": "delivers"}
