@@ -131,6 +131,14 @@
       "symbols": ["EnemyHealthBarUI", "ColorFor", "Refresh"]
     },
     {
+      "id": "phase2_missile_system",
+      "type": "system",
+      "label": "Ground-Locked Missile System",
+      "tags": ["weapon", "phase2", "adr-002"],
+      "phase": ["2"],
+      "symbols": ["MissileController", "MissileLauncher", "MissileTriggerButton", "Steer", "Detonate"]
+    },
+    {
       "id": "phase2_right_hand_targeting",
       "type": "system",
       "label": "Right-Hand Targeting Reticle (ground-only)",
@@ -184,6 +192,10 @@
     {"from": "phase2_enemy_healthbar_ui", "to": "cycle:2", "kind": "part_of"},
     {"from": "phase2_weapon_bullet_damage", "to": "cycle:2", "kind": "part_of"},
     {"from": "phase2_right_hand_targeting", "to": "cycle:2", "kind": "part_of"},
+    {"from": "phase2_missile_system", "to": "cycle:2", "kind": "part_of"},
+    {"from": "phase2_missile_system", "to": "domain:weapon", "kind": "delivers"},
+    {"from": "phase2_missile_system", "to": "phase2_right_hand_targeting", "kind": "depends_on"},
+    {"from": "phase2_missile_system", "to": "phase1_weapon_gun_stub", "kind": "depends_on"},
     {"from": "phase2_right_hand_targeting", "to": "domain:ui", "kind": "delivers"},
     {"from": "phase2_right_hand_targeting", "to": "phase1_input_joystick_mapping", "kind": "depends_on"},
     {"from": "phase2_weapon_bullet_damage", "to": "domain:weapon", "kind": "delivers"},
