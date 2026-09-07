@@ -81,7 +81,7 @@ animates and colours correctly, missile locks and destroys a ground target.
 | [x] | `phase3/enemy-drop-tables` | enemy | Roadmap §2 `asset` — weighted drops, data-only balancing | — | Drop weights are retunable with no code change | `phase3_enemy_drop_tables` |
 | [x] | `phase3/difficulty-scaling` | enemy | Roadmap §4 — bounded DDA | — | Time-to-kill never exceeds the ceiling across a `PlayerPowerLevel` sweep | `phase3_difficulty_scaling` |
 | [x] | `phase3/enemy-spawner-waves` | enemy | Roadmap §4 — archetype variety by threshold | — | Archetypes unlock at the configured thresholds | `phase3_enemy_spawner_waves` |
-| [ ] | `phase3/economy-coins` | scene | Roadmap §5 — currency-generic `Wallet` | **ADR-004** | Adding a third currency requires no `Wallet` change | `phase3_economy_coins` |
+| [x] | `phase3/economy-coins` | scene | Roadmap §5 — currency-generic `Wallet` | **ADR-004** | Adding a third currency requires no `Wallet` change | `phase3_economy_coins` |
 
 **Cycle gate:** a 5+ minute solo run; power-ups visibly change behaviour;
 difficulty escalates and stays beatable.

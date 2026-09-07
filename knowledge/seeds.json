@@ -171,6 +171,14 @@
       "symbols": ["DifficultyCurve", "DifficultyManager", "ComputeStatMultiplier", "TimeToKill", "GetUnlockedArchetypes"]
     },
     {
+      "id": "phase3_economy_coins",
+      "type": "system",
+      "label": "Currency-Generic Wallet + Coin Earning",
+      "tags": ["scene", "economy", "phase3", "adr-004"],
+      "phase": ["3"],
+      "symbols": ["Wallet", "CurrencyType", "SaveService", "CoinEarnController"]
+    },
+    {
       "id": "phase3_enemy_drop_tables",
       "type": "system",
       "label": "Weighted Enemy Drop Tables (data-only balancing)",
@@ -246,6 +254,9 @@
     {"from": "phase3_enemy_drop_tables", "to": "cycle:3", "kind": "part_of"},
     {"from": "phase3_difficulty_scaling", "to": "cycle:3", "kind": "part_of"},
     {"from": "phase3_enemy_spawner_waves", "to": "cycle:3", "kind": "part_of"},
+    {"from": "phase3_economy_coins", "to": "cycle:3", "kind": "part_of"},
+    {"from": "phase3_economy_coins", "to": "domain:scene", "kind": "delivers"},
+    {"from": "phase3_economy_coins", "to": "phase2_enemy_core", "kind": "depends_on"},
     {"from": "phase3_enemy_spawner_waves", "to": "domain:enemy", "kind": "delivers"},
     {"from": "phase3_enemy_spawner_waves", "to": "phase3_difficulty_scaling", "kind": "depends_on"},
     {"from": "phase3_difficulty_scaling", "to": "domain:enemy", "kind": "delivers"},
