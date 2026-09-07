@@ -163,6 +163,14 @@
       "symbols": ["Bullet", "HandleHit", "Launch", "PrimaryGunController"]
     },
     {
+      "id": "phase3_difficulty_scaling",
+      "type": "system",
+      "label": "Bounded Difficulty Scaling (defeatability floor)",
+      "tags": ["enemy", "phase3", "risk-r5"],
+      "phase": ["3"],
+      "symbols": ["DifficultyCurve", "DifficultyManager", "ComputeStatMultiplier", "TimeToKill", "GetUnlockedArchetypes"]
+    },
+    {
       "id": "phase3_enemy_drop_tables",
       "type": "system",
       "label": "Weighted Enemy Drop Tables (data-only balancing)",
@@ -228,6 +236,9 @@
     {"from": "phase3_player_stats_runtime", "to": "cycle:3", "kind": "part_of"},
     {"from": "phase3_powerup_core", "to": "cycle:3", "kind": "part_of"},
     {"from": "phase3_enemy_drop_tables", "to": "cycle:3", "kind": "part_of"},
+    {"from": "phase3_difficulty_scaling", "to": "cycle:3", "kind": "part_of"},
+    {"from": "phase3_difficulty_scaling", "to": "domain:enemy", "kind": "delivers"},
+    {"from": "phase3_difficulty_scaling", "to": "phase3_powerup_core", "kind": "depends_on"},
     {"from": "phase3_enemy_drop_tables", "to": "domain:enemy", "kind": "delivers"},
     {"from": "phase3_enemy_drop_tables", "to": "phase3_powerup_core", "kind": "depends_on"},
     {"from": "phase3_powerup_core", "to": "domain:asset", "kind": "delivers"},
