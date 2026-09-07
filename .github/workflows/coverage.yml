@@ -1,0 +1,92 @@
+name: coverage
+
+# Feeds the `Coverage` repository ruleset, which carries a code_coverage rule
+# with minimum_coverage: 99. That rule evaluates *line* coverage on the
+# aggregate only, and it can evaluate nothing at all unless a Cobertura report
+# is uploaded -- which is what the upload step below provides.
+#
+# scripts/check_coverage.py additionally gates branch coverage and every
+# individual module and file, which the ruleset rule does not cover.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      minimum:
+        description: "Coverage floor to enforce (percent)"
+        required: false
+        default: "99"
+
+permissions:
+  contents: read
+  code-quality: write
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    env:
+      JFA_CI: "1"
+      COVERAGE_MIN: ${{ github.event.inputs.minimum || '99' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install -r requirements.txt
+
+      # Always produce the report, even when the suite's own fail_under trips,
+      # so the gate below can report *which* scopes fell short rather than just
+      # that something did.
+      - name: Run tests with coverage
+        id: pytest
+        continue-on-error: true
+        run: python -m pytest tests/ -q --cov --cov-report=xml --cov-report=term-missing
+
+      - name: Enforce the coverage floor on every scope
+        id: gate
+        continue-on-error: true
+        run: python scripts/check_coverage.py --min "$COVERAGE_MIN" --report coverage.xml | tee coverage-report.txt
+
+      - name: Summarise
+        if: always()
+        run: |
+          {
+            echo "## Coverage gate (>= ${COVERAGE_MIN}%)"
+            echo
+            echo '```'
+            cat coverage-report.txt 2>/dev/null || echo "no report produced"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: |
+            coverage.xml
+            coverage-report.txt
+
+      # Uploading is what lets the ruleset's code_coverage rule evaluate this
+      # PR at all. Skipped for fork PRs, which cannot hold write permissions.
+      - name: Upload coverage report to GitHub Code Quality
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        uses: actions/upload-code-coverage@v1
+        with:
+          file: coverage.xml
+          language: Python
+          label: code-coverage/pytest
+
+      # Failing last, on purpose: the report, the summary and the upload all
+      # happen first, so a red run still tells you the numbers and still feeds
+      # the ruleset.
+      - name: Fail if the suite or the gate did not pass
+        if: steps.pytest.outcome != 'success' || steps.gate.outcome != 'success'
+        run: |
+          echo "::error::pytest=${{ steps.pytest.outcome }} coverage-gate=${{ steps.gate.outcome }}"
+          exit 1

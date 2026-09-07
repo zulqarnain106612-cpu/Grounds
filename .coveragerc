@@ -1,0 +1,26 @@
+# Coverage configuration for the >=99% gate enforced on every PR.
+#
+# See .github/workflows/coverage.yml and scripts/check_coverage.py.
+# Exclusions are kept deliberately minimal: a generous exclude list is the
+# easiest way to manufacture a passing percentage, which would make the gate
+# decorative. Anything added here should be justified in the PR that adds it.
+
+[run]
+# gateway/ is the production code. tests/ is deliberately not measured --
+# including test files inflates the total with code that is trivially 100%
+# covered by definition, which hides gaps in the code that matters.
+source = gateway
+branch = True
+
+[report]
+fail_under = 99
+precision = 2
+show_missing = True
+skip_covered = False
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+
+[xml]
+output = coverage.xml
