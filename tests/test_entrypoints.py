@@ -191,7 +191,11 @@ def probes(isolated_repo, monkeypatch):
     return isolated_repo
 
 
-def test_verify_retrieval_passes_against_a_populated_kb(probes, capsys):
+def test_verify_retrieval_passes_against_a_populated_kb(probes, monkeypatch, capsys):
+    # GitHub Actions always sets GITHUB_STEP_SUMMARY, so the "not running in CI"
+    # path is never taken there unless it is removed explicitly.
+    monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
+
     assert verify_retrieval.main() == 0
     assert "[PASS] retrieval verification" in capsys.readouterr().out
 
