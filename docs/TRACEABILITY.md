@@ -90,7 +90,7 @@ difficulty escalates and stays beatable.
 
 | Done | Branch | Domain | Requirement | ADR | Verified by | Seed node |
 |---|---|---|---|---|---|---|
-| [ ] | `phase4/network-abstraction` | network | Roadmap §6 — `INetworkTransport` seam | **ADR-005** | Loopback transport drives gameplay with no GameKit present | `phase4_network_abstraction` |
+| [x] | `phase4/network-abstraction` | network | Roadmap §6 — `INetworkTransport` seam | **ADR-005** | Loopback transport drives gameplay with no GameKit present | `phase4_network_abstraction` |
 | [ ] | `phase4/player-state-sync` | network | Roadmap §6 — position/fire sync | ADR-005 | Passes over loopback before any device is involved | `phase4_player_state_sync` |
 | [ ] | `phase4/host-authoritative-enemies` | enemy | Roadmap §6 — one authority for enemy state | ADR-005 | No enemy-HP divergence over loopback | `phase4_host_authoritative_enemies` |
 | [ ] | `phase4/gamekit-transport` | network | Roadmap §6 — GameKit as an implementation, not a dependency | ADR-005 | **Zero gameplay-code changes** when swapping transport — this is the abstraction's own test | `phase4_gamekit_transport` |

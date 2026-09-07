@@ -209,6 +209,14 @@
       "tags": ["asset", "player", "phase3", "adr-003"],
       "phase": ["3"],
       "symbols": ["PowerUpDef", "PowerUpController", "PowerUpPickup", "PlayerPowerLevel", "MultiplierFor"]
+    },
+    {
+      "id": "phase4_network_abstraction",
+      "type": "system",
+      "label": "INetworkTransport Seam + Loopback Transport",
+      "tags": ["network", "phase4", "adr-005"],
+      "phase": ["4"],
+      "symbols": ["INetworkTransport", "LocalLoopbackTransport", "TransportState", "SendState", "Pump"]
     }
   ],
   "edges": [
@@ -255,6 +263,8 @@
     {"from": "phase3_difficulty_scaling", "to": "cycle:3", "kind": "part_of"},
     {"from": "phase3_enemy_spawner_waves", "to": "cycle:3", "kind": "part_of"},
     {"from": "phase3_economy_coins", "to": "cycle:3", "kind": "part_of"},
+    {"from": "phase4_network_abstraction", "to": "cycle:4", "kind": "part_of"},
+    {"from": "phase4_network_abstraction", "to": "domain:network", "kind": "delivers"},
     {"from": "phase3_economy_coins", "to": "domain:scene", "kind": "delivers"},
     {"from": "phase3_economy_coins", "to": "phase2_enemy_core", "kind": "depends_on"},
     {"from": "phase3_enemy_spawner_waves", "to": "domain:enemy", "kind": "delivers"},
