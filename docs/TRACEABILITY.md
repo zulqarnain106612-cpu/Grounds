@@ -119,7 +119,7 @@ show, and the evidence a passing run has to produce.
 | Done | Branch | Domain | Requirement | ADR | Verified by | Seed node |
 |---|---|---|---|---|---|---|
 | [x] | `phase6/analytics-instrumentation` | scene | Roadmap §7 — Firebase event set | — | Every listed event appears in the Firebase dashboard on a real run | `phase6_analytics_instrumentation` |
-| [ ] | `phase6/settings-ui` | ui | Spec item 2c — adjustable settings | — | Manual override persists across relaunch and visibly changes rendering | `phase6_settings_ui` |
+| [x] | `phase6/settings-ui` | ui | Spec item 2c — adjustable settings | — | Manual override persists across relaunch and visibly changes rendering | `phase6_settings_ui` |
 | [ ] | `phase6/perf-profiling-pass` | physics | Roadmap §2 `build_pipeline` — Burst decided from data | — | Sustained fps floor at low tier on the lowest supported device | `phase6_perf_profiling_pass` |
 | [ ] | `phase6/appstore-cert-checklist` | build_pipeline | Roadmap §8 Phase 6 | ADR-006 | Archives cleanly with all required Privacy Manifests | `phase6_appstore_cert_checklist` |
 
