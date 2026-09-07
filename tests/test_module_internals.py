@@ -239,6 +239,13 @@ def test_knowledge_update_can_update_remove_and_link_nodes():
     assert "n1" not in {n["id"] for n in removed["graph"]["nodes"]}
 
 
+def test_knowledge_update_ignores_an_unrecognised_op():
+    before = kb_store.apply_knowledge_op({"op": "add_node", "id": "keep"})["graph"]
+    after = kb_store.apply_knowledge_op({"op": "not_a_real_op", "id": "keep"})["graph"]
+    assert after["nodes"] == before["nodes"]
+    assert after["edges"] == before["edges"]
+
+
 # --------------------------------------------------------------------------
 # log_guard
 # --------------------------------------------------------------------------
@@ -336,6 +343,12 @@ def test_is_valid_is_false_for_a_non_conforming_instance():
     assert schema_guard.is_valid({"totally": "wrong"}) is False
 
 
+def test_is_valid_is_true_for_a_conforming_instance():
+    assert schema_guard.is_valid(_request("retrieve", {"context": {
+        "strategy": "keyword", "scope": "kb", "target": "x", "top_k": 1, "max_tokens": 100,
+    }})) is True
+
+
 # --------------------------------------------------------------------------
 # symbol_scanner
 # --------------------------------------------------------------------------
@@ -379,9 +392,11 @@ def test_scan_file_returns_nothing_for_an_unreadable_path(tmp_path):
 
 
 def test_rebuild_symbol_index_picks_up_configured_sources(isolated_repo):
-    source = isolated_repo / "Assets" / "_Game" / "Scripts" / "Player" / "JetController.cs"
-    source.parent.mkdir(parents=True)
-    source.write_text(CSHARP)
+    scripts = isolated_repo / "Assets" / "_Game" / "Scripts" / "Player"
+    scripts.mkdir(parents=True)
+    (scripts / "JetController.cs").write_text(CSHARP)
+    # a directory whose name matches the glob must be skipped, not scanned
+    (scripts / "NotAFile.cs").mkdir()
 
     index = symbol_scanner.rebuild_symbol_index(isolated_repo)
     assert "JetController" in {s["name"] for s in index["symbols"]}
@@ -400,6 +415,9 @@ def docs_repo(isolated_repo):
     docs.mkdir(exist_ok=True)
     (docs / "GUIDE.md").write_text("# One\n\nalpha\n\n## Two\n\nbeta\n")
     (docs / "EMPTY.md").write_text("no headings here at all\n")
+    # glob("docs/*.md") matches directories too; reading one raises OSError and
+    # must be skipped rather than aborting the whole ingest.
+    (docs / "BROKEN.md").mkdir()
     return isolated_repo
 
 
@@ -411,6 +429,8 @@ def test_markdown_ingest_chunks_per_heading(docs_repo):
     assert "doc:docs/GUIDE.md#two" in ids
     # a file with no heading produces no chunk rather than an untitled one
     assert not any(c["id"].startswith("doc:docs/EMPTY.md") for c in chunks)
+    # an unreadable path is skipped, not fatal
+    assert not any(c["id"].startswith("doc:docs/BROKEN.md") for c in chunks)
     guide = [c for c in chunks if c["id"] == "doc:docs/GUIDE.md#two"][0]
     assert guide["summary"] == "Two. beta"
 

@@ -47,8 +47,12 @@ jobs:
         continue-on-error: true
         run: python -m pytest tests/ -q --cov --cov-report=xml --cov-report=term-missing
 
+      # `shell: bash` is required, not cosmetic: the default shell is `bash -e`
+      # with no pipefail, so the pipe to tee would swallow the gate's exit code
+      # and report a passing job while files sat below the threshold.
       - name: Enforce the coverage floor on every scope
         id: gate
+        shell: bash
         continue-on-error: true
         run: python scripts/check_coverage.py --min "$COVERAGE_MIN" --report coverage.xml | tee coverage-report.txt
 
