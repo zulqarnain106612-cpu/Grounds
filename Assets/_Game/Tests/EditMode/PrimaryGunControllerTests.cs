@@ -152,5 +152,63 @@ namespace JetFighter.Tests.EditMode
             weapon.fireRatePerSecond = 0f;
             Assert.AreEqual(100f, weapon.CooldownSeconds, 1e-3f);
         }
+
+        // --- player stats seam (Phase 2 cross-phase retrofit) ---------------
+
+        private sealed class Stats : JetFighter.Player.IPlayerStats
+        {
+            public float DamageMultiplier { get; set; } = 1f;
+            public float FireRateMultiplier { get; set; } = 1f;
+        }
+
+        [Test]
+        public void WithNoStatsSourceTheWeaponsOwnNumbersApply()
+        {
+            weapon.damage = 7f;
+            Assert.AreEqual(weapon.CooldownSeconds, gun.EffectiveCooldownSeconds, 1e-4f);
+            Assert.AreEqual(7f, gun.EffectiveDamage, 1e-4f);
+        }
+
+        [Test]
+        public void AFireRateMultiplierChangesTheCadence()
+        {
+            gun.Stats = new Stats { FireRateMultiplier = 2f };
+            Simulate(10f, 1f / 60f);
+            Assert.AreEqual(21, gun.ShotsFired, 1, "the fire-rate multiplier did not reach the cooldown");
+        }
+
+        [Test]
+        public void ADamageMultiplierScalesTheWeaponRatherThanReplacingIt()
+        {
+            // WeaponBase stays the source of balance; a power-up scales it.
+            weapon.damage = 3f;
+            gun.Stats = new Stats { DamageMultiplier = 2.5f };
+            Assert.AreEqual(7.5f, gun.EffectiveDamage, 1e-4f);
+        }
+
+        [Test]
+        public void ClearingTheStatsRestoresTheDefaultsRatherThanSilencingTheGun()
+        {
+            gun.Stats = new Stats { FireRateMultiplier = 4f };
+            gun.Stats = null;
+            Assert.AreEqual(weapon.CooldownSeconds, gun.EffectiveCooldownSeconds, 1e-4f);
+            Simulate(5f, 1f / 60f);
+            Assert.Greater(gun.ShotsFired, 0, "a null stats source stopped the gun firing");
+        }
+
+        [Test]
+        public void AZeroFireRateMultiplierCannotDivideByZero()
+        {
+            gun.Stats = new Stats { FireRateMultiplier = 0f };
+            Assert.IsTrue(float.IsFinite(gun.EffectiveCooldownSeconds));
+        }
+
+        [Test]
+        public void ANegativeDamageMultiplierCannotHealTheTarget()
+        {
+            weapon.damage = 5f;
+            gun.Stats = new Stats { DamageMultiplier = -3f };
+            Assert.AreEqual(0f, gun.EffectiveDamage, 1e-4f);
+        }
     }
 }
