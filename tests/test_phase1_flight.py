@@ -63,7 +63,11 @@ def test_this_branch_is_deliberately_unconstrained():
     has exactly one possible cause. A constraint sneaking in here would make
     the next branch's own test pass before that branch existed."""
     assert not (REAL_ROOT / "Assets" / "_Game" / "Scripts" / "Physics" / "PlaneConstraint.cs").exists()
-    assert "PlaneConstraint" not in CONTROLLER.read_text()
+    # Comments may name it -- the controller's own docstring explains why the
+    # lock is absent. Only executable lines are the concern here.
+    code = [l for l in CONTROLLER.read_text().splitlines()
+            if not l.lstrip().startswith(("//", "///", "*", "/*"))]
+    assert not any("PlaneConstraint" in l for l in code)
 
 
 def test_banking_never_rotates_the_rigidbody():
