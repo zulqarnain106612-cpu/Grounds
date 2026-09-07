@@ -26,8 +26,8 @@ This file is that join. One row per cell. It is the checklist that
   This matches the ids already used in the phase specs' `knowledge_update`
   examples.
 
-`Done` is `[ ]` for every row — no game code exists yet. That is the accurate
-starting state, not an oversight.
+Cycle 0's first row is ticked; every other row is `[ ]`. That is the accurate
+state, not an oversight — the scaffold exists, the gameplay code does not.
 
 ---
 
@@ -35,7 +35,7 @@ starting state, not an oversight.
 
 | Done | Branch | Domain | Requirement | ADR | Verified by | Seed node |
 |---|---|---|---|---|---|---|
-| [ ] | `phase1/build-ios-scaffold` | build_pipeline | Roadmap §8 Phase 1 build_pipeline — iOS project scaffold | ADR-009 | `symbols/index.json` non-empty after ingest | `phase1_build_ios_scaffold` |
+| [x] | `phase1/build-ios-scaffold` | build_pipeline | Roadmap §8 Phase 1 build_pipeline — iOS project scaffold | ADR-009 | `symbols/index.json` non-empty after ingest | `phase1_build_ios_scaffold` |
 | [ ] | `phase0/knowledge_base-seeds-layer` | knowledge_base | *Gap-fill* — durable phase nodes survive ingest | ADR-008 | `enforce.yml` green with seeds committed; seeded node present after a fresh ingest | `phase0_knowledge_base_seeds_layer` |
 | [ ] | `phase0/ci-unity-test-workflow` | ci | *Gap-fill* — C# tests have somewhere to run | ADR-010 | Unity test workflow green on a trivial passing test | `phase0_ci_unity_test_workflow` |
 

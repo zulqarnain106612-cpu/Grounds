@@ -220,3 +220,32 @@ The four below were not in the roadmap. They are recorded here because
 - **Consequence:** If Cycle 0 ever grows work that is genuinely not Phase 1
   build_pipeline, revisit this rather than stretching the meaning of
   phase `1`.
+
+## ADR-012 — iOS Player Settings are held in `config/ios.build.json`, applied to Unity by script
+
+- **Status:** Accepted
+- **Cycle:** 0
+- **Context:** `phase1/build-ios-scaffold` must pin the Bundle ID, minimum
+  iOS version, Metal and IL2CPP. Unity's home for those is
+  `ProjectSettings/ProjectSettings.asset` — generated YAML, several thousand
+  lines, hand-editing it is exactly what "never hand-edit generated files"
+  forbids. It also cannot be checked without booting the editor, and
+  ADR-010 says every verification runs in CI, where no Unity licence exists
+  yet (that licence is `phase0/ci-unity-test-workflow`'s problem, not this
+  cell's).
+- **Decision:** The values live in `config/ios.build.json`, hand-authored
+  alongside `config/agent.config.json`.
+  `Assets/_Game/Editor/IOSPlayerSettings.cs` reads that file and applies it
+  to `PlayerSettings`, invoked from the `JetFighter/Apply iOS Player
+  Settings` menu item and callable from a batch-mode build.
+  `ProjectSettings.asset` stays Unity-owned and is never hand-edited.
+- **Rationale:** It makes the settings a testable artifact.
+  `tests/test_ios_scaffold.py` asserts IL2CPP, Metal, ARM64 and a sane iOS
+  floor on every PR, so a dropped setting fails a pull request in seconds
+  instead of an Xcode archive an hour later. It also survives a Unity
+  version bump rewriting the .asset.
+- **Consequence:** The JSON and the .asset can drift if someone changes
+  settings through the Unity inspector and does not update the JSON. The
+  fix is to re-run the menu item, which makes the JSON authoritative again.
+  When the Unity licence lands, `unity-test.yml` should run `Apply` in batch
+  mode so drift is corrected in CI rather than by convention.
