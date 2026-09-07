@@ -11,7 +11,6 @@ Grouped by module, in the order they appear in gateway/.
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 from pathlib import Path
 
@@ -111,9 +110,13 @@ def test_daemon_status_flags_an_unregistered_id():
     assert daemon_manager.status("no_such_daemon") == {"no_such_daemon": "unknown_daemon"}
 
 
-def test_daemon_status_reports_a_live_pid_as_running():
-    daemon_manager._pid_path("symbol_indexer").write_text(str(os.getpid()))
-    assert daemon_manager.status("symbol_indexer")["symbol_indexer"].startswith("running(pid=")
+def test_daemon_status_reports_a_live_pid_as_running(monkeypatch):
+    # Never write this process's own pid here: conftest's teardown SIGTERMs
+    # every pid it finds in the state dir, which would kill the test runner.
+    daemon_manager._pid_path("symbol_indexer").write_text("4242424")
+    monkeypatch.setattr(daemon_manager.os, "kill", lambda pid, sig: None)
+
+    assert daemon_manager.status("symbol_indexer")["symbol_indexer"] == "running(pid=4242424)"
 
 
 def test_daemon_status_clears_a_stale_pid_file(monkeypatch):
@@ -141,8 +144,10 @@ def test_daemon_start_rejects_an_unknown_daemon():
     assert daemon_manager.start("nope") == {"error": "unknown daemon nope"}
 
 
-def test_daemon_start_is_idempotent_while_already_running():
-    daemon_manager._pid_path("symbol_indexer").write_text(str(os.getpid()))
+def test_daemon_start_is_idempotent_while_already_running(monkeypatch):
+    daemon_manager._pid_path("symbol_indexer").write_text("4242424")
+    monkeypatch.setattr(daemon_manager.os, "kill", lambda pid, sig: None)
+
     assert daemon_manager.start("symbol_indexer") == {"status": "already_running"}
 
 
