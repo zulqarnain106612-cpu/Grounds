@@ -1,0 +1,88 @@
+{
+  "version": "1.1.0",
+  "note": "Hand-authored submission checklist. Machine-readable so scripts/check_appstore_readiness.py can gate on it rather than a human re-reading a wiki page under release pressure. See docs/APPSTORE_SUBMISSION.md. Entries with provided_by=sdk arrive when that SDK is installed; the checker reports them as outstanding until then and requires them under --release.",
+  "bundle_identifier": "com.conquerer.jetfighter",
+  "minimum_ios_version": "15.0",
+  "privacy_manifests": [
+    {
+      "sdk": "FirebaseAnalytics",
+      "path": "Assets/_Game/Plugins/iOS/FirebaseAnalytics.bundle/PrivacyInfo.xcprivacy",
+      "required_reason_apis": [
+        "NSPrivacyAccessedAPICategoryUserDefaults"
+      ],
+      "collects": [
+        "identifier_for_vendor",
+        "product_interaction",
+        "crash_data"
+      ],
+      "tracking": false,
+      "provided_by": "sdk"
+    },
+    {
+      "sdk": "UnityIAP",
+      "path": "Assets/_Game/Plugins/iOS/UnityIAP.bundle/PrivacyInfo.xcprivacy",
+      "required_reason_apis": [
+        "NSPrivacyAccessedAPICategoryUserDefaults"
+      ],
+      "collects": [
+        "purchase_history"
+      ],
+      "tracking": false,
+      "provided_by": "sdk"
+    },
+    {
+      "sdk": "AdsSdk",
+      "path": "Assets/_Game/Plugins/iOS/AdsSdk.bundle/PrivacyInfo.xcprivacy",
+      "required_reason_apis": [
+        "NSPrivacyAccessedAPICategoryUserDefaults",
+        "NSPrivacyAccessedAPICategorySystemBootTime"
+      ],
+      "collects": [
+        "advertising_data",
+        "device_id"
+      ],
+      "tracking": true,
+      "provided_by": "sdk"
+    },
+    {
+      "sdk": "JetFighter",
+      "path": "Assets/_Game/Plugins/iOS/PrivacyInfo.xcprivacy",
+      "required_reason_apis": [
+        "NSPrivacyAccessedAPICategoryFileTimestamp",
+        "NSPrivacyAccessedAPICategoryUserDefaults"
+      ],
+      "collects": [],
+      "tracking": false,
+      "provided_by": "project"
+    }
+  ],
+  "info_plist_keys": [
+    {
+      "key": "NSUserTrackingUsageDescription",
+      "required_when": "the ads SDK declares tracking",
+      "value": "Used to show you more relevant ads. You can decline and still play the full game."
+    },
+    {
+      "key": "ITSAppUsesNonExemptEncryption",
+      "required_when": "always",
+      "value": "false"
+    },
+    {
+      "key": "GKGameCenterEnabled",
+      "required_when": "the game uses GameKit matchmaking",
+      "value": "true"
+    }
+  ],
+  "capabilities": [
+    "in-app-purchase",
+    "game-center"
+  ],
+  "manual_gates": [
+    "App Store Connect product ids match config/ios.build.json and the ProductCatalog asset exactly",
+    "Screenshots for every required device size",
+    "Age rating questionnaire completed, reflecting the ads and IAP present",
+    "Privacy nutrition labels in App Store Connect match the privacy manifests below",
+    "A sandbox IAP purchase completed end to end on a device",
+    "Archive validated in Xcode with no warnings about missing privacy manifests"
+  ]
+}
