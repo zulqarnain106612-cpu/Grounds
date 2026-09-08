@@ -91,6 +91,7 @@
             "context_pop",
             "ci_dispatch",
             "ci_status",
+            "ci_logs",
             "ingest",
             "manifest"
           ]
@@ -605,8 +606,13 @@
           "enum": [
             "dispatch",
             "status",
-            "list_runs"
+            "logs"
           ]
+        },
+        "pr": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Pull request number. Required when op is 'status' or 'logs' -- a repo-wide status or log request is not expressible."
         },
         "workflow": {
           "type": "string",
@@ -631,6 +637,18 @@
           "minimum": 1,
           "maximum": 20
         },
+        "log_tail_lines": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50,
+          "description": "Exact number of log lines to return. No default: omitting it returns the fixed 2-line error probe instead. Set it only to a number the probe justified."
+        },
+        "log_offset": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Lines to skip from the end before the window starts, for when the probe shows the cause sits above the tail."
+        },
         "remote_only": {
           "type": "boolean",
           "const": true,
@@ -641,7 +659,43 @@
           "const": false,
           "description": "Must be false. Dispatch returns immediately; callers never block on a run."
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "const": "status"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "pr"
+            ]
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "const": "logs"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "pr"
+            ]
+          }
+        }
+      ]
     }
   },
   "x-enforcement": {

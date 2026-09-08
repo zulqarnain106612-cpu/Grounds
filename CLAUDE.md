@@ -54,6 +54,36 @@ hand-authored input that ingest merges in.
 Schema, `schema/examples.json` and `gateway/handlers.py` must move together
 or `validate_repo` fails the build. Steps: `docs/EXTENDING.md`.
 
+## IMPORTANT: CI status and logs are always scoped to one PR
+
+Never list runs repo-wide, and never pull a full log.
+
+```bash
+make ci-status PR=<n>
+```
+
+Logs are **probe first, then exact**. With no `LINES` you get the last 2
+`##[error]` annotations plus `error_line`/`total_lines`. Those name the failure
+class and its position, which is what tells you how many lines you actually
+need:
+
+```bash
+make ci-logs PR=<n>
+```
+
+Then ask for precisely that many — not a round number, not "to be safe".
+`OFFSET` skips lines from the end when the probe shows the cause sits above the
+tail (`OFFSET = total_lines - error_line`):
+
+```bash
+make ci-logs PR=<n> LINES=12 OFFSET=17
+```
+
+`gh run list`, `gh run view` and `gh run watch` are denied in
+`.claude/settings.json`. Through the gateway, `ci_status`/`ci_logs` require
+`ci_op.pr`; omitting `log_tail_lines` returns the 2-line probe, and any named
+count is capped at 50 server-side.
+
 ## Verification
 
 Every cell ships something that returns pass/fail without a human looking at
