@@ -54,7 +54,7 @@ def isolated_repo(tmp_path, monkeypatch):
         # `gh pr view --json headRefName` must yield an object; returning "[]"
         # for every command only happened to satisfy the list-shaped callers.
         if args[:2] == ["pr", "view"]:
-            return 0, json.dumps({"headRefName": "stub-branch"})
+            return 0, json.dumps({"headRefName": "stub-branch", "headRefOid": "0" * 40})
         return 0, "[]"
 
     monkeypatch.setattr(handlers, "_gh", _fake_gh)

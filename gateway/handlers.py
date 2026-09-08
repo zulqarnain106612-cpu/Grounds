@@ -280,11 +280,12 @@ def h_ci_logs(req: dict) -> dict:
     count = enforcement.cap_ci_log_tail(requested)
     offset = ci_op.get("log_offset", 0)
 
-    code, out = _gh(["pr", "view", str(pr), "--json", "headRefName"])
+    code, out = _gh(["pr", "view", str(pr), "--json", "headRefName,headRefOid"])
     if code != 0:
         return _error("pr_lookup_failed", out.strip()[:500])
     try:
-        branch = json.loads(out)["headRefName"]
+        parsed = json.loads(out)
+        branch, head = parsed["headRefName"], parsed["headRefOid"]
     except (json.JSONDecodeError, KeyError, TypeError):
         # TypeError covers gh returning a list where an object was expected --
         # which is exactly what the stubbed `gh` in the example replay returns.
@@ -292,8 +293,11 @@ def h_ci_logs(req: dict) -> dict:
 
     run_id = ci_op.get("run_id")
     if not run_id:
-        code, out = _gh(["run", "list", "--branch", branch, "--status", "failure",
-                         "--limit", "1", "--json", "databaseId"])
+        # Pinned to the PR's current head. Without --commit, a branch that has
+        # since been fixed still reports its old failure, sending the caller to
+        # debug a problem that no longer exists.
+        code, out = _gh(["run", "list", "--branch", branch, "--commit", head,
+                         "--status", "failure", "--limit", "1", "--json", "databaseId"])
         if code != 0:
             return _error("run_lookup_failed", out.strip()[:500])
         try:

@@ -165,7 +165,7 @@ _LOG = "\n".join([
 
 def _log_stubs(*, log=_LOG, branch="phase0/x", run=99):
     return _gh_script(
-        (0, json.dumps({"headRefName": branch})),
+        (0, json.dumps({"headRefName": branch, "headRefOid": "abc1234"})),
         (0, json.dumps([{"databaseId": run}])),
         (0, log),
     )
@@ -231,7 +231,7 @@ def test_an_inflated_count_is_clamped_server_side(monkeypatch):
 
 
 def test_an_explicit_run_id_skips_the_run_lookup(monkeypatch):
-    stub = _gh_script((0, json.dumps({"headRefName": "b"})), (0, _LOG))
+    stub = _gh_script((0, json.dumps({"headRefName": "b", "headRefOid": "abc"})), (0, _LOG))
     monkeypatch.setattr(handlers, "_gh", stub)
 
     result = handlers.h_ci_logs(_req("ci_logs", {"op": "logs", "pr": 10, "run_id": 55}))
@@ -241,7 +241,7 @@ def test_an_explicit_run_id_skips_the_run_lookup(monkeypatch):
 
 def test_ci_logs_reports_when_the_pr_has_no_failed_run(monkeypatch):
     monkeypatch.setattr(handlers, "_gh", _gh_script(
-        (0, json.dumps({"headRefName": "b"})), (0, "[]")))
+        (0, json.dumps({"headRefName": "b", "headRefOid": "abc"})), (0, "[]")))
     result = handlers.h_ci_logs(_req("ci_logs", {"op": "logs", "pr": 10}))["result"]
     assert result["failed_run"] is None
     assert result["lines"] == []
@@ -251,8 +251,8 @@ def test_ci_logs_reports_when_the_pr_has_no_failed_run(monkeypatch):
     ([(1, "no such PR")], "pr_lookup_failed"),
     ([(0, "not json")], "bad_gh_output"),
     ([(0, json.dumps({"wrong": "shape"}))], "bad_gh_output"),
-    ([(0, json.dumps({"headRefName": "b"})), (1, "gh exploded")], "run_lookup_failed"),
-    ([(0, json.dumps({"headRefName": "b"})), (0, "not json")], "bad_gh_output"),
+    ([(0, json.dumps({"headRefName": "b", "headRefOid": "a"})), (1, "gh exploded")], "run_lookup_failed"),
+    ([(0, json.dumps({"headRefName": "b", "headRefOid": "a"})), (0, "not json")], "bad_gh_output"),
 ])
 def test_ci_logs_error_paths(monkeypatch, responses, code):
     monkeypatch.setattr(handlers, "_gh", _gh_script(*responses))

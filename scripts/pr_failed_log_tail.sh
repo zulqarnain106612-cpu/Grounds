@@ -31,17 +31,21 @@ case "$OFFSET" in ''|*[!0-9]*) OFFSET=0 ;; esac
 [ "$LINES" -lt 1 ] && LINES=1
 [ "$LINES" -gt "$MAX_LINES" ] && LINES=$MAX_LINES
 
-BRANCH=$(gh pr view "$PR" --json headRefName --jq .headRefName 2>/dev/null)
-if [ -z "$BRANCH" ]; then
+read -r BRANCH HEAD <<<"$(gh pr view "$PR" --json headRefName,headRefOid \
+    --jq '"\(.headRefName) \(.headRefOid)"' 2>/dev/null)"
+if [ -z "${BRANCH:-}" ]; then
     echo "PR #$PR: not found" >&2
     exit 1
 fi
 
-RUN=$(gh run list --branch "$BRANCH" --status failure --limit 1 \
+# Pinned to the PR's current head commit. Without --commit, a branch that has
+# since been fixed still reports its old failure, which sends you debugging a
+# problem that no longer exists.
+RUN=$(gh run list --branch "$BRANCH" --commit "$HEAD" --status failure --limit 1 \
         --json databaseId --jq '.[0].databaseId // empty' 2>/dev/null)
 
 if [ -z "$RUN" ]; then
-    echo "PR #$PR  branch=$BRANCH: no failed run"
+    echo "PR #$PR  branch=$BRANCH  head=${HEAD:0:7}: no failed run at the current head"
     exit 0
 fi
 
