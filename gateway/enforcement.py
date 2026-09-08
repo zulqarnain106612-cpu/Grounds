@@ -66,6 +66,19 @@ def cap_log_tail(requested: int | None) -> int:
     return min(requested, hard_cap)
 
 
+def cap_ci_log_tail(requested: int | None) -> int:
+    """Lines returned from a failed CI run.
+
+    No request returns the fixed probe size, not the ceiling -- so "just grab a
+    chunk" is unexpressible: a caller that names no number gets two lines. A
+    named count is honoured exactly, ceilinged at max_ci_log_lines.
+    """
+    enf = config()["enforcement"]
+    if requested is None:
+        return enf["max_ci_log_probe_lines"]
+    return min(requested, enf["max_ci_log_lines"])
+
+
 def cap_tool_output_tokens(requested: int | None) -> int:
     hard_cap = config()["enforcement"]["max_tool_output_tokens"]
     if requested is None:
