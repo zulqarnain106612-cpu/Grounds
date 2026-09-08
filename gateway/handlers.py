@@ -285,7 +285,9 @@ def h_ci_logs(req: dict) -> dict:
         return _error("pr_lookup_failed", out.strip()[:500])
     try:
         branch = json.loads(out)["headRefName"]
-    except (json.JSONDecodeError, KeyError):
+    except (json.JSONDecodeError, KeyError, TypeError):
+        # TypeError covers gh returning a list where an object was expected --
+        # which is exactly what the stubbed `gh` in the example replay returns.
         return _error("bad_gh_output", out.strip()[:500])
 
     run_id = ci_op.get("run_id")
