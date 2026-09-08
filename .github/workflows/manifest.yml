@@ -87,7 +87,7 @@ jobs:
           fi
           BRANCH="chore/manifest-${{ github.run_id }}"
           git checkout -b "$BRANCH"
-          git commit -m "chore(manifest): refresh content manifest [skip ci]"
+          git commit -m "chore(manifest): refresh content manifest"
           git push origin "$BRANCH"
           gh pr create \
             --base "${{ github.ref_name }}" \
