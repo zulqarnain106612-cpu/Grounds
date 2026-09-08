@@ -640,21 +640,22 @@ def test_ci_status_without_a_workflow_filter(monkeypatch):
         return 0, "[]"
 
     monkeypatch.setattr(handlers, "_gh", _capture)
-    result = handlers.h_ci_status(_request("ci_status", {"ci_op": {"op": "status", "remote_only": True, "wait": False}},
-                                           domain="ci"))
-    assert result["result"] == {"runs": []}
-    assert "--workflow" not in seen["args"]
+    result = handlers.h_ci_status(_request("ci_status", {"ci_op": {
+        "op": "status", "pr": 10, "remote_only": True, "wait": False}}, domain="ci"))
+    assert result["result"]["pr"] == 10
+    # the invariant that replaced the old workflow filter: never a run listing
+    assert seen["args"][:2] == ["pr", "checks"]
 
 
 def test_ci_status_surfaces_a_failed_call(monkeypatch):
     monkeypatch.setattr(handlers, "_gh", lambda args, timeout_s=20.0: (1, "not authenticated"))
-    result = handlers.h_ci_status(_request("ci_status", {}, domain="ci"))
+    result = handlers.h_ci_status(_request("ci_status", {"ci_op": {"pr": 10}}, domain="ci"))
     assert result["errors"][0]["code"] == "status_failed"
 
 
 def test_ci_status_rejects_unparseable_gh_output(monkeypatch):
     monkeypatch.setattr(handlers, "_gh", lambda args, timeout_s=20.0: (0, "not json at all"))
-    result = handlers.h_ci_status(_request("ci_status", {}, domain="ci"))
+    result = handlers.h_ci_status(_request("ci_status", {"ci_op": {"pr": 10}}, domain="ci"))
     assert result["errors"][0]["code"] == "bad_gh_output"
 
 
