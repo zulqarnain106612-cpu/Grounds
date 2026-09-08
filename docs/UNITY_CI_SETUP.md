@@ -21,6 +21,30 @@ So the old loop — request a `.alf` in CI, upload it to
 produce the licence.** The `.ulf` is now generated locally by Unity Hub, which
 is the one step in this repo that genuinely cannot run on GitHub Actions.
 
+### Why the GameCI docs look like they disagree
+
+`github.com/game-ci/unity-actions` still documents the three-step activation
+flow — request file, activate, return licence — with green status badges. It
+reads as current. It is not: that repository was last pushed **2023-03-04**,
+while `unity-request-activation-file` was updated in **May 2026** specifically
+to deprecate itself. Its `action.yml` now carries:
+
+```yaml
+description: '[DEPRECATED] Request the manual activation file for acquiring a Unity personal license.'
+```
+
+and declares no inputs at all, so passing `unityVersion` only produces a
+warning before the action exits with the unsupported-action error.
+
+`game-ci/unity-activate` is alive (pushed 2026-09-07) but is the wrong tool:
+it *consumes* credentials or a licence file, it does not produce one. It is
+also unnecessary here — `game-ci/unity-test-runner@v4`, which
+`unity-test.yml` already uses, performs activation itself given the secrets
+below.
+
+Check `action.yml` on the action's own default branch before trusting an
+aggregator README.
+
 ## Procedure
 
 ### 1. Produce the `.ulf` locally
