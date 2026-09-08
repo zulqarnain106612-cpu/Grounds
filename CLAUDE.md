@@ -80,7 +80,13 @@ make ci-logs PR=<n> LINES=12 OFFSET=17
 ```
 
 `gh run list`, `gh run view` and `gh run watch` are denied in
-`.claude/settings.json`. Through the gateway, `ci_status`/`ci_logs` require
+`.claude/settings.json`, and a `PreToolUse` hook
+(`.claude/hooks/guard_ci_reads.py`) blocks them again along with
+`gh api .../actions/runs/...`. The hook exists because permission rules match
+a command prefix and cannot constrain `gh api` arguments; a hook sees the whole
+command string, so piped and command-substituted forms are caught too.
+
+Through the gateway, `ci_status`/`ci_logs` require
 `ci_op.pr`; omitting `log_tail_lines` returns the 2-line probe, and any named
 count is capped at 50 server-side.
 
