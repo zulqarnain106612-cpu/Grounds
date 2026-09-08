@@ -59,6 +59,14 @@
       "symbols": []
     },
     {
+      "id": "phase0_knowledge_base_seeds_layer",
+      "type": "system",
+      "label": "Durable Knowledge Seed Layer",
+      "tags": ["knowledge_base", "phase0", "cycle0", "harness"],
+      "phase": ["0"],
+      "symbols": []
+    },
+    {
       "id": "phase1_build_ios_scaffold",
       "type": "system",
       "label": "iOS Project Scaffold (Unity 6 LTS)",
@@ -90,6 +98,8 @@
     {"from": "cycle:4", "to": "cycle:3", "kind": "depends_on"},
     {"from": "cycle:5", "to": "cycle:3", "kind": "depends_on"},
     {"from": "cycle:6", "to": "cycle:5", "kind": "depends_on"},
+    {"from": "phase0_knowledge_base_seeds_layer", "to": "cycle:0", "kind": "part_of"},
+    {"from": "phase0_knowledge_base_seeds_layer", "to": "domain:knowledge_base", "kind": "delivers"},
     {"from": "phase1_build_ios_scaffold", "to": "cycle:0", "kind": "part_of"},
     {"from": "phase1_build_ios_scaffold", "to": "domain:build_pipeline", "kind": "delivers"}
   ]

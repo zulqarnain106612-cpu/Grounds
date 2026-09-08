@@ -235,6 +235,84 @@ def build_kb_index(repo_root: Path | None = None) -> dict:
     return index
 
 
+class SeedsError(ValueError):
+    """knowledge/seeds.json is structurally invalid.
+
+    Raised rather than skipping the offending entry. seeds.json is the only
+    hand-authored file under knowledge/, and the whole point of the layer is
+    that durable knowledge cannot go missing; dropping a bad node quietly
+    would reintroduce the disappearance ADR-008 exists to stop, with the extra
+    twist that the author would never find out.
+    """
+
+
+def _require_str(value: object, field: str, where: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise SeedsError(f"{where}: '{field}' must be a non-empty string, got {value!r}")
+    return value
+
+
+def parse_seeds(data: object) -> tuple[list[dict], list[dict]]:
+    """Structural validation of a parsed seeds document.
+
+    Split out from _load_seeds so gateway/validate_repo.py can run the same
+    checks on a pull request, rather than the mistake surfacing hours later in
+    the nightly ingest.
+    """
+    if not isinstance(data, dict):
+        raise SeedsError(f"seeds.json must be a JSON object, got {type(data).__name__}")
+
+    raw_nodes = data.get("nodes", [])
+    raw_edges = data.get("edges", [])
+    if not isinstance(raw_nodes, list):
+        raise SeedsError("seeds.json: 'nodes' must be an array")
+    if not isinstance(raw_edges, list):
+        raise SeedsError("seeds.json: 'edges' must be an array")
+
+    nodes: list[dict] = []
+    seen_ids: set[str] = set()
+    for i, node in enumerate(raw_nodes):
+        where = f"seeds.json nodes[{i}]"
+        if not isinstance(node, dict):
+            raise SeedsError(f"{where}: must be an object, got {type(node).__name__}")
+        node_id = _require_str(node.get("id"), "id", where)
+        if node_id in seen_ids:
+            # Last-one-wins would make the graph depend on file order, and the
+            # duplicate is far more likely a copy-paste than an intent.
+            raise SeedsError(f"{where}: duplicate node id {node_id!r}")
+        seen_ids.add(node_id)
+        nodes.append(node)
+
+    edges: list[dict] = []
+    for i, edge in enumerate(raw_edges):
+        where = f"seeds.json edges[{i}]"
+        if not isinstance(edge, dict):
+            raise SeedsError(f"{where}: must be an object, got {type(edge).__name__}")
+        _require_str(edge.get("from"), "from", where)
+        _require_str(edge.get("to"), "to", where)
+        if "kind" in edge:
+            _require_str(edge.get("kind"), "kind", where)
+        edges.append(edge)
+
+    return nodes, edges
+
+
+def check_seed_edges(edges: list[dict], known_ids: set[str]) -> None:
+    """Reject seed edges whose endpoints name no node.
+
+    A dangling edge is not a crash -- it is worse: the graph keeps building,
+    retrieval silently traverses nothing, and a typo like `domain:build-pipeline`
+    for `domain:build_pipeline` looks identical in review.
+    """
+    for edge in edges:
+        for side in ("from", "to"):
+            if edge[side] not in known_ids:
+                raise SeedsError(
+                    f"seeds.json: edge {edge['from']!r} -> {edge['to']!r} has a "
+                    f"'{side}' endpoint {edge[side]!r} that matches no node"
+                )
+
+
 def _load_seeds(repo_root: Path) -> tuple[list[dict], list[dict]]:
     """Hand-authored durable nodes/edges from knowledge/seeds.json.
 
@@ -246,17 +324,13 @@ def _load_seeds(repo_root: Path) -> tuple[list[dict], list[dict]]:
 
     A malformed seeds file raises rather than degrading to empty: silently
     dropping durable knowledge is the failure this file exists to prevent.
+    An absent file is not malformed -- an older checkout predating the layer
+    must still ingest cleanly -- so that case returns empty.
     """
     path = repo_root / "knowledge" / "seeds.json"
     if not path.exists():
         return [], []
-    data = json.loads(path.read_text())
-    nodes = [n for n in (data.get("nodes") or []) if isinstance(n, dict) and n.get("id")]
-    edges = [
-        e for e in (data.get("edges") or [])
-        if isinstance(e, dict) and e.get("from") and e.get("to")
-    ]
-    return nodes, edges
+    return parse_seeds(json.loads(path.read_text()))
 
 
 def build_graph(repo_root: Path | None = None) -> dict:
@@ -298,6 +372,7 @@ def build_graph(repo_root: Path | None = None) -> dict:
     nodes = [n for n in nodes if n["id"] not in seed_ids]
     nodes += sorted(seed_nodes, key=lambda n: n["id"])
 
+    check_seed_edges(seed_edges, {n["id"] for n in nodes})
     for edge in seed_edges:
         edges.append({
             "from": edge["from"], "to": edge["to"], "kind": edge.get("kind", "related"),
