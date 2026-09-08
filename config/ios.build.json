@@ -1,0 +1,18 @@
+{
+  "version": "1.1.0",
+  "note": "Single source of truth for iOS Player Settings. Hand-authored. Assets/_Game/Editor/IOSPlayerSettings.cs applies these to the Unity project, and tests/test_ios_scaffold.py asserts them without needing Unity. ProjectSettings.asset is Unity-generated YAML and is therefore never hand-edited -- see docs/DECISIONS.md ADR-012.",
+  "unity_version": "6000.0.32f1",
+  "player_settings": {
+    "bundle_identifier": "com.conquerer.jetfighter",
+    "product_name": "JetFighter",
+    "company_name": "Conquerer",
+    "target_minimum_ios_version": "15.0",
+    "scripting_backend": "IL2CPP",
+    "architecture": "ARM64",
+    "graphics_api": "Metal",
+    "target_device": "iPhoneAndiPad",
+    "strip_engine_code": true,
+    "default_interface_orientation": "LandscapeLeft",
+    "allow_unsafe_code": false
+  }
+}

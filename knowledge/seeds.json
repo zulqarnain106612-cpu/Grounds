@@ -57,6 +57,14 @@
       "tags": ["cycle", "build_pipeline", "scene", "ui", "physics"],
       "phase": ["6"],
       "symbols": []
+    },
+    {
+      "id": "phase1_build_ios_scaffold",
+      "type": "system",
+      "label": "iOS Project Scaffold (Unity 6 LTS)",
+      "tags": ["build_pipeline", "phase1", "cycle0", "harness", "ios"],
+      "phase": ["0", "1"],
+      "symbols": ["QualityTierManager", "DetectTier", "ApplySettings"]
     }
   ],
   "edges": [
@@ -81,6 +89,8 @@
     {"from": "cycle:3", "to": "cycle:2", "kind": "depends_on"},
     {"from": "cycle:4", "to": "cycle:3", "kind": "depends_on"},
     {"from": "cycle:5", "to": "cycle:3", "kind": "depends_on"},
-    {"from": "cycle:6", "to": "cycle:5", "kind": "depends_on"}
+    {"from": "cycle:6", "to": "cycle:5", "kind": "depends_on"},
+    {"from": "phase1_build_ios_scaffold", "to": "cycle:0", "kind": "part_of"},
+    {"from": "phase1_build_ios_scaffold", "to": "domain:build_pipeline", "kind": "delivers"}
   ]
 }
