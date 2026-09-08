@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 from pathlib import Path
@@ -49,7 +50,14 @@ def isolated_repo(tmp_path, monkeypatch):
     # repo, so `_gh` is stubbed to a deterministic success here. Tests that care
     # about dispatch behaviour override this with their own stub -- see
     # tests/test_ci_policy.py, which asserts what is and is not dispatched.
-    monkeypatch.setattr(handlers, "_gh", lambda args, timeout_s=20.0: (0, "[]"))
+    def _fake_gh(args, timeout_s=20.0):
+        # `gh pr view --json headRefName` must yield an object; returning "[]"
+        # for every command only happened to satisfy the list-shaped callers.
+        if args[:2] == ["pr", "view"]:
+            return 0, json.dumps({"headRefName": "stub-branch"})
+        return 0, "[]"
+
+    monkeypatch.setattr(handlers, "_gh", _fake_gh)
 
     monkeypatch.setattr(symbol_scanner, "ROOT", fake_root)
     monkeypatch.setattr(symbol_scanner, "SYMBOLS_PATH", fake_root / "symbols" / "index.json")
