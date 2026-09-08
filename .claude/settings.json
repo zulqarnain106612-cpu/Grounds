@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh run watch:*)"
+    ],
+    "allow": [
+      "Bash(scripts/pr_status.sh:*)",
+      "Bash(./scripts/pr_status.sh:*)",
+      "Bash(scripts/pr_failed_log_tail.sh:*)",
+      "Bash(./scripts/pr_failed_log_tail.sh:*)",
+      "Bash(make ci-status:*)",
+      "Bash(make ci-logs:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh pr view:*)"
+    ]
+  }
+}
