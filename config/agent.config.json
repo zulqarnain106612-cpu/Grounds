@@ -20,6 +20,8 @@
     "cap_all_tool_calls": true,
     "max_command_output_lines": 50,
     "max_log_tail_lines": 20,
+    "max_ci_log_probe_lines": 2,
+    "max_ci_log_lines": 50,
     "max_tool_output_tokens": 1000,
     "default_command_timeout_ms": 5000,
     "forbidden_cmd_patterns_file": "tools/patterns.json"
