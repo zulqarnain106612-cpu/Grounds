@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-09T03:27:06.402868Z",
+  "updated_at": "2026-09-09T06:33:13.350626Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -85,10 +85,18 @@
       "tags": []
     },
     {
+      "name": "CancelPendingForce",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Physics/PlaneConstraint.cs",
+      "line": 104,
+      "namespace": "JetFighter.Physics",
+      "tags": []
+    },
+    {
       "name": "Component",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Physics/PlaneConstraint.cs",
-      "line": 89,
+      "line": 115,
       "namespace": "JetFighter.Physics",
       "tags": []
     },
@@ -96,7 +104,7 @@
       "name": "WithComponent",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Physics/PlaneConstraint.cs",
-      "line": 95,
+      "line": 121,
       "namespace": "JetFighter.Physics",
       "tags": []
     },
@@ -104,7 +112,7 @@
       "name": "DeviationFrom",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Physics/PlaneConstraint.cs",
-      "line": 106,
+      "line": 132,
       "namespace": "JetFighter.Physics",
       "tags": []
     },
