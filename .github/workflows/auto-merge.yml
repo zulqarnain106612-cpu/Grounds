@@ -1,0 +1,137 @@
+name: auto-merge
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  check_run:
+    types: [completed]
+  workflow_run:
+    types: [completed]
+  status:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check if PR is ready to merge
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo, number } = context.issue;
+
+            if (!number) {
+              console.log('Not a pull request context, skipping');
+              return;
+            }
+
+            // Get PR details
+            const pr = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: number,
+            });
+
+            console.log(`PR #${number} state:`, {
+              mergeable: pr.data.mergeable,
+              mergeable_state: pr.data.mergeable_state,
+              draft: pr.data.draft,
+            });
+
+            if (pr.data.draft) {
+              console.log('PR is a draft, skipping auto-merge');
+              return;
+            }
+
+            if (pr.data.mergeable === false) {
+              console.log('PR has merge conflicts, cannot auto-merge');
+              return;
+            }
+
+            // Get all commit checks for the head commit
+            const checks = await github.rest.checks.listForRef({
+              owner,
+              repo,
+              ref: pr.data.head.sha,
+            });
+
+            const checksByName = {};
+            checks.data.check_runs.forEach(check => {
+              checksByName[check.name] = check.conclusion;
+            });
+
+            console.log('Check run conclusions:', checksByName);
+
+            // Get combined status
+            const status = await github.rest.repos.getCombinedStatusForRef({
+              owner,
+              repo,
+              ref: pr.data.head.sha,
+            });
+
+            console.log('Combined status state:', status.data.state);
+            console.log('Status checks:', status.data.statuses.map(s => ({ context: s.context, state: s.state })));
+
+            // Required checks - adjust based on your workflow names
+            const requiredChecks = [
+              'agent-schema-enforcement',
+              'Unity - EditMode',
+              'Unity - PlayMode',
+            ];
+
+            // Verify all required checks passed
+            const allPassed = requiredChecks.every(checkName => {
+              const conclusion = checksByName[checkName];
+              const passed = conclusion === 'success';
+              console.log(`${checkName}: ${conclusion || 'not found'} ${passed ? '✓' : '✗'}`);
+              return passed;
+            });
+
+            // Also verify status checks passed (if any)
+            const statusChecksPassed = status.data.state === 'success' || status.data.state === 'pending';
+
+            if (!allPassed) {
+              console.log('Not all required checks passed, skipping auto-merge');
+              return;
+            }
+
+            if (!statusChecksPassed && status.data.state !== 'pending') {
+              console.log('Status checks not passing, skipping auto-merge');
+              return;
+            }
+
+            // Check if there are any pending checks
+            const hasPending = Object.values(checksByName).includes('pending') ||
+                              status.data.state === 'pending';
+
+            if (hasPending) {
+              console.log('Checks are still pending, waiting for completion');
+              return;
+            }
+
+            console.log('All checks passed! Attempting to merge PR #' + number);
+
+            // Merge the PR
+            try {
+              const mergeResult = await github.rest.pulls.merge({
+                owner,
+                repo,
+                pull_number: number,
+                merge_method: 'squash',
+                commit_title: pr.data.title,
+              });
+
+              console.log('PR merged successfully:', mergeResult.data.message);
+            } catch (error) {
+              if (error.message.includes('Pull Request is not mergeable')) {
+                console.log('PR is not mergeable (may have conflicts or be out of sync)');
+              } else if (error.message.includes('has already been merged')) {
+                console.log('PR has already been merged');
+              } else {
+                throw error;
+              }
+            }
