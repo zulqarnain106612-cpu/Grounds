@@ -33,6 +33,11 @@ Every request/response is one JSON object validated against `schema/agent.schema
 - `knowledge_update` — handled
 - `context_push` — handled
 - `context_pop` — handled
+- `ci_dispatch` — handled
+- `ci_status` — handled
+- `ci_logs` — handled
+- `ingest` — handled
+- `manifest` — handled
 
 ## intent.domain (enum)
 
@@ -51,6 +56,7 @@ Every request/response is one JSON object validated against `schema/agent.schema
 - `daemon`
 - `log`
 - `schema`
+- `ci`
 
 ## payload sub-objects
 
@@ -159,6 +165,22 @@ Every request/response is one JSON object validated against `schema/agent.schema
 | `line_start` | integer | no |  |
 | `line_end` | integer | no |  |
 | `strategy` | string | no |  |
+
+### CIOp
+
+| field | type | required | notes |
+|---|---|---|---|
+| `op` | string | yes | enum: dispatch, status, logs |
+| `pr` | integer | no | Pull request number. Required when op is 'status' or 'logs' -- a repo-wide status or log request is not expressible. |
+| `workflow` | string | no | Workflow file name under .github/workflows, e.g. 'ingest.yml'. |
+| `ref` | string | no |  |
+| `inputs` | object | no |  |
+| `run_id` | integer | no |  |
+| `limit` | integer | no |  |
+| `log_tail_lines` | integer | no | Exact number of log lines to return. No default: omitting it returns the fixed 2-line error probe instead. Set it only to a number the probe justified. |
+| `log_offset` | integer | no | Lines to skip from the end before the window starts, for when the probe shows the cause sits above the tail. |
+| `remote_only` | boolean | yes | Must be true. Asserts the work runs on GitHub Actions, never on the local machine. const: True |
+| `wait` | boolean | no | Must be false. Dispatch returns immediately; callers never block on a run. const: False |
 
 ## Enforcement guarantees encoded in this schema
 
