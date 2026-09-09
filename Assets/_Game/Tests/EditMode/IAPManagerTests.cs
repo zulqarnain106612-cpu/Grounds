@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
+using System.Text.RegularExpressions;
 using UnityEngine;
+using UnityEngine.TestTools;
 using JetFighter.Economy;
 
 namespace JetFighter.Tests.EditMode
@@ -259,6 +261,9 @@ namespace JetFighter.Tests.EditMode
             var freshRoot = new GameObject("IAP4");
             var fresh = freshRoot.AddComponent<IAPManager>();
             fresh.Catalog = catalog;
+            // Refusing loudly is the point of this path, and the test runner
+            // fails a test on any Debug.LogError it was not told to expect.
+            LogAssert.Expect(LogType.Error, new Regex("duplicate product id"));
             Assert.IsFalse(fresh.Initialize(new FakeStore(), new Wallet()));
 
             UnityEngine.Object.DestroyImmediate(freshRoot);

@@ -38,7 +38,13 @@ namespace JetFighter.Weapon
 
         public float CooldownRemaining => cooldownRemaining;
 
-        public bool IsReady => cooldownRemaining <= 0f;
+        // Same constant and the same reasoning as Bullet.LifetimeEpsilon and
+        // PrimaryGunController.CooldownEpsilon: float subtraction does not land
+        // on zero exactly, so counting a 3s cooldown down in 1/60s steps leaves
+        // ~2e-6 behind and a bare `<= 0f` never reports ready.
+        private const float CooldownEpsilon = 1e-4f;
+
+        public bool IsReady => cooldownRemaining <= CooldownEpsilon;
 
         /// <summary>Fraction of the cooldown elapsed, 0..1. For a radial UI fill.</summary>
         public float CooldownProgress =>
