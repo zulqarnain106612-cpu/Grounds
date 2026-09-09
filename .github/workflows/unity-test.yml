@@ -90,6 +90,7 @@ jobs:
       # has to exist as a repository secret. The credentials stay in GitHub
       # Secrets and are only ever read by the runner.
       - name: Activate Unity
+        shell: bash
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
@@ -126,6 +127,7 @@ jobs:
           exit 1
 
       - name: Run ${{ matrix.testMode }} tests
+        shell: bash
         run: |
           mkdir -p "${{ matrix.testMode }}-artifacts"
           set +e
@@ -141,6 +143,7 @@ jobs:
       # says whether the cause was failing tests or none discovered at all.
       - name: Gate on the results file
         if: always()
+        shell: bash
         run: python3 scripts/check_unity_results.py --results "${{ matrix.testMode }}-artifacts" --min-tests 1
 
       - uses: actions/upload-artifact@v4
