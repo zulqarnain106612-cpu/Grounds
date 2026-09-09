@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using JetFighter.Player;
 using JetFighter.Shared;
@@ -22,6 +23,11 @@ namespace JetFighter.Weapon
         [SerializeField] private bool autoFire = true;
 
         private ObjectPool pool;
+
+        // The bullets this gun has in the air. The pool knows how many are
+        // live but not which, and the gun is what owns their clock -- see
+        // StepLiveProjectiles.
+        private readonly List<Bullet> live = new List<Bullet>();
         private float cooldownTimer;
         private IPlayerStats stats = DefaultPlayerStats.Instance;
 
@@ -60,6 +66,10 @@ namespace JetFighter.Weapon
             {
                 weaponDef = value;
                 pool = null;
+                // The old pool's instances are about to be orphaned; keeping
+                // them in `live` would have the gun stepping bullets that no
+                // longer belong to it.
+                live.Clear();
             }
         }
 
@@ -128,6 +138,7 @@ namespace JetFighter.Weapon
                 return;
             }
             EnsurePool();
+            StepLiveProjectiles(deltaTime);
             cooldownTimer -= deltaTime;
 
             float cooldown = EffectiveCooldownSeconds;
@@ -148,7 +159,43 @@ namespace JetFighter.Weapon
         /// </summary>
         private void ReleaseProjectile(GameObject projectile)
         {
+            if (projectile != null)
+            {
+                var spent = projectile.GetComponent<Bullet>();
+                if (spent != null)
+                {
+                    live.Remove(spent);
+                }
+            }
             pool?.Release(projectile);
+        }
+
+        /// <summary>
+        /// Advances every bullet in the air by the same deltaTime the gun was
+        /// ticked with.
+        ///
+        /// The gun owns the clock because it is the only way the two agree. A
+        /// bullet that advanced itself from Time.deltaTime while the gun was
+        /// driven with a simulated step would never reach its lifetime during
+        /// a simulated soak: the gun would fire four seconds' worth of shots
+        /// inside one second of real time, none of them would expire, and the
+        /// pool would start recycling bullets that are still on screen.
+        ///
+        /// Iterated backwards because expiry calls back into
+        /// ReleaseProjectile, which removes from this list.
+        /// </summary>
+        private void StepLiveProjectiles(float deltaTime)
+        {
+            for (int i = live.Count - 1; i >= 0; i--)
+            {
+                Bullet projectile = live[i];
+                if (projectile == null)
+                {
+                    live.RemoveAt(i);
+                    continue;
+                }
+                projectile.Step(deltaTime);
+            }
         }
 
         /// <summary>
@@ -176,6 +223,10 @@ namespace JetFighter.Weapon
             {
                 projectile.OnFinished = ReleaseProjectile;
                 projectile.Launch(EffectiveDamage, weaponDef.projectileSpeed, weaponDef.projectileLifetime);
+                if (!live.Contains(projectile))
+                {
+                    live.Add(projectile);
+                }
             }
         }
     }
