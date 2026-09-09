@@ -164,14 +164,20 @@ def test_the_results_gate_runs_even_when_the_runner_step_failed():
     whole log. `if: always()` on the gate keeps the guarantee without hiding
     the cause, so the runner is now allowed to fail normally.
     """
-    text = WORKFLOW.read_text()
-    assert "if: always()" in text
-    assert "continue-on-error" not in text, (
+    # Comments only, stripped: the comment explaining why continue-on-error
+    # was removed otherwise trips the check that it is absent -- the same trap
+    # PR #16 fixed for the C# unconstrained-flight assertion.
+    code = "\n".join(
+        line for line in WORKFLOW.read_text().splitlines()
+        if not line.lstrip().startswith("#")
+    )
+    assert "if: always()" in code
+    assert "continue-on-error" not in code, (
         "a non-failing runner step is omitted from --log-failed, which hides "
         "the reason the job is red"
     )
-    assert "scripts/check_unity_results.py" in text
-    assert "--min-tests 1" in text
+    assert "scripts/check_unity_results.py" in code
+    assert "--min-tests 1" in code
 
 
 def test_both_test_modes_are_covered():
