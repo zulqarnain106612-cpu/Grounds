@@ -94,6 +94,22 @@ jobs:
           checkName: ${{ matrix.testMode }} results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
 
+      # Temporary. The runner is continue-on-error, so when it dies before
+      # writing results its own log is not in the failed-step log and the only
+      # visible symptom is "artifacts do not exist". This step fails on
+      # purpose so whatever the container left behind is captured.
+      - name: Show why the runner produced nothing
+        if: steps.runner.outcome != 'success'
+        run: |
+          echo "runner outcome: ${{ steps.runner.outcome }}"
+          ls -la
+          find . -maxdepth 3 \( -name '*.log' -o -name '*.xml' \) 2>/dev/null | head -20
+          for f in $(find . -maxdepth 3 -name '*.log' 2>/dev/null | head -3); do
+            echo "=== $f"
+            tail -40 "$f"
+          done
+          exit 1
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
