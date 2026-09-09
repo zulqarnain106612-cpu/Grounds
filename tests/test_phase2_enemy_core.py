@@ -91,11 +91,18 @@ def test_the_approach_cannot_overshoot_the_loiter_ring():
     assert "Mathf.Min(speed * deltaTime, distance - loiterDistance)" in body
 
 
-def test_phase_3_data_is_not_smuggled_in_early():
-    """The spec is explicit that the drop table is Phase 3. A data shape
-    carrying fields nothing reads is how a schema becomes fiction."""
+def test_the_enemy_data_shape_carries_nothing_unread():
+    """Phase 2 shipped `EnemyDef` without a drop table because nothing read
+    one yet -- a data shape carrying fields nothing reads is how a schema
+    becomes fiction.
+
+    `phase3/enemy-drop-tables` added `dropTable` together with the code that
+    rolls it, which is the same rule applied at the right time. Difficulty
+    scaling reads `EnemyDef` but stores its own curve, so no difficulty field
+    belongs here at all."""
     source = code(DEF)
-    assert "dropTable" not in source
+    assert "dropTable" in source, "the drop table its own cell added has gone missing"
+    assert "DropTable" in code(REAL_ROOT / "Assets" / "_Game" / "Scripts" / "Enemy" / "DropTable.cs")
     assert "difficulty" not in source.lower()
 
 
