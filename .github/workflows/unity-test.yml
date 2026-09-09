@@ -83,8 +83,8 @@ jobs:
   test:
     needs: preflight
     runs-on: ubuntu-latest
-    # No githubToken is passed to the runner below, so it posts no check run
-    # of its own. The one it posted reported `neutral` -- neither pass nor
+    # The runner below is given an empty githubToken, so it posts no check
+    # run of its own. The one it posted reported `neutral` -- neither pass nor
     # fail, and never green -- while the gate that actually decides, the
     # results check further down, was already reporting both. Two verdicts on
     # one suite, one of which can never be satisfied, is worse than one.
@@ -128,6 +128,11 @@ jobs:
         with:
           testMode: ${{ matrix.testMode }}
           artifactsPath: ${{ matrix.testMode }}-artifacts
+          # Empty on purpose, and not merely omitted: the input defaults to
+          # ${{ github.token }}, so leaving it out still posts the check --
+          # it just posts it without permission and fails the job after
+          # every test has passed. Empty is falsy, and the runner skips it.
+          githubToken: ''
 
       - uses: actions/setup-python@v5
         with:
