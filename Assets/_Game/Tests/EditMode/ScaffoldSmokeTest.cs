@@ -29,10 +29,13 @@ namespace JetFighter.Tests.EditMode
         [Test]
         public void DetectTier_ReturnsAKnownTier()
         {
-            Assert.That(QualityTierManager.DetectTier(),
-                Is.AnyOf(QualityTierManager.Tier.Low,
-                         QualityTierManager.Tier.Medium,
-                         QualityTierManager.Tier.High));
+            // Is.AnyOf does not exist in the NUnit version Unity ships, which
+            // is a compile error rather than a failing test -- the suite never
+            // runs at all. Enum.IsDefined asserts the same thing and keeps
+            // working if a tier is added later.
+            Assert.That(System.Enum.IsDefined(typeof(QualityTierManager.Tier),
+                                              QualityTierManager.DetectTier()),
+                        Is.True, "DetectTier must return a declared Tier value");
         }
     }
 }
