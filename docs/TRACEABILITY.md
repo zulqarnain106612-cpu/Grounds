@@ -23,8 +23,14 @@ This file is that join. One row per cell. It is the checklist that
   the phase-scoped retrieval for that cell will return nothing.
 - **Node id convention:** the branch name with `/` and `-` replaced by `_`.
   `phase1/physics-plane-constraint` → `phase1_physics_plane_constraint`.
-  This matches the ids already used in the phase specs' `knowledge_update`
-  examples.
+
+  **Where a phase spec's `knowledge_update` example disagrees, the `Seed node`
+  column here wins,** and the cell's PR corrects the spec. All four Phase 1
+  examples predate this convention and name something shorter
+  (`phase1_plane_constraint` for the row above). The ids have to agree with
+  something derivable from the branch name, or the check in "Closing a cell"
+  is a lookup nobody can perform. `phase1/player-flight-rigidbody` corrected
+  its own example; the remaining three are each their own cell's to fix.
 
 Cycle 0's first row is ticked; every other row is `[ ]`. That is the accurate
 state, not an oversight — the scaffold exists, the gameplay code does not.
@@ -36,14 +42,14 @@ state, not an oversight — the scaffold exists, the gameplay code does not.
 | Done | Branch | Domain | Requirement | ADR | Verified by | Seed node |
 |---|---|---|---|---|---|---|
 | [x] | `phase1/build-ios-scaffold` | build_pipeline | Roadmap §8 Phase 1 build_pipeline — iOS project scaffold | ADR-009 | `symbols/index.json` non-empty after ingest | `phase1_build_ios_scaffold` |
-| [ ] | `phase0/knowledge_base-seeds-layer` | knowledge_base | *Gap-fill* — durable phase nodes survive ingest | ADR-008 | `enforce.yml` green with seeds committed; seeded node present after a fresh ingest | `phase0_knowledge_base_seeds_layer` |
-| [ ] | `phase0/ci-unity-test-workflow` | ci | *Gap-fill* — C# tests have somewhere to run | ADR-010 | Unity test workflow green on a trivial passing test | `phase0_ci_unity_test_workflow` |
+| [x] | `phase0/knowledge_base-seeds-layer` | knowledge_base | *Gap-fill* — durable phase nodes survive ingest | ADR-008 | `enforce.yml` green with seeds committed; seeded node present after a fresh ingest | `phase0_knowledge_base_seeds_layer` |
+| [x] | `phase0/ci-unity-test-workflow` | ci | *Gap-fill* — C# tests have somewhere to run | ADR-010 | Unity test workflow green on a trivial passing test | `phase0_ci_unity_test_workflow` |
 
 ## Cycle 1 — Constrained-physics flight feel  *(risk R1)*
 
 | Done | Branch | Domain | Requirement | ADR | Verified by | Seed node |
 |---|---|---|---|---|---|---|
-| [ ] | `phase1/player-flight-rigidbody` | player | Roadmap §2 `player`, §3.1 — real inertia/drag/banking | — | Inertia and banking validated unconstrained, in isolation | `phase1_player_flight_rigidbody` |
+| [x] | `phase1/player-flight-rigidbody` | player | Roadmap §2 `player`, §3.1 — real inertia/drag/banking | — | Inertia and banking validated unconstrained, in isolation | `phase1_player_flight_rigidbody` |
 | [ ] | `phase1/physics-plane-constraint` | physics | Roadmap §3.2 — post-solve axis clamp | **ADR-001** | Locked-axis deviation stays within epsilon over a long run | `phase1_physics_plane_constraint` |
 | [ ] | `phase1/input-joystick-mapping` | ui | Roadmap §2 `ui` — left-region joystick, no bleed | — | Left-region-only guarantee test; on-device touch test | `phase1_input_joystick_mapping` |
 | [ ] | `phase1/weapon-gun-stub` | weapon | Roadmap §2 `weapon` — pooled 1/sec auto-fire | — | Pool stays bounded; no `Instantiate`/`Destroy` in the fire path | `phase1_weapon_gun_stub` |

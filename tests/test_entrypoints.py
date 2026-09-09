@@ -181,6 +181,42 @@ def test_validate_repo_catches_an_action_with_no_handler(repo, monkeypatch, caps
     assert "actions with no handler in gateway/handlers.py" in capsys.readouterr().out
 
 
+def test_validate_repo_catches_a_structurally_broken_seed(repo, capsys):
+    """seeds.json is hand-authored, so it fails here -- on the PR that broke
+    it -- rather than in the nightly ingest that reads it hours later."""
+    seeds = repo / "knowledge" / "seeds.json"
+    data = json.loads(seeds.read_text())
+    data["nodes"].append({"label": "no id at all"})
+    seeds.write_text(json.dumps(data))
+
+    assert validate_repo.main() == 1
+    assert "'id' must be a non-empty string" in capsys.readouterr().out
+
+
+def test_validate_repo_catches_a_dangling_seed_edge(repo, capsys):
+    seeds = repo / "knowledge" / "seeds.json"
+    data = json.loads(seeds.read_text())
+    data["edges"].append({"from": "cycle:0", "to": "domain:build-pipeline", "kind": "delivers"})
+    seeds.write_text(json.dumps(data))
+
+    assert validate_repo.main() == 1
+    assert "matches no node" in capsys.readouterr().out
+
+
+def test_validate_repo_accepts_edges_into_derived_nodes(repo, capsys):
+    """`domain:*` and `kind:*` ids are derived by ingest, not seeded, so an
+    edge into one must pass even though no seed node declares it."""
+    seeds = repo / "knowledge" / "seeds.json"
+    data = json.loads(seeds.read_text())
+    kb = json.loads((repo / "index" / "kb.index.json").read_text())
+    a_kind = sorted({c["kind"] for c in kb["chunks"]})[0]
+    data["edges"].append({"from": "cycle:0", "to": f"kind:{a_kind}", "kind": "covers"})
+    seeds.write_text(json.dumps(data))
+
+    assert validate_repo.main() == 0
+    assert "[PASS]" in capsys.readouterr().out
+
+
 # --------------------------------------------------------------------------
 # gateway/verify_retrieval.py
 # --------------------------------------------------------------------------

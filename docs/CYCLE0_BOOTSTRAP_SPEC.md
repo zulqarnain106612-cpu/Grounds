@@ -44,6 +44,8 @@ Assets/_Game/Scripts/
 Assets/_Game/Tests/
   EditMode/
     ScaffoldSmokeTest.cs         # proves the test runner works, nothing more
+  PlayMode/
+    ScaffoldPlayModeTest.cs      # same, for the mode Cycle 1's physics needs
 knowledge/
   seeds.json                     # new: durable, tracked knowledge nodes
 .github/workflows/
@@ -67,6 +69,13 @@ tests are not project symbols and should not pollute retrieval.
 
 Sorted by `id` on write, so a fresh ingest reproduces the file
 byte-identically and `enforce.yml`'s staleness check keeps working unchanged.
+
+Validated by `gateway/validate_repo.py` on every push, using the same
+`gateway/ingest.py:parse_seeds()` the ingest itself runs: a node with no
+usable `id`, a duplicate id, or an edge whose endpoint names no node fails
+the PR. It is the only hand-authored file under `knowledge/`, so it is the
+only one that can be wrong, and a broken entry that merely disappeared would
+be the exact failure ADR-008 exists to prevent.
 
 ### `gateway/ingest.py:build_graph()` — modified
 
@@ -96,8 +105,26 @@ that are easy to get wrong:
 
 ### `Assets/_Game/Tests/EditMode/ScaffoldSmokeTest.cs`
 
-One trivially passing test. Its only job is to prove the runner executes and
-reports. It is deleted once Cycle 1 has real tests.
+Its only job is to prove the runner executes and reports. It is deleted once
+Cycle 1 has real tests.
+
+It asserts something real rather than `Assert.Pass()`: a test that cannot fail
+proves the runner started, not that it reports failures, and a green job that
+means nothing is the exact problem this branch exists to solve.
+
+### `Assets/_Game/Tests/PlayMode/ScaffoldPlayModeTest.cs`
+
+The workflow runs both modes, and the zero-tests gate fails any mode that
+discovers nothing — so a PlayMode matrix leg with no PlayMode assembly would
+be red by construction. Cycle 1 needs the mode regardless: a plane constraint
+cannot be verified from EditMode, where `FixedUpdate` never runs.
+
+### `scripts/check_unity_results.py`
+
+The gate itself, kept in Python rather than in workflow YAML so both failure
+paths are testable without a Unity licence (`tests/test_unity_test_workflow.py`).
+It parses the NUnit results and fails on a failed test, on fewer tests than
+the floor, and on a run where nothing actually passed.
 
 ### `Assets/_Game/Scripts/Build/QualityTierManager.cs`
 

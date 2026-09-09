@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-09T08:07:16.709694Z",
+  "updated_at": "2026-09-09T17:49:41.862292Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -42,6 +42,86 @@
       "file": "Assets/_Game/Scripts/Build/QualityTierManager.cs",
       "line": 68,
       "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "JetController",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Player/JetController.cs",
+      "line": 17,
+      "namespace": "JetFighter.Player",
+      "tags": []
+    },
+    {
+      "name": "Awake",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Player/JetController.cs",
+      "line": 43,
+      "namespace": "JetFighter.Player",
+      "tags": []
+    },
+    {
+      "name": "ApplyConfigToBody",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Player/JetController.cs",
+      "line": 54,
+      "namespace": "JetFighter.Player",
+      "tags": []
+    },
+    {
+      "name": "FixedUpdate",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Player/JetController.cs",
+      "line": 65,
+      "namespace": "JetFighter.Player",
+      "tags": []
+    },
+    {
+      "name": "ApplyMovementForces",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Player/JetController.cs",
+      "line": 80,
+      "namespace": "JetFighter.Player",
+      "tags": []
+    },
+    {
+      "name": "ApplyBanking",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Player/JetController.cs",
+      "line": 92,
+      "namespace": "JetFighter.Player",
+      "tags": []
+    },
+    {
+      "name": "ComputeAcceleration",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Player/JetController.cs",
+      "line": 112,
+      "namespace": "JetFighter.Player",
+      "tags": []
+    },
+    {
+      "name": "ComputeTargetBankAngle",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Player/JetController.cs",
+      "line": 134,
+      "namespace": "JetFighter.Player",
+      "tags": []
+    },
+    {
+      "name": "StepTowardBank",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Player/JetController.cs",
+      "line": 152,
+      "namespace": "JetFighter.Player",
+      "tags": []
+    },
+    {
+      "name": "JetFlightConfig",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Player/JetFlightConfig.cs",
+      "line": 13,
+      "namespace": "JetFighter.Player",
       "tags": []
     }
   ]
