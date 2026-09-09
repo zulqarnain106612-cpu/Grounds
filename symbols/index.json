@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-09T20:17:41.024327Z",
+  "updated_at": "2026-09-09T20:41:02.191843Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -216,7 +216,7 @@
       "name": "Awake",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/CoinEarnController.cs",
-      "line": 57,
+      "line": 62,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -224,7 +224,7 @@
       "name": "Track",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/CoinEarnController.cs",
-      "line": 63,
+      "line": 68,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -232,7 +232,7 @@
       "name": "HandleKill",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/CoinEarnController.cs",
-      "line": 75,
+      "line": 80,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -240,7 +240,7 @@
       "name": "AwardKill",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/CoinEarnController.cs",
-      "line": 81,
+      "line": 86,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -248,7 +248,7 @@
       "name": "Update",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/CoinEarnController.cs",
-      "line": 92,
+      "line": 97,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -256,7 +256,7 @@
       "name": "Tick",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/CoinEarnController.cs",
-      "line": 104,
+      "line": 109,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -264,7 +264,7 @@
       "name": "Flush",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/CoinEarnController.cs",
-      "line": 137,
+      "line": 142,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -272,7 +272,7 @@
       "name": "OnApplicationPause",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/CoinEarnController.cs",
-      "line": 150,
+      "line": 155,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -280,7 +280,7 @@
       "name": "OnApplicationQuit",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/CoinEarnController.cs",
-      "line": 158,
+      "line": 163,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -1168,7 +1168,7 @@
       "name": "Connect",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/LocalLoopbackTransport.cs",
-      "line": 100,
+      "line": 106,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -1176,7 +1176,7 @@
       "name": "SendState",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/LocalLoopbackTransport.cs",
-      "line": 109,
+      "line": 115,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -1184,7 +1184,7 @@
       "name": "Pump",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/LocalLoopbackTransport.cs",
-      "line": 141,
+      "line": 177,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -1192,7 +1192,7 @@
       "name": "Interrupt",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/LocalLoopbackTransport.cs",
-      "line": 168,
+      "line": 211,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -1200,7 +1200,7 @@
       "name": "Disconnect",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/LocalLoopbackTransport.cs",
-      "line": 174,
+      "line": 217,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -1208,7 +1208,7 @@
       "name": "SetState",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/LocalLoopbackTransport.cs",
-      "line": 183,
+      "line": 226,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -1264,7 +1264,7 @@
       "name": "HandleStateChanged",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/NetworkMatchmaker.cs",
-      "line": 116,
+      "line": 123,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -1272,7 +1272,7 @@
       "name": "if",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/NetworkMatchmaker.cs",
-      "line": 122,
+      "line": 129,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -1736,7 +1736,7 @@
       "name": "TickSpawn",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 143,
+      "line": 161,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1744,7 +1744,7 @@
       "name": "TickCountdown",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 162,
+      "line": 183,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1752,7 +1752,7 @@
       "name": "Enter",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 176,
+      "line": 197,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1760,7 +1760,7 @@
       "name": "ApplyControl",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 201,
+      "line": 231,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -2640,7 +2640,7 @@
       "name": "Awake",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 77,
+      "line": 83,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2648,7 +2648,7 @@
       "name": "EnsurePool",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 82,
+      "line": 88,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2656,7 +2656,7 @@
       "name": "Update",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 92,
+      "line": 98,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2664,7 +2664,7 @@
       "name": "Tick",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 103,
+      "line": 109,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2672,7 +2672,7 @@
       "name": "Fire",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 116,
+      "line": 122,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2680,7 +2680,7 @@
       "name": "ReleaseMissile",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 154,
+      "line": 160,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
