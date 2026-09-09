@@ -83,6 +83,32 @@ namespace JetFighter.Physics
         {
             body.position = WithComponent(body.position, lockedAxis, lockedValue);
             body.linearVelocity = WithComponent(body.linearVelocity, lockedAxis, 0f);
+            CancelPendingForce();
+        }
+
+        /// <summary>
+        /// Removes the part of this tick's accumulated force that points along
+        /// the locked axis, before the solver integrates it.
+        ///
+        /// Position and velocity alone are not enough. This runs inside
+        /// FixedUpdate, so the solve is still ahead of it: any force a system
+        /// ordered earlier added this tick -- JetController's, when the locked
+        /// axis is one the stick drives -- is integrated after the clamp and
+        /// puts the body back off-plane by a whole tick of acceleration. The
+        /// clamp then looks like it is holding to within one tick of drift
+        /// rather than holding exactly, which is the difference between the
+        /// soak's epsilon and a visible wobble.
+        ///
+        /// Z, the ADR-001 default, never showed it: nothing pushes along Z.
+        /// </summary>
+        private void CancelPendingForce()
+        {
+            float pending = Component(body.GetAccumulatedForce(), lockedAxis);
+            if (pending == 0f)
+            {
+                return;
+            }
+            body.AddForce(WithComponent(Vector3.zero, lockedAxis, -pending), ForceMode.Force);
         }
 
         /// <summary>Reads one component of a vector by axis.</summary>

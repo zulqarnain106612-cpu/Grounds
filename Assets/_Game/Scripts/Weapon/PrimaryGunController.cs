@@ -72,7 +72,9 @@ namespace JetFighter.Weapon
         /// <summary>
         /// Whether Update drives the gun. Turned off by the intro sequence
         /// (Phase 2) so the gun is silent until Go, and by tests that need to
-        /// place every shot themselves.
+        /// place every shot themselves -- a scene test cannot observe the pool
+        /// before the first shot while the player loop is firing between its
+        /// setup and its assertions.
         /// </summary>
         public bool AutoFire
         {
