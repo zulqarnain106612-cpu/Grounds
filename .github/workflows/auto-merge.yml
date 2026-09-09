@@ -5,6 +5,10 @@ on:
   check_run:
     types: [completed]
   workflow_run:
+    # `workflows` is required for workflow_run. Without it the file is invalid
+    # and every run of this workflow ends in a startup failure before a single
+    # step executes -- which is why auto-merge has never once merged anything.
+    workflows: [agent-schema-enforcement, unity-test]
     types: [completed]
   status:
 
@@ -77,10 +81,17 @@ jobs:
             console.log('Status checks:', status.data.statuses.map(s => ({ context: s.context, state: s.state })));
 
             // Required checks - adjust based on your workflow names
+            // These are check RUN names, which are job names -- not workflow
+            // names. 'agent-schema-enforcement' is the workflow name in
+            // enforce.yml; its job is 'validate'. The Unity jobs are matrix
+            // legs, so they are 'test (editmode)' / 'test (playmode)'. The
+            // previous three names matched no check run at all, so every
+            // lookup returned undefined and auto-merge always concluded that
+            // the required checks had not passed.
             const requiredChecks = [
-              'agent-schema-enforcement',
-              'Unity - EditMode',
-              'Unity - PlayMode',
+              'validate',
+              'test (editmode)',
+              'test (playmode)',
             ];
 
             // Verify all required checks passed
