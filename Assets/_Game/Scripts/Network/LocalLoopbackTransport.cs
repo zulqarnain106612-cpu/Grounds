@@ -60,6 +60,12 @@ namespace JetFighter.Network
 
         private int sendCounter;
 
+        // Fractional part of the golden ratio: successive multiples are
+        // equidistributed without ever falling into step with a periodic
+        // sender. See the loss decision in SendState.
+        private const float GoldenRatioConjugate = 0.61803399f;
+        private float lossPhase;
+
         /// <summary>
         /// Pumps a payload waits before delivery. Zero is the old behaviour.
         ///
@@ -115,12 +121,31 @@ namespace JetFighter.Network
             }
 
             sendCounter++;
-            if (LossRate > 0f && sendCounter % Math.Max(2, (int)Math.Round(1f / LossRate)) == 0)
+            if (LossRate > 0f)
             {
-                DroppedByLoss++;
-                // Reported as sent: a real lossy link does not tell the sender.
-                // Code that treats a false return as "retry" would spin.
-                return true;
+                // Low-discrepancy rather than periodic. `sendCounter % N`
+                // aliases with any periodic send pattern: player state and
+                // enemy state broadcast on the same frames, so their sends
+                // land on alternating values of this counter, and a modulo-2
+                // drop at LossRate 0.5 removed one of the two streams
+                // entirely -- the guest never received a single enemy update
+                // while the link honestly reported a 50% loss rate. Advancing
+                // an irrational rotation instead is just as reproducible, but
+                // it spreads the drops over both streams and bounds how many
+                // fall in a row, so a receiver always catches up.
+                lossPhase += GoldenRatioConjugate;
+                if (lossPhase >= 1f)
+                {
+                    lossPhase -= 1f;
+                }
+                if (lossPhase < LossRate)
+                {
+                    DroppedByLoss++;
+                    // Reported as sent: a real lossy link does not tell the
+                    // sender. Code that treats a false return as "retry"
+                    // would spin.
+                    return true;
+                }
             }
 
             // Copied, not referenced. A caller reusing its buffer between sends
@@ -129,6 +154,17 @@ namespace JetFighter.Network
             var copy = new byte[payload.Length];
             Buffer.BlockCopy(payload, 0, copy, 0, payload.Length);
             int delay = Math.Max(0, LatencyPumps) + (sendCounter % 2 == 0 ? Math.Max(0, JitterPumps) : 0);
+            if (peer.state != TransportState.Connected)
+            {
+                // The far end is down: the message is lost on the wire. Only
+                // this side's own state was checked above, so without this a
+                // host went on filling a disconnected guest's inbox and the
+                // guest kept applying state it could not really have received.
+                // Reported as sent for the same reason loss is -- a real link
+                // does not tell the sender the peer went away.
+                DroppedByLoss++;
+                return true;
+            }
             peer.inbox.Enqueue(new Pending { Payload = copy, PumpsRemaining = delay });
             return true;
         }
@@ -140,6 +176,13 @@ namespace JetFighter.Network
         /// </summary>
         public int Pump()
         {
+            if (state != TransportState.Connected)
+            {
+                // A downed link delivers nothing to its consumer, including
+                // anything that was already in flight when it dropped.
+                return 0;
+            }
+
             int waiting = inbox.Count;
             int delivered = 0;
             // Each message is examined once per pump. Anything still in
