@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-09T09:16:25.105488Z",
+  "updated_at": "2026-09-09T09:23:31.911325Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -608,7 +608,7 @@
       "name": "Tick",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 134,
+      "line": 140,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -616,7 +616,7 @@
       "name": "ReleaseProjectile",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 160,
+      "line": 166,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -624,7 +624,7 @@
       "name": "StepLiveProjectiles",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 187,
+      "line": 193,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -632,7 +632,7 @@
       "name": "Fire",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 206,
+      "line": 212,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
