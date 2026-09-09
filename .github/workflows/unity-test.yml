@@ -1,0 +1,166 @@
+name: unity-test
+
+# Runs the C# EditMode and PlayMode suites. Every phase spec's acceptance
+# criteria assume C# tests exist; before this workflow there was nowhere for
+# them to run (docs/CYCLE0_BOOTSTRAP_SPEC.md section 0).
+#
+# Two failure modes this workflow exists to avoid, both of which report green:
+#
+#   1. Zero discovered tests. The Unity runner exits 0 when it finds nothing,
+#      so a broken .asmdef silently stops verifying anything and the job stays
+#      green forever. scripts/check_unity_results.py asserts the counts.
+#   2. A missing Unity licence. Skipping the job without one turns the gate
+#      into decoration. The preflight below fails loudly and says exactly what
+#      to configure.
+
+on:
+  push:
+    paths:
+      - "Assets/**"
+      - "ProjectSettings/**"
+      - "Packages/**"
+      - "scripts/check_unity_results.py"
+      - ".github/workflows/unity-test.yml"
+  pull_request:
+    paths:
+      - "Assets/**"
+      - "ProjectSettings/**"
+      - "Packages/**"
+      - "scripts/check_unity_results.py"
+      - ".github/workflows/unity-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: unity-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Separated from the test job so the licence problem is reported as its own
+  # red step with an actionable message, rather than as an opaque Unity
+  # activation error 20 minutes into a container pull.
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require a Unity licence
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        run: |
+          if [ -n "$UNITY_LICENSE" ] || { [ -n "$UNITY_EMAIL" ] && [ -n "$UNITY_PASSWORD" ]; }; then
+            echo "Unity credentials present."
+            exit 0
+          fi
+          echo "::error::No Unity licence configured, so the C# suites cannot run."
+          echo "::error::Set the UNITY_LICENSE secret (Personal), or UNITY_EMAIL + UNITY_PASSWORD (Pro)."
+          echo "::error::Failing rather than skipping on purpose: a skipped test gate is a green lie."
+          exit 1
+
+  test:
+    needs: preflight
+    runs-on: ubuntu-latest
+    # Unity's own image, pinned to ProjectSettings/ProjectVersion.txt.
+    container:
+      image: unityci/editor:ubuntu-6000.0.32f1-base-3
+      options: --user root
+    strategy:
+      fail-fast: false
+      matrix:
+        testMode: [editmode, playmode]
+    steps:
+      - uses: actions/checkout@v4
+
+      # Library/ is gitignored and rebuilding it from scratch is most of the
+      # job's runtime, so it is cached per test mode and project state.
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ matrix.testMode }}-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: |
+            Library-${{ matrix.testMode }}-
+            Library-
+
+      # Activated here with the account credentials rather than through
+      # game-ci/unity-test-runner, which refuses a Personal licence unless a
+      # .ulf is supplied as UNITY_LICENSE. Unity's own CLI accepts
+      # -username/-password, so the licence is created inside the job and never
+      # has to exist as a repository secret. The credentials stay in GitHub
+      # Secrets and are only ever read by the runner.
+      - name: Activate Unity
+        shell: bash
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        run: |
+          set +e
+          # Unity.Licensing.Client, not `unity-editor -username/-password`.
+          # The editor path asks only for assigned seats and dies with
+          # "Found 0 entitlement groups and 0 free entitlements" on an account
+          # that has none. --include-personal is the documented fallback to
+          # Personal Edition in exactly that case, and the editor never passes it.
+          LC=$(find /opt/unity /usr/share/unity3d -name Unity.Licensing.Client -type f 2>/dev/null | head -1)
+          if [ -z "$LC" ]; then
+            LC=$(find / -name Unity.Licensing.Client -type f 2>/dev/null | head -1)
+          fi
+          echo "licensing client: ${LC:-NOT FOUND}"
+          [ -z "$LC" ] && { echo "::error::Unity.Licensing.Client not found in image"; exit 1; }
+
+          "$LC" --activate-all --include-personal \
+            --username "$UNITY_EMAIL" --password "$UNITY_PASSWORD" 2>&1 | tail -30
+          echo "activate exit: ${PIPESTATUS[0]}"
+
+          echo "--- entitlements after activation ---"
+          "$LC" --showEntitlements 2>&1 | tail -20
+
+          # Unity 6 writes UnityEntitlementLicense.xml, not the legacy
+          # Unity_lic.ulf -- checking only for the .ulf reported failure on a
+          # licence that had in fact been granted.
+          if find / -name 'UnityEntitlementLicense.xml' -o -name 'Unity_lic.ulf' 2>/dev/null | grep -q .; then
+            echo "licence acquired"
+            exit 0
+          fi
+          # Surfaced as annotations so a failure is visible to --log-failed
+          # rather than buried in a log the access rules forbid fetching whole.
+          echo "::error::Unity activation produced no licence file."
+          "$LC" --showEntitlements 2>&1 | tail -6 | sed 's/^/::error::/'
+          exit 1
+
+      - name: Run ${{ matrix.testMode }} tests
+        shell: bash
+        run: |
+          mkdir -p "${{ matrix.testMode }}-artifacts"
+          set +e
+          unity-editor -batchmode -nographics -runTests \
+            -projectPath . \
+            -testPlatform ${{ matrix.testMode }} \
+            -testResults "${{ matrix.testMode }}-artifacts/results.xml" \
+            -logfile /tmp/tests.log
+          CODE=$?
+          echo "unity exit: $CODE  (editor: $(command -v unity-editor || echo none))"
+          ls -la "${{ matrix.testMode }}-artifacts" || true
+          # Unconditional: Unity exits 0 while writing no results, so gating the
+          # diagnostics on a non-zero code left the real cause invisible. A step
+          # that merely prints its log is absent from --log-failed, so anything
+          # that matters is emitted as an annotation instead.
+          if ! ls "${{ matrix.testMode }}-artifacts"/*.xml >/dev/null 2>&1; then
+            echo "::error::no results written for ${{ matrix.testMode }} (unity exit $CODE)"
+            tail -25 /tmp/tests.log 2>/dev/null | sed 's/^/::error::/'
+            exit 1
+          fi
+          tail -25 /tmp/tests.log 2>/dev/null || true
+
+      # The real gate. Runs even when the step above failed, so a red job still
+      # says whether the cause was failing tests or none discovered at all.
+      - name: Gate on the results file
+        if: always()
+        shell: bash
+        run: python3 scripts/check_unity_results.py --results "${{ matrix.testMode }}-artifacts" --min-tests 1
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unity-${{ matrix.testMode }}-results
+          path: ${{ matrix.testMode }}-artifacts

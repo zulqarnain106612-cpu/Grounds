@@ -59,6 +59,14 @@
       "symbols": []
     },
     {
+      "id": "phase0_ci_unity_test_workflow",
+      "type": "system",
+      "label": "Unity C# Test Workflow (EditMode + PlayMode)",
+      "tags": ["ci", "phase0", "cycle0", "harness", "build_pipeline"],
+      "phase": ["0"],
+      "symbols": ["ScaffoldSmokeTest", "ScaffoldPlayModeTest"]
+    },
+    {
       "id": "phase0_knowledge_base_seeds_layer",
       "type": "system",
       "label": "Durable Knowledge Seed Layer",
@@ -99,6 +107,9 @@
     {"from": "cycle:5", "to": "cycle:3", "kind": "depends_on"},
     {"from": "cycle:6", "to": "cycle:5", "kind": "depends_on"},
     {"from": "phase0_knowledge_base_seeds_layer", "to": "cycle:0", "kind": "part_of"},
+    {"from": "phase0_ci_unity_test_workflow", "to": "cycle:0", "kind": "part_of"},
+    {"from": "phase0_ci_unity_test_workflow", "to": "domain:ci", "kind": "delivers"},
+    {"from": "phase0_ci_unity_test_workflow", "to": "phase1_build_ios_scaffold", "kind": "depends_on"},
     {"from": "phase0_knowledge_base_seeds_layer", "to": "domain:knowledge_base", "kind": "delivers"},
     {"from": "phase1_build_ios_scaffold", "to": "cycle:0", "kind": "part_of"},
     {"from": "phase1_build_ios_scaffold", "to": "domain:build_pipeline", "kind": "delivers"}
