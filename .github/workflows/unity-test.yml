@@ -115,8 +115,10 @@ jobs:
           echo "--- entitlements after activation ---"
           "$LC" --showEntitlements 2>&1 | tail -20
 
-          if [ -f /root/.local/share/unity3d/Unity/Unity_lic.ulf ] \
-             || ls /usr/share/unity3d/config/*.ulf >/dev/null 2>&1; then
+          # Unity 6 writes UnityEntitlementLicense.xml, not the legacy
+          # Unity_lic.ulf -- checking only for the .ulf reported failure on a
+          # licence that had in fact been granted.
+          if find / -name 'UnityEntitlementLicense.xml' -o -name 'Unity_lic.ulf' 2>/dev/null | grep -q .; then
             echo "licence acquired"
             exit 0
           fi
