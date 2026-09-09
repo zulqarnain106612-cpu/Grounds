@@ -62,14 +62,16 @@ jobs:
   test:
     needs: preflight
     runs-on: ubuntu-latest
+    # Unity's own image, pinned to ProjectSettings/ProjectVersion.txt.
+    container:
+      image: unityci/editor:ubuntu-6000.0.32f1-base-3
+      options: --user root
     strategy:
       fail-fast: false
       matrix:
         testMode: [editmode, playmode]
     steps:
       - uses: actions/checkout@v4
-        with:
-          lfs: true
 
       # Library/ is gitignored and rebuilding it from scratch is most of the
       # job's runtime, so it is cached per test mode and project state.
@@ -81,32 +83,50 @@ jobs:
             Library-${{ matrix.testMode }}-
             Library-
 
-      # Deliberately NOT continue-on-error: that hid the runner's own failure
-      # from `gh run view --log-failed`, so a licence or activation error was
-      # invisible to the two-line probe and could only be found by dumping the
-      # whole log. The gate below runs with `if: always()` instead, which keeps
-      # the "tests failed" vs "no tests at all" distinction without hiding why.
-      - uses: game-ci/unity-test-runner@v4
-        id: runner
+      # Activated here with the account credentials rather than through
+      # game-ci/unity-test-runner, which refuses a Personal licence unless a
+      # .ulf is supplied as UNITY_LICENSE. Unity's own CLI accepts
+      # -username/-password, so the licence is created inside the job and never
+      # has to exist as a repository secret. The credentials stay in GitHub
+      # Secrets and are only ever read by the runner.
+      - name: Activate Unity
         env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          testMode: ${{ matrix.testMode }}
-          artifactsPath: ${{ matrix.testMode }}-artifacts
-          checkName: ${{ matrix.testMode }} results
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          unity-editor -batchmode -nographics -quit \
+            -logfile /tmp/activate.log \
+            -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD"
+          echo "activation exit: $?"
+          if [ -f /root/.local/share/unity3d/Unity/Unity_lic.ulf ]; then
+            echo "licence acquired"
+            exit 0
+          fi
+          # Surfaced as annotations so a failure is visible to --log-failed
+          # rather than buried in a log the access rules forbid fetching whole.
+          echo "::error::Unity activation produced no licence file."
+          grep -iE "licen|error|invalid|denied|token|auth" /tmp/activate.log 2>/dev/null \
+            | tail -8 | sed 's/^/::error::/'
+          exit 1
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+      - name: Run ${{ matrix.testMode }} tests
+        run: |
+          mkdir -p "${{ matrix.testMode }}-artifacts"
+          set +e
+          unity-editor -batchmode -nographics -runTests \
+            -projectPath . \
+            -testPlatform ${{ matrix.testMode }} \
+            -testResults "${{ matrix.testMode }}-artifacts/results.xml" \
+            -logfile /tmp/tests.log
+          echo "unity exit: $?"
+          tail -25 /tmp/tests.log 2>/dev/null || true
 
-      # The real gate. Runs even when the runner step failed, so a red job
-      # still says whether the cause was failing tests or none at all.
+      # The real gate. Runs even when the step above failed, so a red job still
+      # says whether the cause was failing tests or none discovered at all.
       - name: Gate on the results file
         if: always()
-        run: python scripts/check_unity_results.py --results "${{ matrix.testMode }}-artifacts" --min-tests 1
+        run: python3 scripts/check_unity_results.py --results "${{ matrix.testMode }}-artifacts" --min-tests 1
 
       - uses: actions/upload-artifact@v4
         if: always()
