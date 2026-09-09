@@ -75,11 +75,18 @@ def test_the_multipliers_are_clamped(expression, reason):
     assert expression in code(GUN), reason
 
 
-def test_phase_3_is_not_pre_empted():
-    """The seam only. Naming Phase 3's class here would be the speculative
-    design the roadmap declines."""
-    assert not (SCRIPTS / "Player" / "PlayerStatsRuntime.cs").exists()
-    assert "PlayerStatsRuntime" not in code(GUN)
+def test_the_gun_still_holds_the_seam_not_the_implementation():
+    """Phase 2 shipped the interface alone, and Cycle 3's
+    `phase3/player-stats-runtime` supplied `PlayerStatsRuntime` -- which is
+    the split this row was ticked on.
+
+    What has to stay true is that the gun never learns the concrete class.
+    Phase 4 gives the remote player its own stats object, and a concrete
+    reference here would put that back on this file."""
+    assert (SCRIPTS / "Player" / "PlayerStatsRuntime.cs").exists(), \
+        "the implementation the retrofit was deferring to never arrived"
+    assert "PlayerStatsRuntime" not in code(GUN), \
+        "the gun named the concrete stats class"
 
 
 def test_the_retrofit_row_is_ticked():
