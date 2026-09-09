@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-09T03:28:20.461517Z",
+  "updated_at": "2026-09-09T03:32:26.189691Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -189,6 +189,62 @@
       "tags": []
     },
     {
+      "name": "ObjectPool",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
+      "line": 19,
+      "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
+      "name": "ObjectPool",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
+      "line": 38,
+      "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
+      "name": "Prewarm",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
+      "line": 49,
+      "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
+      "name": "Get",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
+      "line": 64,
+      "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
+      "name": "if",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
+      "line": 71,
+      "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
+      "name": "Release",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
+      "line": 92,
+      "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
+      "name": "RemoveFromLive",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
+      "line": 103,
+      "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
       "name": "ITargetInput",
       "kind": "interface",
       "file": "Assets/_Game/Scripts/UI/Input/ITargetInput.cs",
@@ -274,6 +330,62 @@
       "file": "Assets/_Game/Scripts/UI/Input/PlayerInputRouter.cs",
       "line": 42,
       "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "PrimaryGunController",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
+      "line": 14,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Awake",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
+      "line": 50,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "EnsurePool",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
+      "line": 60,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Update",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
+      "line": 70,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Tick",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
+      "line": 89,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Fire",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
+      "line": 115,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "WeaponBase",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Weapon/WeaponBase.cs",
+      "line": 11,
+      "namespace": "JetFighter.Weapon",
       "tags": []
     }
   ]
