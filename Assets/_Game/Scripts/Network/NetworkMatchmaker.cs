@@ -109,7 +109,14 @@ namespace JetFighter.Network
                     // still gets a working single-player game.
                     return GameKitFactory?.Invoke();
                 default:
-                    return new LocalLoopbackTransport(SystemInfo.deviceUniqueIdentifier);
+                    // Both ends, not one. A lone LocalLoopbackTransport has no
+                    // peer, and Connect() reports Failed without one, so a solo
+                    // instance here made loopback mode return null from Begin
+                    // every time. Loopback stands up its own far end: the host
+                    // is what gameplay talks to, the guest is the local echo.
+                    return LocalLoopbackTransport.CreatePair(
+                        SystemInfo.deviceUniqueIdentifier,
+                        SystemInfo.deviceUniqueIdentifier + ":loopback").host;
             }
         }
 
