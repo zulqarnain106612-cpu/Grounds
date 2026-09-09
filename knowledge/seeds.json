@@ -113,6 +113,22 @@
       "tags": ["weapon", "phase1"],
       "phase": ["1"],
       "symbols": ["ObjectPool", "WeaponBase", "PrimaryGunController", "Fire", "Tick"]
+    },
+    {
+      "id": "phase2_enemy_core",
+      "type": "system",
+      "label": "Enemy Health + Damage Pipeline",
+      "tags": ["enemy", "phase2"],
+      "phase": ["2"],
+      "symbols": ["EnemyDef", "EnemyHealth", "EnemyController", "IDamageable", "NextPosition"]
+    },
+    {
+      "id": "phase2_enemy_healthbar_ui",
+      "type": "system",
+      "label": "Event-Driven Enemy Health Bar",
+      "tags": ["ui", "enemy", "phase2"],
+      "phase": ["2"],
+      "symbols": ["EnemyHealthBarUI", "ColorFor", "Refresh"]
     }
   ],
   "edges": [
@@ -148,6 +164,12 @@
     {"from": "phase1_physics_plane_constraint", "to": "cycle:1", "kind": "part_of"},
     {"from": "phase1_input_joystick_mapping", "to": "cycle:1", "kind": "part_of"},
     {"from": "phase1_weapon_gun_stub", "to": "cycle:1", "kind": "part_of"},
+    {"from": "phase2_enemy_core", "to": "cycle:2", "kind": "part_of"},
+    {"from": "phase2_enemy_healthbar_ui", "to": "cycle:2", "kind": "part_of"},
+    {"from": "phase2_enemy_healthbar_ui", "to": "domain:ui", "kind": "delivers"},
+    {"from": "phase2_enemy_healthbar_ui", "to": "phase2_enemy_core", "kind": "depends_on"},
+    {"from": "phase2_enemy_core", "to": "domain:enemy", "kind": "delivers"},
+    {"from": "phase2_enemy_core", "to": "phase1_weapon_gun_stub", "kind": "depends_on"},
     {"from": "phase1_weapon_gun_stub", "to": "domain:weapon", "kind": "delivers"},
     {"from": "phase1_weapon_gun_stub", "to": "phase1_build_ios_scaffold", "kind": "depends_on"},
     {"from": "phase1_input_joystick_mapping", "to": "domain:ui", "kind": "delivers"},
