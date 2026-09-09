@@ -88,7 +88,7 @@ namespace JetFighter.Tests.EditMode
             {
                 Directory.Delete(saveDirectory, true);
             }
-            Object.DestroyImmediate(root);
+            UnityEngine.Object.DestroyImmediate(root);
         }
 
         // --- the continue ---------------------------------------------------
@@ -289,7 +289,7 @@ namespace JetFighter.Tests.EditMode
             bool continued = false;
             Assert.IsFalse(lonely.ShowInterstitial(() => continued = true));
             Assert.IsTrue(continued);
-            Object.DestroyImmediate(lonelyRoot);
+            UnityEngine.Object.DestroyImmediate(lonelyRoot);
         }
     }
 }

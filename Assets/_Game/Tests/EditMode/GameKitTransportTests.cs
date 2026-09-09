@@ -243,8 +243,8 @@ namespace JetFighter.Tests.EditMode
             Assert.AreEqual(1, sync.SentCount);
             Assert.AreEqual(1, match.Sent.Count, "the broadcast never reached GameKit");
 
-            Object.DestroyImmediate(jet.gameObject);
-            Object.DestroyImmediate(root);
+            UnityEngine.Object.DestroyImmediate(jet.gameObject);
+            UnityEngine.Object.DestroyImmediate(root);
         }
 
         [Test]
@@ -261,7 +261,7 @@ namespace JetFighter.Tests.EditMode
             matchmaker.CurrentMode = NetworkMatchmaker.Mode.Loopback;
             Assert.IsInstanceOf<LocalLoopbackTransport>(matchmaker.Begin());
 
-            Object.DestroyImmediate(root);
+            UnityEngine.Object.DestroyImmediate(root);
         }
 
         [Test]
@@ -280,7 +280,7 @@ namespace JetFighter.Tests.EditMode
             Assert.IsNull(matchmaker.Begin());
             Assert.IsNotNull(reason);
 
-            Object.DestroyImmediate(root);
+            UnityEngine.Object.DestroyImmediate(root);
         }
     }
 }
