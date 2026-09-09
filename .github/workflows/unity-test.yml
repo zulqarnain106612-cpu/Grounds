@@ -96,13 +96,15 @@ jobs:
             Library-${{ matrix.testMode }}-
             Library-
 
-      # continue-on-error, plus `if: always()` on the gate below, so a failing
-      # suite does not short-circuit before the gate can say *why* the job is
-      # red -- and so the runner's own output (licence activation errors among
-      # them) still lands in the log rather than being swallowed.
+      # No continue-on-error. The gate below carries `if: always()` instead,
+      # which keeps the property that matters -- the gate still runs and still
+      # says *why* the job is red -- without the property that cost hours:
+      # continue-on-error marks the step successful, and a successful step's
+      # log is not in the failed-step log. Every licence activation error this
+      # runner printed was therefore invisible, and the only symptom reaching
+      # anyone was the gate downstream reporting a missing artifacts directory.
       - uses: game-ci/unity-test-runner@v4
         id: runner
-        continue-on-error: true
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
