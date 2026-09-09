@@ -126,17 +126,35 @@ namespace JetFighter.Player
             }
             stateElapsed += deltaTime;
 
-            switch (Current)
+            // A single frame can be longer than a whole state -- a hitch, or a
+            // deliberately large step from a test. Dispatching once per Tick
+            // dropped whatever was left of the frame at each state boundary, so
+            // one 3.5s frame during the countdown emitted a single number and
+            // threw the other three away. Each state now leaves its unused
+            // remainder in stateElapsed and the next one consumes it in the
+            // same frame. The bound is a guard against a zero-length state
+            // looping forever, not an expected number of transitions.
+            for (int guard = 0; guard < 64; guard++)
             {
-                case State.Spawn:
-                    TickSpawn();
+                State before = Current;
+                switch (Current)
+                {
+                    case State.Spawn:
+                        TickSpawn();
+                        break;
+                    case State.Countdown:
+                        TickCountdown();
+                        break;
+                    case State.Go:
+                        Enter(State.PlayerControl);
+                        break;
+                }
+
+                if (Current == before || Current == State.Idle
+                    || Current == State.PlayerControl)
+                {
                     break;
-                case State.Countdown:
-                    TickCountdown();
-                    break;
-                case State.Go:
-                    Enter(State.PlayerControl);
-                    break;
+                }
             }
         }
 
@@ -153,7 +171,10 @@ namespace JetFighter.Player
                 // the player a jet a few centimetres off its plane, and the
                 // constraint would visibly yank it back on the first frame.
                 transform.position = restPosition;
-                stateElapsed = 0f;
+                // Carry the overshoot rather than zeroing it: the frame that
+                // ends the spawn may be long enough to cover part of the
+                // countdown too, and that time belongs to the countdown.
+                stateElapsed = Mathf.Max(0f, stateElapsed - spawnSeconds);
                 Enter(State.Countdown);
                 OnCountChanged?.Invoke(currentCount);
             }
@@ -181,6 +202,15 @@ namespace JetFighter.Player
             // except the gun".
             bool playerHasControl = next == State.Go || next == State.PlayerControl;
             ApplyControl(playerHasControl);
+
+            if (next == State.Spawn)
+            {
+                // Snap to the entry position on entering the state, not on the
+                // first Tick. Waiting for the tick leaves the jet sitting at its
+                // rest position until a frame has passed -- one frame of the jet
+                // visible where it is supposed to arrive, then a jump below it.
+                transform.position = restPosition + spawnOffset;
+            }
 
             if (next == State.PlayerControl)
             {
