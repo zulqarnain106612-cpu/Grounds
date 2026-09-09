@@ -29,7 +29,12 @@ namespace JetFighter.Economy
         [Min(0f)]
         [SerializeField] private float saveIntervalSeconds = 10f;
 
-        private float survivalRemainder;
+        // Double, not float: the remainder is carried across frames, and a
+        // float's ~1e-7 resolution near 1.0 survives every subtraction. Over a
+        // five-minute run at 60fps that shortfall compounds into whole seconds
+        // the player survived and was not paid for -- 29 coins where 30 were
+        // earned, and a 60fps run earning less than the same run at 30.
+        private double survivalRemainder;
         private float sinceLastSave;
         private bool dirty;
 
@@ -111,7 +116,7 @@ namespace JetFighter.Economy
             if (coinsPerSecondSurvived > 0)
             {
                 survivalRemainder += deltaTime;
-                int wholeSeconds = Mathf.FloorToInt(survivalRemainder);
+                int wholeSeconds = (int)System.Math.Floor(survivalRemainder);
                 if (wholeSeconds > 0)
                 {
                     survivalRemainder -= wholeSeconds;
