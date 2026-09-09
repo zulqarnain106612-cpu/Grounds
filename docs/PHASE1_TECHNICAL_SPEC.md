@@ -164,7 +164,7 @@ Trunk-based, one branch per cell, squash-merged to `main`, each ending in a `kno
   "meta": {"schema_version":"1.1.0","session_id":"<uuid>","tick":<n>,"phase":"1","timestamp_utc":"<iso>"},
   "intent": {"action":"knowledge_update","domain":"physics","priority":5},
   "payload": {"data": null, "knowledge_op": {
-    "op":"add_node","id":"phase1_plane_constraint","type":"system",
+    "op":"add_node","id":"phase1_physics_plane_constraint","type":"system",
     "label":"2D-Plane Physics Constraint (Z-locked)","tags":["physics","phase1"],
     "phase":["1"],"symbols":["PlaneConstraint"]
   }}
@@ -175,7 +175,7 @@ Trunk-based, one branch per cell, squash-merged to `main`, each ending in a `kno
   "meta": {"schema_version":"1.1.0","session_id":"<uuid>","tick":<n>,"phase":"1","timestamp_utc":"<iso>"},
   "intent": {"action":"knowledge_update","domain":"ui","priority":4},
   "payload": {"data": null, "knowledge_op": {
-    "op":"add_node","id":"phase1_joystick_input","type":"system",
+    "op":"add_node","id":"phase1_input_joystick_mapping","type":"system",
     "label":"Left-Hand Virtual Joystick + Router","tags":["ui","input","phase1"],
     "phase":["1"],"symbols":["JoystickInput","PlayerInputRouter"]
   }}
@@ -186,7 +186,7 @@ Trunk-based, one branch per cell, squash-merged to `main`, each ending in a `kno
   "meta": {"schema_version":"1.1.0","session_id":"<uuid>","tick":<n>,"phase":"1","timestamp_utc":"<iso>"},
   "intent": {"action":"knowledge_update","domain":"weapon","priority":5},
   "payload": {"data": null, "knowledge_op": {
-    "op":"add_node","id":"phase1_primary_gun_stub","type":"system",
+    "op":"add_node","id":"phase1_weapon_gun_stub","type":"system",
     "label":"Primary Gun (1/sec, pooled)","tags":["weapon","phase1"],
     "phase":["1"],"symbols":["WeaponBase","PrimaryGunController","ObjectPool"]
   }}

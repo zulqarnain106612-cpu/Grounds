@@ -15,6 +15,8 @@ import pytest
 
 from gateway import symbol_scanner
 
+from tests._csharp import code, mentions
+
 REAL_ROOT = Path(__file__).resolve().parent.parent
 PLAYER = REAL_ROOT / "Assets" / "_Game" / "Scripts" / "Player"
 CONTROLLER = PLAYER / "JetController.cs"
@@ -51,23 +53,25 @@ def test_the_flight_model_is_free_of_engine_singletons(indexed):
     """The pure functions take deltaTime as an argument rather than reading
     Time.fixedDeltaTime, which is what makes the frame-rate independence test
     possible at all."""
-    body = CONTROLLER.read_text()
-    tail = body[body.index("// --- pure functions"):]
+    assert "// --- pure functions" in CONTROLLER.read_text(), \
+        "the pure section is no longer marked, so this check has nothing to anchor to"
+    stripped = code(CONTROLLER)
+    tail = stripped[stripped.index("public static Vector3 ComputeAcceleration"):]
     for forbidden in ("Time.", "GetComponent", "FindObjectOf"):
         assert forbidden not in tail, f"the pure section reaches for {forbidden}"
 
 
-def test_this_branch_is_deliberately_unconstrained():
-    """docs/PHASE1_TECHNICAL_SPEC.md section 3: inertia and banking are
-    validated in free 3D space *before* the plane lock, so a bad feel later
-    has exactly one possible cause. A constraint sneaking in here would make
-    the next branch's own test pass before that branch existed."""
-    assert not (REAL_ROOT / "Assets" / "_Game" / "Scripts" / "Physics" / "PlaneConstraint.cs").exists()
-    # Comments may name it -- the controller's own docstring explains why the
-    # lock is absent. Only executable lines are the concern here.
-    code = [l for l in CONTROLLER.read_text().splitlines()
-            if not l.lstrip().startswith(("//", "///", "*", "/*"))]
-    assert not any("PlaneConstraint" in l for l in code)
+def test_the_flight_model_knows_nothing_about_the_constraint():
+    """docs/PHASE1_TECHNICAL_SPEC.md section 3: inertia and banking were
+    validated in free 3D space before the plane lock existed, so a bad feel
+    has exactly one possible cause.
+
+    The constraint has since landed in its own branch, and it works by
+    correcting the body after the solve -- so the controller must still hold
+    no reference to it. A JetController that special-cased the locked axis
+    would put the plane rule in two places, and the two would drift.
+    """
+    assert not mentions(CONTROLLER, "PlaneConstraint")
 
 
 def test_banking_never_rotates_the_rigidbody():
