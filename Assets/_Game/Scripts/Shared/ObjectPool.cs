@@ -84,6 +84,27 @@ namespace JetFighter.Shared
         }
 
         /// <summary>
+        /// Copies the live instances into <paramref name="buffer"/>.
+        ///
+        /// A snapshot, because callers advance the instances they get back and
+        /// advancing one can release it, which would mutate `live` underneath
+        /// an iteration. The buffer is the caller's and is reused, so a
+        /// per-frame walk does not allocate once it has warmed up.
+        ///
+        /// The pool is where this belongs: it already knows which instances
+        /// are out, and nothing else should be keeping a second list of them.
+        /// </summary>
+        public void CopyLiveTo(List<GameObject> buffer)
+        {
+            if (buffer == null)
+            {
+                return;
+            }
+            buffer.Clear();
+            buffer.AddRange(live);
+        }
+
+        /// <summary>
         /// Returns an instance. Releasing something already idle, or something
         /// this pool never handed out, is ignored rather than corrupting the
         /// counts -- a double release is a caller bug that must not turn into
