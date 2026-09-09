@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-09T03:27:06.402868Z",
+  "updated_at": "2026-09-09T03:28:20.461517Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -186,6 +186,94 @@
       "file": "Assets/_Game/Scripts/Player/JetFlightConfig.cs",
       "line": 13,
       "namespace": "JetFighter.Player",
+      "tags": []
+    },
+    {
+      "name": "ITargetInput",
+      "kind": "interface",
+      "file": "Assets/_Game/Scripts/UI/Input/ITargetInput.cs",
+      "line": 11,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "JoystickInput",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/UI/Input/JoystickInput.cs",
+      "line": 16,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "GetNormalizedVector",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/JoystickInput.cs",
+      "line": 54,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "OnPointerDown",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/JoystickInput.cs",
+      "line": 59,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "OnDrag",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/JoystickInput.cs",
+      "line": 75,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "OnPointerUp",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/JoystickInput.cs",
+      "line": 87,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "SetOffset",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/JoystickInput.cs",
+      "line": 97,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "IsInRegion",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/JoystickInput.cs",
+      "line": 116,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "Normalize",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/JoystickInput.cs",
+      "line": 126,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "PlayerInputRouter",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/UI/Input/PlayerInputRouter.cs",
+      "line": 19,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "Update",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/PlayerInputRouter.cs",
+      "line": 42,
+      "namespace": "JetFighter.UI.Input",
       "tags": []
     }
   ]
