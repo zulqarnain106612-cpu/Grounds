@@ -24,10 +24,11 @@ namespace JetFighter.Weapon
 
         private ObjectPool pool;
 
-        // The bullets this gun has in the air. The pool knows how many are
-        // live but not which, and the gun is what owns their clock -- see
-        // StepLiveProjectiles.
-        private readonly List<Bullet> live = new List<Bullet>();
+        // Scratch space for one frame's walk over the pool's live instances.
+        // Not a record of what is in flight -- the pool holds that, and
+        // returning a spent round stays the round's own job. Reused so the
+        // walk does not allocate every frame.
+        private readonly List<GameObject> stepBuffer = new List<GameObject>();
         private float cooldownTimer;
         private IPlayerStats stats = DefaultPlayerStats.Instance;
 
@@ -66,10 +67,6 @@ namespace JetFighter.Weapon
             {
                 weaponDef = value;
                 pool = null;
-                // The old pool's instances are about to be orphaned; keeping
-                // them in `live` would have the gun stepping bullets that no
-                // longer belong to it.
-                live.Clear();
             }
         }
 
@@ -151,11 +148,22 @@ namespace JetFighter.Weapon
             // A loop, not an `if`: a frame longer than the cooldown (a hitch,
             // or a fire-rate power-up in Phase 3) still owes the player every
             // shot that elapsed during it.
+            //
+            // The first check admits a timer of exactly zero, which is what
+            // makes the opening shot immediate. The carry after a shot has to
+            // be strictly negative to fire again inside the same frame: a
+            // frame that lands exactly on the cadence -- every frame, when the
+            // step is the cooldown -- otherwise pays twice, once for the shot
+            // due at its start and once for the one due at its end. That extra
+            // opening round is one more bullet in the air than the pool was
+            // sized for, and the pool answers by recycling a live one.
+            bool due = cooldownTimer <= 0f;
             int guard = 0;
-            while (cooldownTimer <= 0f && guard++ < 64)
+            while (due && guard++ < 64)
             {
                 Fire();
                 cooldownTimer += cooldown;
+                due = cooldownTimer < 0f;
             }
         }
 
@@ -165,42 +173,43 @@ namespace JetFighter.Weapon
         /// </summary>
         private void ReleaseProjectile(GameObject projectile)
         {
-            if (projectile != null)
-            {
-                var spent = projectile.GetComponent<Bullet>();
-                if (spent != null)
-                {
-                    live.Remove(spent);
-                }
-            }
             pool?.Release(projectile);
         }
 
         /// <summary>
-        /// Advances every bullet in the air by the same deltaTime the gun was
+        /// Advances every round in the air by the same deltaTime the gun was
         /// ticked with.
         ///
         /// The gun owns the clock because it is the only way the two agree. A
-        /// bullet that advanced itself from Time.deltaTime while the gun was
-        /// driven with a simulated step would never reach its lifetime during
-        /// a simulated soak: the gun would fire four seconds' worth of shots
-        /// inside one second of real time, none of them would expire, and the
-        /// pool would start recycling bullets that are still on screen.
+        /// bullet that advanced itself from Time.deltaTime while the gun ran
+        /// on a simulated step would never reach its lifetime during a
+        /// simulated soak: the gun fires four seconds' worth of shots inside
+        /// one second of real time, none expire, and the pool starts recycling
+        /// rounds that are still on screen.
         ///
-        /// Iterated backwards because expiry calls back into
-        /// ReleaseProjectile, which removes from this list.
+        /// Which instances are live is asked of the pool each time rather than
+        /// tracked here. The gun keeping its own list of bullets is the thing
+        /// test_the_gun_does_not_track_bullets_in_flight exists to prevent.
         /// </summary>
         private void StepLiveProjectiles(float deltaTime)
         {
-            for (int i = live.Count - 1; i >= 0; i--)
+            if (pool == null)
             {
-                Bullet projectile = live[i];
-                if (projectile == null)
+                return;
+            }
+            pool.CopyLiveTo(stepBuffer);
+            for (int i = 0; i < stepBuffer.Count; i++)
+            {
+                GameObject instance = stepBuffer[i];
+                if (instance == null)
                 {
-                    live.RemoveAt(i);
                     continue;
                 }
-                projectile.Step(deltaTime);
+                Bullet projectile = instance.GetComponent<Bullet>();
+                if (projectile != null)
+                {
+                    projectile.Step(deltaTime);
+                }
             }
         }
 
@@ -229,10 +238,6 @@ namespace JetFighter.Weapon
             {
                 projectile.OnFinished = ReleaseProjectile;
                 projectile.Launch(EffectiveDamage, weaponDef.projectileSpeed, weaponDef.projectileLifetime);
-                if (!live.Contains(projectile))
-                {
-                    live.Add(projectile);
-                }
             }
         }
     }
