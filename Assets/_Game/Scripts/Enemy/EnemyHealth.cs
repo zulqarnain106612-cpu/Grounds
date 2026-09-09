@@ -73,6 +73,29 @@ namespace JetFighter.Enemy
         }
 
         /// <summary>
+        /// Applies authoritative health from the host.
+        ///
+        /// Distinct from ApplyDamage on purpose: this does not fire OnDamaged
+        /// or OnDied, and does not roll a drop. Only the host rolls drops --
+        /// a guest that rolled its own would produce different loot from the
+        /// same kill, and the health bar is driven by the value it is handed
+        /// rather than by a damage event it did not witness.
+        ///
+        /// It also does not clamp to the previous health: a host that revived
+        /// or rescaled an enemy is still the authority, and a guest refusing
+        /// to follow it upward is exactly the divergence this exists to stop.
+        /// </summary>
+        public void SetNetworkedHealth(float current, float max)
+        {
+            if (max > 0f)
+            {
+                scaledMaxHealth = max;
+            }
+            currentHealth = Mathf.Clamp(current, 0f, MaxHealth);
+            OnDamaged.Invoke(PercentRemaining);
+        }
+
+        /// <summary>
         /// Overrides max health for this instance, for the difficulty
         /// multiplier.
         ///
