@@ -38,6 +38,12 @@ namespace JetFighter.Tests.PlayMode
             gun = gunObject.AddComponent<PrimaryGunController>();
             gun.WeaponDef = weapon;
             gun.EnsurePool();
+            // A frame elapses between SetUp and the test body, and the gun's
+            // first shot is immediate by design (PrimaryGunControllerTests
+            // .TheFirstShotIsImmediate). Left driven, it empties a pool slot
+            // before any test has said a word. The one case that needs the
+            // player loop turns it back on for itself.
+            gun.AutoFire = false;
         }
 
         [TearDown]
@@ -117,6 +123,7 @@ namespace JetFighter.Tests.PlayMode
         [UnityTest]
         public IEnumerator AutoFireRunsFromUpdateWithoutBeingDriven()
         {
+            gun.AutoFire = true;
             int before = gun.ShotsFired;
             yield return new WaitForSeconds(0.3f);
             Assert.Greater(gun.ShotsFired, before, "the gun only fires when a test calls Tick");
