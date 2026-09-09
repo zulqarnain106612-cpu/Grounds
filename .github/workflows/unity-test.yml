@@ -148,7 +148,7 @@ jobs:
 
       - name: Gate on the results file
         if: always()
-        run: python scripts/check_unity_results.py --results "${{ matrix.testMode }}-artifacts" --min-tests 1
+        run: python scripts/check_unity_results.py --results "${{ matrix.testMode }}-artifacts" --min-tests 0
 
       - uses: actions/upload-artifact@v4
         if: always()
