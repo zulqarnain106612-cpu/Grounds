@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-09T03:32:26.189691Z",
+  "updated_at": "2026-09-09T03:33:56.355990Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -106,6 +106,30 @@
       "file": "Assets/_Game/Scripts/Physics/PlaneConstraint.cs",
       "line": 106,
       "namespace": "JetFighter.Physics",
+      "tags": []
+    },
+    {
+      "name": "IPlayerStats",
+      "kind": "interface",
+      "file": "Assets/_Game/Scripts/Player/IPlayerStats.cs",
+      "line": 25,
+      "namespace": "JetFighter.Player",
+      "tags": []
+    },
+    {
+      "name": "DefaultPlayerStats",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Player/IPlayerStats.cs",
+      "line": 42,
+      "namespace": "JetFighter.Player",
+      "tags": []
+    },
+    {
+      "name": "DefaultPlayerStats",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Player/IPlayerStats.cs",
+      "line": 46,
+      "namespace": "JetFighter.Player",
       "tags": []
     },
     {
@@ -336,7 +360,7 @@
       "name": "PrimaryGunController",
       "kind": "class",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 14,
+      "line": 15,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -344,7 +368,7 @@
       "name": "Awake",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 50,
+      "line": 72,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -352,7 +376,7 @@
       "name": "EnsurePool",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 60,
+      "line": 82,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -360,7 +384,7 @@
       "name": "Update",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 70,
+      "line": 92,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -368,7 +392,7 @@
       "name": "Tick",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 89,
+      "line": 111,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -376,7 +400,7 @@
       "name": "Fire",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 115,
+      "line": 137,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
