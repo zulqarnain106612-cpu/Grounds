@@ -138,7 +138,17 @@ jobs:
             -testPlatform ${{ matrix.testMode }} \
             -testResults "${{ matrix.testMode }}-artifacts/results.xml" \
             -logfile /tmp/tests.log
-          echo "unity exit: $?"
+          CODE=$?
+          echo "unity exit: $CODE"
+          ls -la "${{ matrix.testMode }}-artifacts" || true
+          # Emitted as annotations, not plain output: a step that merely prints
+          # its log is absent from --log-failed, which is how the previous two
+          # failures stayed invisible.
+          if [ "$CODE" -ne 0 ]; then
+            echo "::error::unity-editor -runTests exited $CODE for ${{ matrix.testMode }}"
+            grep -iE "error|exception|failed|licen" /tmp/tests.log 2>/dev/null \
+              | tail -12 | sed 's/^/::error::/'
+          fi
           tail -25 /tmp/tests.log 2>/dev/null || true
 
       # The real gate. Runs even when the step above failed, so a red job still
