@@ -27,6 +27,7 @@ namespace JetFighter.UI.Input
         [SerializeField] private float regionFraction = 0.5f;
 
         private Vector2 offset;
+        private Vector2 pressOrigin;
         private int activePointerId = InvalidPointer;
 
         /// <summary>No finger is currently driving the stick.</summary>
@@ -63,6 +64,12 @@ namespace JetFighter.UI.Input
                 return;
             }
             activePointerId = eventData.pointerId;
+            // Where the thumb landed is the stick's centre for this hold. It
+            // is remembered here rather than read back off `background`, which
+            // is a decoration: with no sprite wired up the origin would fall
+            // back to the *current* event's press position, and every drag
+            // would measure itself against itself and report zero.
+            pressOrigin = eventData.position;
             if (background != null)
             {
                 // Move the stick under the finger instead of making the player
@@ -80,8 +87,7 @@ namespace JetFighter.UI.Input
             {
                 return;
             }
-            Vector2 origin = background != null ? (Vector2)background.position : eventData.pressPosition;
-            SetOffset(Vector2.ClampMagnitude(eventData.position - origin, radius));
+            SetOffset(Vector2.ClampMagnitude(eventData.position - pressOrigin, radius));
         }
 
         public void OnPointerUp(PointerEventData eventData)

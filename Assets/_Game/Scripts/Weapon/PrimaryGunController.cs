@@ -47,6 +47,20 @@ namespace JetFighter.Weapon
             set => muzzleTransform = value;
         }
 
+        /// <summary>
+        /// Whether Update drives the cooldown by itself.
+        ///
+        /// Exposed for the same reason Tick takes a deltaTime: a scene test
+        /// that wants to observe the pool before the first shot cannot do it
+        /// while the player loop is firing between its setup and its
+        /// assertions.
+        /// </summary>
+        public bool AutoFire
+        {
+            get => autoFire;
+            set => autoFire = value;
+        }
+
         private void Awake()
         {
             EnsurePool();
