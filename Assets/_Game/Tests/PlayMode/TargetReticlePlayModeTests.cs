@@ -88,16 +88,35 @@ namespace JetFighter.Tests.PlayMode
 
         private static Vector2 LeftHalf => new Vector2(Screen.width * 0.25f, Screen.height * 0.5f);
 
+        private static Vector2 RightHand => new Vector2(Screen.width * 0.75f, Screen.height * 0.5f);
+
+        /// <summary>
+        /// Moves a collider and makes the physics scene agree, which is not
+        /// the same thing.
+        ///
+        /// Physics.autoSyncTransforms is off by default, so a raycast fired in
+        /// the same breath as a teleport still sees the collider where it used
+        /// to be. Every lock in this file missed because of it -- and the
+        /// tests that only assert "nothing was locked" passed anyway, which is
+        /// exactly how it stayed hidden. `yield return null` does not fix it
+        /// either: a frame is not a physics step.
+        /// </summary>
+        private void PlaceAtDepth(GameObject target, Vector2 screenPosition, float depth = 20f)
+        {
+            target.transform.position = cam.ScreenToWorldPoint(
+                new Vector3(screenPosition.x, screenPosition.y, depth));
+            UnityEngine.Physics.SyncTransforms();
+        }
+
         [UnityTest]
         public IEnumerator ARightHalfTouchLocksAGroundEnemy()
         {
             // Placed so the ray passes through the enemy regardless of the
             // runner's screen size.
-            groundEnemy.transform.position = cam.ScreenToWorldPoint(
-                new Vector3(Screen.width * 0.75f, Screen.height * 0.5f, 20f));
+            PlaceAtDepth(groundEnemy, RightHand);
             yield return null;
 
-            Press(new Vector2(Screen.width * 0.75f, Screen.height * 0.5f));
+            Press(RightHand);
             yield return null;
 
             Assert.AreEqual(groundEnemy.transform, reticle.CurrentTarget);
@@ -108,8 +127,7 @@ namespace JetFighter.Tests.PlayMode
         public IEnumerator ALeftHalfTouchHasZeroTargetingEffect()
         {
             // The mirror of Phase 1's proof, and the cell's stated criterion.
-            groundEnemy.transform.position = cam.ScreenToWorldPoint(
-                new Vector3(Screen.width * 0.25f, Screen.height * 0.5f, 20f));
+            PlaceAtDepth(groundEnemy, LeftHalf);
             yield return null;
 
             Press(LeftHalf);
@@ -124,11 +142,10 @@ namespace JetFighter.Tests.PlayMode
         [UnityTest]
         public IEnumerator ALeftHalfTouchCannotDragAnActiveLock()
         {
-            groundEnemy.transform.position = cam.ScreenToWorldPoint(
-                new Vector3(Screen.width * 0.75f, Screen.height * 0.5f, 20f));
+            PlaceAtDepth(groundEnemy, RightHand);
             yield return null;
 
-            Press(new Vector2(Screen.width * 0.75f, Screen.height * 0.5f), id: 0);
+            Press(RightHand, id: 0);
             Vector2? locked = reticle.ScreenTarget;
 
             Drag(LeftHalf, id: 1);
@@ -141,11 +158,10 @@ namespace JetFighter.Tests.PlayMode
         {
             // The player raises the thumb to press the missile button. A lock
             // that died with the touch would make the weapon unusable.
-            groundEnemy.transform.position = cam.ScreenToWorldPoint(
-                new Vector3(Screen.width * 0.75f, Screen.height * 0.5f, 20f));
+            PlaceAtDepth(groundEnemy, RightHand);
             yield return null;
 
-            Vector2 p = new Vector2(Screen.width * 0.75f, Screen.height * 0.5f);
+            Vector2 p = RightHand;
             Press(p);
             Release(p);
             yield return null;
@@ -158,12 +174,12 @@ namespace JetFighter.Tests.PlayMode
         public IEnumerator AirEnemiesAreNotLockable()
         {
             // ADR-002: missiles are ground-only, enforced by the layer mask.
-            airEnemy.transform.position = cam.ScreenToWorldPoint(
-                new Vector3(Screen.width * 0.75f, Screen.height * 0.5f, 20f));
+            PlaceAtDepth(airEnemy, RightHand);
             groundEnemy.transform.position = new Vector3(0f, -500f, 0f);
+            UnityEngine.Physics.SyncTransforms();
             yield return null;
 
-            Press(new Vector2(Screen.width * 0.75f, Screen.height * 0.5f));
+            Press(RightHand);
             yield return null;
 
             Assert.IsNull(reticle.CurrentTarget, "an air enemy was locked; the layer mask is not holding");
@@ -174,10 +190,9 @@ namespace JetFighter.Tests.PlayMode
         {
             // Enemies are pooled, so a killed one is deactivated rather than
             // destroyed. A stale lock would have the launcher firing at it.
-            groundEnemy.transform.position = cam.ScreenToWorldPoint(
-                new Vector3(Screen.width * 0.75f, Screen.height * 0.5f, 20f));
+            PlaceAtDepth(groundEnemy, RightHand);
             yield return null;
-            Press(new Vector2(Screen.width * 0.75f, Screen.height * 0.5f));
+            Press(RightHand);
             yield return null;
             Assert.IsNotNull(reticle.CurrentTarget);
 
