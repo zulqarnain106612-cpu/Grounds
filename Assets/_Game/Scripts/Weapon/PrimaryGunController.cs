@@ -148,11 +148,22 @@ namespace JetFighter.Weapon
             // A loop, not an `if`: a frame longer than the cooldown (a hitch,
             // or a fire-rate power-up in Phase 3) still owes the player every
             // shot that elapsed during it.
+            //
+            // The first check admits a timer of exactly zero, which is what
+            // makes the opening shot immediate. The carry after a shot has to
+            // be strictly negative to fire again inside the same frame: a
+            // frame that lands exactly on the cadence -- every frame, when the
+            // step is the cooldown -- otherwise pays twice, once for the shot
+            // due at its start and once for the one due at its end. That extra
+            // opening round is one more bullet in the air than the pool was
+            // sized for, and the pool answers by recycling a live one.
+            bool due = cooldownTimer <= 0f;
             int guard = 0;
-            while (cooldownTimer <= 0f && guard++ < 64)
+            while (due && guard++ < 64)
             {
                 Fire();
                 cooldownTimer += cooldown;
+                due = cooldownTimer < 0f;
             }
         }
 

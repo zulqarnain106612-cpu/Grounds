@@ -265,8 +265,14 @@ namespace JetFighter.Tests.EditMode
             // The refusal is meant to be loud -- a silent one is the bug this
             // guards. Expected rather than muted, so the message keeps being
             // asserted instead of being allowed to disappear.
+            // Both problems the catalog reports, in the order Validate walks
+            // them: the per-product faults first, then the cross-tier one. A
+            // duplicated id at a higher tier is also a tier that grants fewer
+            // gems than the one below it.
             LogAssert.Expect(LogType.Error,
                 new Regex(@"\[IAPManager\] catalog problem: .*duplicate product id"));
+            LogAssert.Expect(LogType.Error,
+                new Regex(@"\[IAPManager\] catalog problem: tier .* grants fewer gems than"));
             Assert.IsFalse(fresh.Initialize(new FakeStore(), new Wallet()));
 
             UnityEngine.Object.DestroyImmediate(freshRoot);

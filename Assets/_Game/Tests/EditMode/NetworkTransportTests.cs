@@ -180,17 +180,27 @@ namespace JetFighter.Tests.EditMode
         [Test]
         public void LossIsDeterministicRatherThanRandom()
         {
-            // A flaky test is worse than no test. "Every third packet"
-            // exercises the same code path as "33% loss" without the flake.
+            // A flaky test is worse than no test: the same packets are lost on
+            // every run. The dropped slot rotates within the cycle rather than
+            // sitting still -- a fixed slot aliases with an interleaved sender,
+            // and one stream then loses every packet while the counter reports
+            // the configured rate. Over a whole cycle the rate is exact, so the
+            // window here is a multiple of one.
             (LocalLoopbackTransport host, LocalLoopbackTransport guest) = LocalLoopbackTransport.CreatePair();
             host.LossRate = 0.5f;
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 12; i++)
             {
                 host.SendState(Payload(i.ToString()));
             }
-            Assert.AreEqual(5, host.DroppedByLoss);
-            Assert.AreEqual(5, guest.PendingCount);
+            Assert.AreEqual(6, host.DroppedByLoss);
+            Assert.AreEqual(6, guest.PendingCount);
+
+            // The same packets, not merely the same count.
+            var arrived = new List<string>();
+            guest.OnStateReceived += p => arrived.Add(Text(p));
+            guest.Pump();
+            CollectionAssert.AreEqual(new[] { "0", "1", "4", "5", "8", "9" }, arrived);
         }
 
         [Test]
