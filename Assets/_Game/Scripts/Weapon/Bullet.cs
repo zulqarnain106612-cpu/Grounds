@@ -14,14 +14,25 @@ namespace JetFighter.Weapon
     /// is fired, not when it lands.
     ///
     /// Returning to the pool is this class's own responsibility because it is
-    /// the only thing that knows the shot is over. Leaving it to the gun would
-    /// mean the gun tracking every bullet in flight.
+    /// the only thing that knows the shot is over.
+    ///
+    /// The bullet does not advance itself. Whatever fired it calls Step with
+    /// the same deltaTime it was ticked with, so the shot and the gun that
+    /// fired it share one clock -- a bullet reading Time.deltaTime while the
+    /// gun ran on a simulated step would outlive every soak.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     public class Bullet : MonoBehaviour
     {
         /// <summary>Called when the bullet is finished. The pool's Release.</summary>
         public System.Action<GameObject> OnFinished;
+
+        // Float subtraction does not land on zero: a 0.5s lifetime minus five
+        // 0.1s steps leaves a few billionths behind, so a lifetime consumed
+        // exactly would survive one step more than it should. One step late is
+        // one round the pool does not have back yet, which is the difference
+        // between a bounded pool and a live bullet being stolen out of it.
+        private const float LifetimeEpsilon = 1e-4f;
 
         private float damage;
         private float speed;
@@ -47,11 +58,6 @@ namespace JetFighter.Weapon
             spent = false;
         }
 
-        private void Update()
-        {
-            Step(Time.deltaTime);
-        }
-
         /// <summary>
         /// Advances the bullet and expires it when its lifetime runs out.
         /// Takes deltaTime so a soak can run in simulated time.
@@ -68,7 +74,7 @@ namespace JetFighter.Weapon
             }
             transform.position += transform.forward * (speed * deltaTime);
             lifetimeRemaining -= deltaTime;
-            if (lifetimeRemaining <= 0f)
+            if (lifetimeRemaining <= LifetimeEpsilon)
             {
                 Finish();
             }
