@@ -116,6 +116,12 @@ namespace JetFighter.Weapon
         {
             if (!autoFire)
             {
+                // Firing is off, but rounds already in the air still have to
+                // travel and expire. Bullets do not advance themselves any
+                // more, so returning here would strand every one of them: they
+                // would hang in place and never come back to the pool, and the
+                // gun would starve the moment firing resumed.
+                StepLiveProjectiles(Time.deltaTime);
                 return;
             }
             Tick(Time.deltaTime);
