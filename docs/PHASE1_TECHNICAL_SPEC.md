@@ -153,7 +153,7 @@ Trunk-based, one branch per cell, squash-merged to `main`, each ending in a `kno
   "meta": {"schema_version":"1.1.0","session_id":"<uuid>","tick":<n>,"phase":"1","timestamp_utc":"<iso>"},
   "intent": {"action":"knowledge_update","domain":"player","priority":5},
   "payload": {"data": null, "knowledge_op": {
-    "op":"add_node","id":"phase1_jet_flight_rigidbody","type":"system",
+    "op":"add_node","id":"phase1_player_flight_rigidbody","type":"system",
     "label":"Jet Flight Rigidbody Controller","tags":["player","physics","phase1"],
     "phase":["1"],"symbols":["JetController","JetFlightConfig"]
   }}

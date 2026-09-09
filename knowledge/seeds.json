@@ -64,7 +64,7 @@
       "label": "Unity C# Test Workflow (EditMode + PlayMode)",
       "tags": ["ci", "phase0", "cycle0", "harness", "build_pipeline"],
       "phase": ["0"],
-      "symbols": ["ScaffoldSmokeTest", "ScaffoldPlayModeTest"]
+      "symbols": []
     },
     {
       "id": "phase0_knowledge_base_seeds_layer",
@@ -81,6 +81,14 @@
       "tags": ["build_pipeline", "phase1", "cycle0", "harness", "ios"],
       "phase": ["0", "1"],
       "symbols": ["QualityTierManager", "DetectTier", "ApplySettings"]
+    },
+    {
+      "id": "phase1_player_flight_rigidbody",
+      "type": "system",
+      "label": "Jet Flight Rigidbody Controller (unconstrained)",
+      "tags": ["player", "physics", "phase1"],
+      "phase": ["1"],
+      "symbols": ["JetController", "JetFlightConfig", "ComputeAcceleration", "ComputeTargetBankAngle", "StepTowardBank"]
     }
   ],
   "edges": [
@@ -112,6 +120,9 @@
     {"from": "phase0_ci_unity_test_workflow", "to": "phase1_build_ios_scaffold", "kind": "depends_on"},
     {"from": "phase0_knowledge_base_seeds_layer", "to": "domain:knowledge_base", "kind": "delivers"},
     {"from": "phase1_build_ios_scaffold", "to": "cycle:0", "kind": "part_of"},
+    {"from": "phase1_player_flight_rigidbody", "to": "cycle:1", "kind": "part_of"},
+    {"from": "phase1_player_flight_rigidbody", "to": "domain:player", "kind": "delivers"},
+    {"from": "phase1_player_flight_rigidbody", "to": "phase1_build_ios_scaffold", "kind": "depends_on"},
     {"from": "phase1_build_ios_scaffold", "to": "domain:build_pipeline", "kind": "delivers"}
   ]
 }
