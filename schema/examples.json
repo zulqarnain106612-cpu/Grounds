@@ -413,7 +413,7 @@
         "data": null,
         "ci_op": {
           "op": "status",
-          "workflow": "enforce.yml",
+          "pr": 10,
           "limit": 5,
           "remote_only": true,
           "wait": false
@@ -463,6 +463,31 @@
           "op": "dispatch",
           "workflow": "manifest.yml",
           "ref": "main",
+          "remote_only": true,
+          "wait": false
+        }
+      }
+    },
+    "ci_logs": {
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 19,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:19Z"
+      },
+      "intent": {
+        "action": "ci_logs",
+        "domain": "ci",
+        "priority": 5
+      },
+      "payload": {
+        "data": null,
+        "ci_op": {
+          "op": "logs",
+          "pr": 10,
+          "log_tail_lines": 12,
+          "log_offset": 17,
           "remote_only": true,
           "wait": false
         }
