@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-09T01:30:18.140484Z",
+  "updated_at": "2026-09-09T01:32:42.043605Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -42,6 +42,86 @@
       "file": "Assets/_Game/Scripts/Build/QualityTierManager.cs",
       "line": 68,
       "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "EnemyController",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyController.cs",
+      "line": 14,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "Awake",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyController.cs",
+      "line": 33,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "Update",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyController.cs",
+      "line": 38,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "Step",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyController.cs",
+      "line": 47,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "EnemyDef",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyDef.cs",
+      "line": 14,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "EnemyHealth",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyHealth.cs",
+      "line": 16,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "Awake",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyHealth.cs",
+      "line": 47,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "ResetHealth",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyHealth.cs",
+      "line": 57,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "ApplyDamage",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyHealth.cs",
+      "line": 62,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "Die",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyHealth.cs",
+      "line": 86,
+      "namespace": "JetFighter.Enemy",
       "tags": []
     },
     {
@@ -106,6 +186,30 @@
       "file": "Assets/_Game/Scripts/Physics/PlaneConstraint.cs",
       "line": 106,
       "namespace": "JetFighter.Physics",
+      "tags": []
+    },
+    {
+      "name": "IPlayerStats",
+      "kind": "interface",
+      "file": "Assets/_Game/Scripts/Player/IPlayerStats.cs",
+      "line": 25,
+      "namespace": "JetFighter.Player",
+      "tags": []
+    },
+    {
+      "name": "DefaultPlayerStats",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Player/IPlayerStats.cs",
+      "line": 42,
+      "namespace": "JetFighter.Player",
+      "tags": []
+    },
+    {
+      "name": "DefaultPlayerStats",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Player/IPlayerStats.cs",
+      "line": 46,
+      "namespace": "JetFighter.Player",
       "tags": []
     },
     {
@@ -186,6 +290,574 @@
       "file": "Assets/_Game/Scripts/Player/JetFlightConfig.cs",
       "line": 13,
       "namespace": "JetFighter.Player",
+      "tags": []
+    },
+    {
+      "name": "IDamageable",
+      "kind": "interface",
+      "file": "Assets/_Game/Scripts/Shared/IDamageable.cs",
+      "line": 15,
+      "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
+      "name": "ObjectPool",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
+      "line": 19,
+      "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
+      "name": "ObjectPool",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
+      "line": 38,
+      "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
+      "name": "Prewarm",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
+      "line": 49,
+      "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
+      "name": "Get",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
+      "line": 64,
+      "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
+      "name": "if",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
+      "line": 71,
+      "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
+      "name": "Release",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
+      "line": 92,
+      "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
+      "name": "RemoveFromLive",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
+      "line": 103,
+      "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
+      "name": "EnemyHealthBarUI",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 20,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "OnEnable",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 82,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "OnDisable",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 88,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "Subscribe",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 93,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "Unsubscribe",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 109,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "Refresh",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 120,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "HandleDeath",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 136,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "LateUpdate",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 144,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "ColorFor",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 169,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "ITargetInput",
+      "kind": "interface",
+      "file": "Assets/_Game/Scripts/UI/Input/ITargetInput.cs",
+      "line": 11,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "JoystickInput",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/UI/Input/JoystickInput.cs",
+      "line": 16,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "GetNormalizedVector",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/JoystickInput.cs",
+      "line": 54,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "OnPointerDown",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/JoystickInput.cs",
+      "line": 59,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "OnDrag",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/JoystickInput.cs",
+      "line": 75,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "OnPointerUp",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/JoystickInput.cs",
+      "line": 87,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "SetOffset",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/JoystickInput.cs",
+      "line": 97,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "IsInRegion",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/JoystickInput.cs",
+      "line": 116,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "Normalize",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/JoystickInput.cs",
+      "line": 126,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "MissileTriggerButton",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/UI/Input/MissileTriggerButton.cs",
+      "line": 15,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "OnPointerDown",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/MissileTriggerButton.cs",
+      "line": 39,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "Press",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/MissileTriggerButton.cs",
+      "line": 45,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "PlayerInputRouter",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/UI/Input/PlayerInputRouter.cs",
+      "line": 19,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "Update",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/PlayerInputRouter.cs",
+      "line": 42,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "ScreenRegions",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/UI/Input/ScreenRegions.cs",
+      "line": 17,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "IsInLeft",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/ScreenRegions.cs",
+      "line": 27,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "IsInRight",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/ScreenRegions.cs",
+      "line": 37,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "IsOnScreen",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/ScreenRegions.cs",
+      "line": 53,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "TargetReticleInput",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/UI/Input/TargetReticleInput.cs",
+      "line": 21,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "OnPointerDown",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/TargetReticleInput.cs",
+      "line": 71,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "OnDrag",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/TargetReticleInput.cs",
+      "line": 81,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "OnPointerUp",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/TargetReticleInput.cs",
+      "line": 92,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "Aim",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/TargetReticleInput.cs",
+      "line": 109,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "SetTarget",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/TargetReticleInput.cs",
+      "line": 128,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "ClearTarget",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/TargetReticleInput.cs",
+      "line": 139,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "Update",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/TargetReticleInput.cs",
+      "line": 149,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "IsInRegion",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/Input/TargetReticleInput.cs",
+      "line": 164,
+      "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "Bullet",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
+      "line": 21,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Launch",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
+      "line": 42,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Update",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
+      "line": 50,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Step",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
+      "line": 63,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "OnTriggerEnter",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
+      "line": 77,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "HandleHit",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
+      "line": 87,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Finish",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
+      "line": 108,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "MissileController",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Weapon/MissileController.cs",
+      "line": 20,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Update",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/MissileController.cs",
+      "line": 56,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Step",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/MissileController.cs",
+      "line": 65,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Detonate",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/MissileController.cs",
+      "line": 108,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Finish",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/MissileController.cs",
+      "line": 123,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "MissileLauncher",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
+      "line": 20,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Awake",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
+      "line": 77,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "EnsurePool",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
+      "line": 82,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Update",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
+      "line": 92,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Tick",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
+      "line": 103,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Fire",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
+      "line": 116,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "ReleaseMissile",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
+      "line": 154,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "PrimaryGunController",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
+      "line": 15,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Awake",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
+      "line": 83,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "EnsurePool",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
+      "line": 93,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Update",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
+      "line": 103,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Tick",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
+      "line": 122,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "ReleaseProjectile",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
+      "line": 147,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Fire",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
+      "line": 157,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "WeaponBase",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Weapon/WeaponBase.cs",
+      "line": 11,
+      "namespace": "JetFighter.Weapon",
       "tags": []
     }
   ]
