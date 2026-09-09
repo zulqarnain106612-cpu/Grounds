@@ -155,10 +155,21 @@ def test_the_licence_gate_fails_rather_than_skips():
 
 
 def test_the_results_gate_runs_even_when_the_runner_step_failed():
-    """`continue-on-error` on the runner is deliberate: without it a failing
-    suite short-circuits before the gate can say *why* the job is red."""
+    """The gate must still run when the runner fails, so a red job says *why*.
+
+    This was originally `continue-on-error: true` on the runner, which had a
+    worse side effect: a step that does not fail is absent from
+    `gh run view --log-failed`, so an activation or licence error was
+    invisible to the two-line probe and could only be found by dumping the
+    whole log. `if: always()` on the gate keeps the guarantee without hiding
+    the cause, so the runner is now allowed to fail normally.
+    """
     text = WORKFLOW.read_text()
-    assert "continue-on-error: true" in text
+    assert "if: always()" in text
+    assert "continue-on-error" not in text, (
+        "a non-failing runner step is omitted from --log-failed, which hides "
+        "the reason the job is red"
+    )
     assert "scripts/check_unity_results.py" in text
     assert "--min-tests 1" in text
 
