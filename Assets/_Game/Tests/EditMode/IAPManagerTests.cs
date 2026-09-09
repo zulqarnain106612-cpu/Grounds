@@ -92,8 +92,8 @@ namespace JetFighter.Tests.EditMode
             {
                 Directory.Delete(saveDirectory, true);
             }
-            Object.DestroyImmediate(root);
-            Object.DestroyImmediate(catalog);
+            UnityEngine.Object.DestroyImmediate(root);
+            UnityEngine.Object.DestroyImmediate(catalog);
         }
 
         [Test]
@@ -171,7 +171,7 @@ namespace JetFighter.Tests.EditMode
             Assert.AreEqual(100, wallet.GetBalance(CurrencyType.Gems));
             Assert.AreEqual(1, fresh.DuplicateTransactions);
 
-            Object.DestroyImmediate(freshRoot);
+            UnityEngine.Object.DestroyImmediate(freshRoot);
         }
 
         [Test]
@@ -242,7 +242,7 @@ namespace JetFighter.Tests.EditMode
             Assert.IsFalse(lonely.PurchaseProduct(SmallPack));
             Assert.AreEqual("store not ready", reason);
 
-            Object.DestroyImmediate(lonelyRoot);
+            UnityEngine.Object.DestroyImmediate(lonelyRoot);
         }
 
         [Test]
@@ -261,7 +261,7 @@ namespace JetFighter.Tests.EditMode
             fresh.Catalog = catalog;
             Assert.IsFalse(fresh.Initialize(new FakeStore(), new Wallet()));
 
-            Object.DestroyImmediate(freshRoot);
+            UnityEngine.Object.DestroyImmediate(freshRoot);
         }
 
         [Test]
@@ -279,7 +279,7 @@ namespace JetFighter.Tests.EditMode
             fresh.Catalog = catalog;
             Assert.IsFalse(fresh.Initialize(null, new Wallet()));
             Assert.IsFalse(fresh.Initialize(new FakeStore(), null));
-            Object.DestroyImmediate(freshRoot);
+            UnityEngine.Object.DestroyImmediate(freshRoot);
         }
 
         [Test]
