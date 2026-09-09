@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-09T07:27:31.432225Z",
+  "updated_at": "2026-09-09T08:21:21.618318Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -42,6 +42,86 @@
       "file": "Assets/_Game/Scripts/Build/QualityTierManager.cs",
       "line": 68,
       "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "EnemyController",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyController.cs",
+      "line": 14,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "Awake",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyController.cs",
+      "line": 33,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "Update",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyController.cs",
+      "line": 38,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "Step",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyController.cs",
+      "line": 47,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "EnemyDef",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyDef.cs",
+      "line": 14,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "EnemyHealth",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyHealth.cs",
+      "line": 16,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "Awake",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyHealth.cs",
+      "line": 47,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "ResetHealth",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyHealth.cs",
+      "line": 57,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "ApplyDamage",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyHealth.cs",
+      "line": 62,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "Die",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Enemy/EnemyHealth.cs",
+      "line": 86,
+      "namespace": "JetFighter.Enemy",
       "tags": []
     },
     {
@@ -218,6 +298,14 @@
       "file": "Assets/_Game/Scripts/Player/JetFlightConfig.cs",
       "line": 13,
       "namespace": "JetFighter.Player",
+      "tags": []
+    },
+    {
+      "name": "IDamageable",
+      "kind": "interface",
+      "file": "Assets/_Game/Scripts/Shared/IDamageable.cs",
+      "line": 15,
+      "namespace": "JetFighter.Shared",
       "tags": []
     },
     {
