@@ -83,17 +83,24 @@ namespace JetFighter.Network
 
         /// <summary>
         /// Wires two transports together. Both are connected afterwards, so a
-        /// test does not have to remember to call Connect on each.
+        /// test does not have to remember to call Connect on each. Pass
+        /// connect: false when the caller needs to subscribe to
+        /// OnStateChanged before the link comes up -- a transport handed back
+        /// already Connected never raises the transition its owner is
+        /// waiting for.
         /// </summary>
         public static (LocalLoopbackTransport host, LocalLoopbackTransport guest) CreatePair(
-            string hostId = "host", string guestId = "guest")
+            string hostId = "host", string guestId = "guest", bool connect = true)
         {
             var host = new LocalLoopbackTransport(hostId);
             var guest = new LocalLoopbackTransport(guestId);
             host.peer = guest;
             guest.peer = host;
-            host.Connect();
-            guest.Connect();
+            if (connect)
+            {
+                host.Connect();
+                guest.Connect();
+            }
             return (host, guest);
         }
 
@@ -115,11 +122,22 @@ namespace JetFighter.Network
             }
 
             sendCounter++;
-            if (LossRate > 0f && sendCounter % Math.Max(2, (int)Math.Round(1f / LossRate)) == 0)
+            if (DropsToLoss(sendCounter))
             {
                 DroppedByLoss++;
                 // Reported as sent: a real lossy link does not tell the sender.
                 // Code that treats a false return as "retry" would spin.
+                return true;
+            }
+
+            // The far end being down is not the sender's business either: a
+            // peer that stopped listening looks exactly like a link that
+            // stopped delivering. Enqueuing anyway would let a disconnected
+            // guest keep applying host state -- the one thing an interruption
+            // test exists to catch, and the failure that reads as a working
+            // game until the players compare screens.
+            if (peer.state != TransportState.Connected)
+            {
                 return true;
             }
 
@@ -178,6 +196,28 @@ namespace JetFighter.Network
             {
                 SetState(TransportState.Disconnected);
             }
+        }
+
+        /// <summary>
+        /// Whether this packet is discarded by <see cref="LossRate"/>.
+        ///
+        /// The phase rotates with the cycle instead of dropping a fixed slot.
+        /// A plain "every Nth packet" aliases with the caller's send pattern:
+        /// two 20Hz senders sharing one link alternate, so at 50% loss one of
+        /// them lands on the dropped slot every single time and never gets a
+        /// packet through -- 100% loss for that stream while the counter says
+        /// 50%. Rotating gives each interleaved stream the configured rate and
+        /// never drops the same one twice running, and it is still exactly
+        /// reproducible: a flaky soak is worse than no soak.
+        /// </summary>
+        private bool DropsToLoss(int counter)
+        {
+            if (LossRate <= 0f)
+            {
+                return false;
+            }
+            int period = Math.Max(2, (int)Math.Round(1f / LossRate));
+            return counter % period == counter / period % period;
         }
 
         private void SetState(TransportState next)
