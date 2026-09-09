@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
-using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.TestTools;
 using JetFighter.Economy;
@@ -263,7 +262,15 @@ namespace JetFighter.Tests.EditMode
             fresh.Catalog = catalog;
             // Refusing loudly is the point of this path, and the test runner
             // fails a test on any Debug.LogError it was not told to expect.
-            LogAssert.Expect(LogType.Error, new Regex("duplicate product id"));
+            // Initialize logs one error per problem, and this catalog has more
+            // than one (a duplicate id, and a tier that grants fewer gems than
+            // the tier below it), so the expectations come from the validator
+            // rather than being spelled out and going stale.
+            foreach (string problem in catalog.Validate())
+            {
+                LogAssert.Expect(LogType.Error, $"[IAPManager] catalog problem: {problem}");
+            }
+            Assert.IsNotEmpty(catalog.Validate(), "the catalog under test must be invalid");
             Assert.IsFalse(fresh.Initialize(new FakeStore(), new Wallet()));
 
             UnityEngine.Object.DestroyImmediate(freshRoot);
