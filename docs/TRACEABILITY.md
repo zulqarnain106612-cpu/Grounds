@@ -79,9 +79,9 @@ animates and colours correctly, missile locks and destroys a ground target.
 | [x] | `phase3/player-stats-runtime` | player | Roadmap §2 `asset` — power-ups mutate player stats | — | Stat changes observable at runtime | `phase3_player_stats_runtime` |
 | [x] | `phase3/powerup-core` | asset | Roadmap §2 `asset` — stacking with a hard cap | **ADR-003** | Multiplicative stacking never exceeds the cap | `phase3_powerup_core` |
 | [x] | `phase3/enemy-drop-tables` | enemy | Roadmap §2 `asset` — weighted drops, data-only balancing | — | Drop weights are retunable with no code change | `phase3_enemy_drop_tables` |
-| [ ] | `phase3/difficulty-scaling` | enemy | Roadmap §4 — bounded DDA | — | Time-to-kill never exceeds the ceiling across a `PlayerPowerLevel` sweep | `phase3_difficulty_scaling` |
-| [ ] | `phase3/enemy-spawner-waves` | enemy | Roadmap §4 — archetype variety by threshold | — | Archetypes unlock at the configured thresholds | `phase3_enemy_spawner_waves` |
-| [ ] | `phase3/economy-coins` | scene | Roadmap §5 — currency-generic `Wallet` | **ADR-004** | Adding a third currency requires no `Wallet` change | `phase3_economy_coins` |
+| [x] | `phase3/difficulty-scaling` | enemy | Roadmap §4 — bounded DDA | — | Time-to-kill never exceeds the ceiling across a `PlayerPowerLevel` sweep | `phase3_difficulty_scaling` |
+| [x] | `phase3/enemy-spawner-waves` | enemy | Roadmap §4 — archetype variety by threshold | — | Archetypes unlock at the configured thresholds | `phase3_enemy_spawner_waves` |
+| [x] | `phase3/economy-coins` | scene | Roadmap §5 — currency-generic `Wallet` | **ADR-004** | Adding a third currency requires no `Wallet` change | `phase3_economy_coins` |
 
 **Cycle gate:** a 5+ minute solo run; power-ups visibly change behaviour;
 difficulty escalates and stays beatable.
@@ -90,22 +90,25 @@ difficulty escalates and stays beatable.
 
 | Done | Branch | Domain | Requirement | ADR | Verified by | Seed node |
 |---|---|---|---|---|---|---|
-| [ ] | `phase4/network-abstraction` | network | Roadmap §6 — `INetworkTransport` seam | **ADR-005** | Loopback transport drives gameplay with no GameKit present | `phase4_network_abstraction` |
-| [ ] | `phase4/player-state-sync` | network | Roadmap §6 — position/fire sync | ADR-005 | Passes over loopback before any device is involved | `phase4_player_state_sync` |
-| [ ] | `phase4/host-authoritative-enemies` | enemy | Roadmap §6 — one authority for enemy state | ADR-005 | No enemy-HP divergence over loopback | `phase4_host_authoritative_enemies` |
-| [ ] | `phase4/gamekit-transport` | network | Roadmap §6 — GameKit as an implementation, not a dependency | ADR-005 | **Zero gameplay-code changes** when swapping transport — this is the abstraction's own test | `phase4_gamekit_transport` |
-| [ ] | `phase4/network-soak-test` | network | Roadmap §11 R4 | ADR-005 | Two physical devices, full co-op run, no visible desync; brief interruption crashes neither client | `phase4_network_soak_test` |
+| [x] | `phase4/network-abstraction` | network | Roadmap §6 — `INetworkTransport` seam | **ADR-005** | Loopback transport drives gameplay with no GameKit present | `phase4_network_abstraction` |
+| [x] | `phase4/player-state-sync` | network | Roadmap §6 — position/fire sync | ADR-005 | Passes over loopback before any device is involved | `phase4_player_state_sync` |
+| [x] | `phase4/host-authoritative-enemies` | enemy | Roadmap §6 — one authority for enemy state | ADR-005 | No enemy-HP divergence over loopback | `phase4_host_authoritative_enemies` |
+| [x] | `phase4/gamekit-transport` | network | Roadmap §6 — GameKit as an implementation, not a dependency | ADR-005 | **Zero gameplay-code changes** when swapping transport — this is the abstraction's own test | `phase4_gamekit_transport` |
+| [ ] | `phase4/network-soak-test` | network | Roadmap §11 R4 | ADR-005 | Two physical devices, full co-op run, no visible desync; brief interruption crashes neither client. **Deliberately still open:** the automated half shipped (latency, jitter, 50% loss, 20 interruptions, a 5-minute run with divergence checked every frame — `NetworkSoakTests`), and the device half is `docs/DEVICE_SOAK_PROCEDURE.md`, which needs two provisioned devices and `UNITY_LICENSE`. Ticking on the automated half alone would be the green lie Cycle 0 was built to prevent | `phase4_network_soak_test` |
 
 **Cycle gate:** two physical iOS devices complete a co-op run with no visible
-enemy-health desync.
+enemy-health desync. **Not yet met** — every cell below it is closed and the
+soak harness exists, but the gate itself is a device observation. See
+`docs/DEVICE_SOAK_PROCEDURE.md` for what is automated, what only devices can
+show, and the evidence a passing run has to produce.
 
 ## Cycle 5 — Economy and monetization  *(risk R6)*
 
 | Done | Branch | Domain | Requirement | ADR | Verified by | Seed node |
 |---|---|---|---|---|---|---|
-| [ ] | `phase5/product-catalog` | scene | Roadmap §5 — data-only pricing | ADR-004 | Price changes touch no code | `phase5_product_catalog` |
-| [ ] | `phase5/iap-integration` | scene | Roadmap §5 — IAP ladder | ADR-004 | Sandbox purchase credits gems via the Phase 3 `Wallet` | `phase5_iap_integration` |
-| [ ] | `phase5/store-ui` | ui | Roadmap §5 — dual-currency store | ADR-004 | Both currencies purchase and deduct correctly | `phase5_store_ui` |
+| [x] | `phase5/product-catalog` | scene | Roadmap §5 — data-only pricing | ADR-004 | Price changes touch no code | `phase5_product_catalog` |
+| [x] | `phase5/iap-integration` | scene | Roadmap §5 — IAP ladder | ADR-004 | Sandbox purchase credits gems via the Phase 3 `Wallet` | `phase5_iap_integration` |
+| [x] | `phase5/store-ui` | ui | Roadmap §5 — dual-currency store | ADR-004 | Both currencies purchase and deduct correctly | `phase5_store_ui` |
 | [ ] | `phase5/ads-integration` | scene | Roadmap §5 — rewarded + interstitial, remove-ads IAP | — | Remove-ads suppresses interstitials permanently | `phase5_ads_integration` |
 | [ ] | `phase5/compliance-odds-ui` | ui | Roadmap §5 — Guideline 3.1.1 slot | **ADR-006** | Renders correctly in a test harness while dormant | `phase5_compliance_odds_ui` |
 
