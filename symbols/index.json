@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-09T08:58:05.708410Z",
+  "updated_at": "2026-09-09T09:45:09.852633Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -656,7 +656,7 @@
       "name": "Bullet",
       "kind": "class",
       "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
-      "line": 21,
+      "line": 25,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -664,15 +664,7 @@
       "name": "Launch",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
-      "line": 42,
-      "namespace": "JetFighter.Weapon",
-      "tags": []
-    },
-    {
-      "name": "Update",
-      "kind": "method",
-      "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
-      "line": 50,
+      "line": 46,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -680,7 +672,7 @@
       "name": "Step",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
-      "line": 63,
+      "line": 62,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -688,7 +680,7 @@
       "name": "OnTriggerEnter",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
-      "line": 77,
+      "line": 76,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -696,7 +688,7 @@
       "name": "HandleHit",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
-      "line": 87,
+      "line": 86,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -704,7 +696,7 @@
       "name": "Finish",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
-      "line": 108,
+      "line": 107,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -808,7 +800,7 @@
       "name": "PrimaryGunController",
       "kind": "class",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 15,
+      "line": 16,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -816,7 +808,7 @@
       "name": "Awake",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 85,
+      "line": 95,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -824,7 +816,7 @@
       "name": "EnsurePool",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 95,
+      "line": 105,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -832,7 +824,7 @@
       "name": "Update",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 105,
+      "line": 115,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -840,7 +832,7 @@
       "name": "Tick",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 124,
+      "line": 140,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -848,7 +840,15 @@
       "name": "ReleaseProjectile",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 149,
+      "line": 166,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "StepLiveProjectiles",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
+      "line": 193,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -856,7 +856,7 @@
       "name": "Fire",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 159,
+      "line": 212,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
