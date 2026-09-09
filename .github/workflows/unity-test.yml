@@ -126,8 +126,9 @@ jobs:
         with:
           testMode: ${{ matrix.testMode }}
           artifactsPath: ${{ matrix.testMode }}-artifacts
-          # GitHub token for game-ci to fetch CLI releases. Without this,
-          # the fetch fails with 403 when resolving the latest CLI version.
+          # Pin CLI version to avoid download failures on unreleased versions.
+          # githubToken provided for CLI release fetching (latest may need API access).
+          cliVersion: v0.1.40
           githubToken: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-python@v5
