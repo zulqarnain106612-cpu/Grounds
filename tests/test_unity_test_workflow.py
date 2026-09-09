@@ -155,28 +155,40 @@ def test_the_licence_gate_fails_rather_than_skips():
 
 
 def test_the_results_gate_runs_even_when_the_runner_step_failed():
-    """The gate must still run after a failing runner, so it can say *why* the
-    job is red rather than letting the run short-circuit.
+    """The gate must still run when the runner fails, so a red job says *why*.
 
-    This originally banned `continue-on-error: true` on the runner, because
-    continue-on-error marks the step *successful* and a successful step is
-    absent from the failed-step log -- which is where a licence activation
-    error would have to appear for anyone to see it.
+    The original form of this asserted `continue-on-error` was absent from the
+    runner step, because a step that does not fail is omitted from
+    `gh run view --log-failed` and so hides the reason the job is red.
 
-    The runner carries continue-on-error again on purpose: game-ci fails while
-    posting its own check run even when the suites ran, so letting it fail the
-    job reported a green run as red. The readability guarantee the ban existed
-    for is kept by an explicit annotation step instead, and that is what is
-    asserted here."""
-    text = WORKFLOW.read_text()
-    assert "if: always()" in text
-    assert "scripts/check_unity_results.py" in text
-    assert "--min-tests" in text
-    # The replacement for the ban: a runner that did not succeed must still
-    # announce itself as an annotation, so --log-failed shows the cause.
-    assert "steps.runner.outcome != 'success'" in text, \
-        "a swallowed runner step hides the reason it failed"
-    assert "::error::game-ci/unity-test-runner exited" in text
+    The runner step now carries `continue-on-error: true` again, deliberately:
+    game-ci/unity-test-runner fails while *posting* its check run even when the
+    suites themselves ran, and letting that fail the job made a green test run
+    report red. The visibility guarantee the original assertion protected is
+    kept by other means instead, and that is what is asserted here:
+
+      - the gate step is `if: always()`, so it runs regardless, and
+      - an explicit `if: always() && steps.runner.outcome != 'success'` step
+        emits `::error::` annotations naming the runner's outcome, which is
+        what puts the cause back in front of the two-line probe.
+    """
+    # Comments only, stripped: the comment explaining the continue-on-error
+    # trade-off otherwise trips the substring checks below -- the same trap
+    # PR #16 fixed for the C# unconstrained-flight assertion.
+    code = "\n".join(
+        line for line in WORKFLOW.read_text().splitlines()
+        if not line.lstrip().startswith("#")
+    )
+    assert "if: always()" in code
+    assert "scripts/check_unity_results.py" in code
+    assert "--min-tests" in code
+    # The replacement for the old continue-on-error ban: a runner that never
+    # started must still announce itself as an annotation.
+    assert "steps.runner.outcome != 'success'" in code, (
+        "without this step a continue-on-error runner failure is invisible to "
+        "--log-failed, which is the whole reason the ban existed"
+    )
+    assert "::error::game-ci/unity-test-runner exited" in code
 
 
 def test_both_test_modes_are_covered():
