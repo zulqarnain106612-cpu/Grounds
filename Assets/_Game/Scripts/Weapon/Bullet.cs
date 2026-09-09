@@ -27,6 +27,13 @@ namespace JetFighter.Weapon
         /// <summary>Called when the bullet is finished. The pool's Release.</summary>
         public System.Action<GameObject> OnFinished;
 
+        // Float subtraction does not land on zero: a 0.5s lifetime minus five
+        // 0.1s steps leaves a few billionths behind, so a lifetime consumed
+        // exactly would survive one step more than it should. One step late is
+        // one round the pool does not have back yet, which is the difference
+        // between a bounded pool and a live bullet being stolen out of it.
+        private const float LifetimeEpsilon = 1e-4f;
+
         private float damage;
         private float speed;
         private float lifetimeRemaining;
@@ -67,7 +74,7 @@ namespace JetFighter.Weapon
             }
             transform.position += transform.forward * (speed * deltaTime);
             lifetimeRemaining -= deltaTime;
-            if (lifetimeRemaining <= 0f)
+            if (lifetimeRemaining <= LifetimeEpsilon)
             {
                 Finish();
             }

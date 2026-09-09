@@ -249,6 +249,30 @@
       "tags": ["network", "phase4", "adr-005"],
       "phase": ["4"],
       "symbols": ["NetworkedPlayerState", "NetworkMessage", "PlayerStatePayload", "Broadcast"]
+    },
+    {
+      "id": "phase5_iap_integration",
+      "type": "system",
+      "label": "Unity IAP + Gem Crediting (idempotent per transaction)",
+      "tags": ["scene", "economy", "monetization", "phase5", "adr-004"],
+      "phase": ["5"],
+      "symbols": ["IAPManager", "ProductCatalog", "IStoreBackend", "Credit"]
+    },
+    {
+      "id": "phase5_product_catalog",
+      "type": "system",
+      "label": "IAP Product Catalog + Store Items (data-only pricing)",
+      "tags": ["scene", "economy", "phase5", "adr-004"],
+      "phase": ["5"],
+      "symbols": ["ProductCatalog", "StoreItemDef", "Validate", "GemsFor"]
+    },
+    {
+      "id": "phase5_store_ui",
+      "type": "system",
+      "label": "Dual-Currency Store (one purchase path)",
+      "tags": ["ui", "economy", "phase5", "adr-004"],
+      "phase": ["5"],
+      "symbols": ["StoreUI", "StoreItemDef", "PurchaseResult", "CanPurchase"]
     }
   ],
   "edges": [
@@ -300,6 +324,15 @@
     {"from": "phase4_host_authoritative_enemies", "to": "cycle:4", "kind": "part_of"},
     {"from": "phase4_gamekit_transport", "to": "cycle:4", "kind": "part_of"},
     {"from": "phase4_network_soak_test", "to": "cycle:4", "kind": "part_of"},
+    {"from": "phase5_product_catalog", "to": "cycle:5", "kind": "part_of"},
+    {"from": "phase5_iap_integration", "to": "cycle:5", "kind": "part_of"},
+    {"from": "phase5_store_ui", "to": "cycle:5", "kind": "part_of"},
+    {"from": "phase5_store_ui", "to": "domain:ui", "kind": "delivers"},
+    {"from": "phase5_store_ui", "to": "phase5_product_catalog", "kind": "depends_on"},
+    {"from": "phase5_iap_integration", "to": "domain:scene", "kind": "delivers"},
+    {"from": "phase5_iap_integration", "to": "phase5_product_catalog", "kind": "depends_on"},
+    {"from": "phase5_product_catalog", "to": "domain:scene", "kind": "delivers"},
+    {"from": "phase5_product_catalog", "to": "phase3_economy_coins", "kind": "depends_on"},
     {"from": "phase4_network_soak_test", "to": "domain:network", "kind": "delivers"},
     {"from": "phase4_network_soak_test", "to": "phase4_gamekit_transport", "kind": "depends_on"},
     {"from": "phase4_gamekit_transport", "to": "domain:network", "kind": "delivers"},
