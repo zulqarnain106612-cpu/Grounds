@@ -95,19 +95,34 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         run: |
           set +e
-          unity-editor -batchmode -nographics -quit \
-            -logfile /tmp/activate.log \
-            -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD"
-          echo "activation exit: $?"
-          if [ -f /root/.local/share/unity3d/Unity/Unity_lic.ulf ]; then
+          # Unity.Licensing.Client, not `unity-editor -username/-password`.
+          # The editor path asks only for assigned seats and dies with
+          # "Found 0 entitlement groups and 0 free entitlements" on an account
+          # that has none. --include-personal is the documented fallback to
+          # Personal Edition in exactly that case, and the editor never passes it.
+          LC=$(find /opt/unity /usr/share/unity3d -name Unity.Licensing.Client -type f 2>/dev/null | head -1)
+          if [ -z "$LC" ]; then
+            LC=$(find / -name Unity.Licensing.Client -type f 2>/dev/null | head -1)
+          fi
+          echo "licensing client: ${LC:-NOT FOUND}"
+          [ -z "$LC" ] && { echo "::error::Unity.Licensing.Client not found in image"; exit 1; }
+
+          "$LC" --activate-all --include-personal \
+            --username "$UNITY_EMAIL" --password "$UNITY_PASSWORD" 2>&1 | tail -30
+          echo "activate exit: ${PIPESTATUS[0]}"
+
+          echo "--- entitlements after activation ---"
+          "$LC" --showEntitlements 2>&1 | tail -20
+
+          if [ -f /root/.local/share/unity3d/Unity/Unity_lic.ulf ] \
+             || ls /usr/share/unity3d/config/*.ulf >/dev/null 2>&1; then
             echo "licence acquired"
             exit 0
           fi
           # Surfaced as annotations so a failure is visible to --log-failed
           # rather than buried in a log the access rules forbid fetching whole.
           echo "::error::Unity activation produced no licence file."
-          grep -iE "licen|error|invalid|denied|token|auth" /tmp/activate.log 2>/dev/null \
-            | tail -8 | sed 's/^/::error::/'
+          "$LC" --showEntitlements 2>&1 | tail -6 | sed 's/^/::error::/'
           exit 1
 
       - name: Run ${{ matrix.testMode }} tests
