@@ -52,7 +52,7 @@ state, not an oversight — the scaffold exists, the gameplay code does not.
 | [x] | `phase1/player-flight-rigidbody` | player | Roadmap §2 `player`, §3.1 — real inertia/drag/banking | — | Inertia and banking validated unconstrained, in isolation | `phase1_player_flight_rigidbody` |
 | [x] | `phase1/physics-plane-constraint` | physics | Roadmap §3.2 — post-solve axis clamp | **ADR-001** | Locked-axis deviation stays within epsilon over a long run | `phase1_physics_plane_constraint` |
 | [x] | `phase1/input-joystick-mapping` | ui | Roadmap §2 `ui` — left-region joystick, no bleed | — | Left-region-only guarantee test; on-device touch test | `phase1_input_joystick_mapping` |
-| [ ] | `phase1/weapon-gun-stub` | weapon | Roadmap §2 `weapon` — pooled 1/sec auto-fire | — | Pool stays bounded; no `Instantiate`/`Destroy` in the fire path | `phase1_weapon_gun_stub` |
+| [x] | `phase1/weapon-gun-stub` | weapon | Roadmap §2 `weapon` — pooled 1/sec auto-fire | — | Pool stays bounded; no `Instantiate`/`Destroy` in the fire path | `phase1_weapon_gun_stub` |
 
 **Cycle gate (roadmap §8):** jet flies under physics, feels right, never
 leaves the locked plane, responsive on-device.

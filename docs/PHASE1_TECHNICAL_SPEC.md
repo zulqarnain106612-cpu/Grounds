@@ -186,7 +186,7 @@ Trunk-based, one branch per cell, squash-merged to `main`, each ending in a `kno
   "meta": {"schema_version":"1.1.0","session_id":"<uuid>","tick":<n>,"phase":"1","timestamp_utc":"<iso>"},
   "intent": {"action":"knowledge_update","domain":"weapon","priority":5},
   "payload": {"data": null, "knowledge_op": {
-    "op":"add_node","id":"phase1_primary_gun_stub","type":"system",
+    "op":"add_node","id":"phase1_weapon_gun_stub","type":"system",
     "label":"Primary Gun (1/sec, pooled)","tags":["weapon","phase1"],
     "phase":["1"],"symbols":["WeaponBase","PrimaryGunController","ObjectPool"]
   }}
