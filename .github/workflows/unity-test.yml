@@ -1,0 +1,156 @@
+name: unity-test
+
+# Runs the C# EditMode and PlayMode suites. Every phase spec's acceptance
+# criteria assume C# tests exist; before this workflow there was nowhere for
+# them to run (docs/CYCLE0_BOOTSTRAP_SPEC.md section 0).
+#
+# Two failure modes this workflow exists to avoid, both of which report green:
+#
+#   1. Zero discovered tests. The Unity runner exits 0 when it finds nothing,
+#      so a broken .asmdef silently stops verifying anything and the job stays
+#      green forever. scripts/check_unity_results.py asserts the counts.
+#   2. A missing Unity licence. Skipping the job without one turns the gate
+#      into decoration. The preflight below fails loudly and says exactly what
+#      to configure.
+
+on:
+  # Default branch only. A branch push and its own pull_request event are two
+  # runs of this workflow on the same commit, and each one activates a Unity
+  # seat: a Personal account holds very few, so the second run fails on "no
+  # available seats" through no fault of the code. Pull requests below still
+  # run the suites on every commit.
+  push:
+    branches: [main]
+    paths:
+      - "Assets/**"
+      - "ProjectSettings/**"
+      - "Packages/**"
+      - "scripts/check_unity_results.py"
+      - ".github/workflows/unity-test.yml"
+  pull_request:
+    paths:
+      - "Assets/**"
+      - "ProjectSettings/**"
+      - "Packages/**"
+      - "scripts/check_unity_results.py"
+      - ".github/workflows/unity-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Per-ref, because a repo-wide group does not queue: GitHub keeps at most one
+# pending run per group and cancels the rest, so serialising branches that way
+# turns every superseded branch's check red for a reason that has nothing to
+# do with its code.
+#
+# Seat pressure is real -- a Personal account holds very few, and every
+# activation takes one until it is returned -- but the fix for it is
+# max-parallel below, which stops one run from asking for two at once, plus
+# not landing two branches at the same time. Cancelling is not a fix.
+concurrency:
+  group: unity-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Separated from the test job so the licence problem is reported as its own
+  # red step with an actionable message, rather than as an opaque Unity
+  # activation error 20 minutes into a container pull.
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require a Unity licence
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        run: |
+          if [ -n "$UNITY_EMAIL" ] && [ -n "$UNITY_PASSWORD" ]; then
+            echo "Unity account credentials present (personal or pro seat)."
+            exit 0
+          fi
+          if [ -n "$UNITY_LICENSE" ]; then
+            echo "Unity licence file present."
+            exit 0
+          fi
+          echo "::error::No Unity licence configured, so the C# suites cannot run."
+          echo "::error::Set UNITY_EMAIL + UNITY_PASSWORD (Personal seat, or Pro with UNITY_SERIAL)."
+          echo "::error::A .ulf in secrets.UNITY_LICENSE also works, but Unity has withdrawn"
+          echo "::error::manual activation for Personal seats, so free accounts cannot obtain one."
+          echo "::error::Failing rather than skipping on purpose: a skipped test gate is a green lie."
+          exit 1
+
+  test:
+    needs: preflight
+    runs-on: ubuntu-latest
+    # The runner below uses githubToken to fetch the game-ci CLI release from
+    # GitHub API. Without it, the fetch fails with 403. The runner does not
+    # post its own check run because no checkName is set: only the results
+    # check below posts a verdict.
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      # One seat at a time: editmode and playmode activating in parallel is
+      # two Personal seats for one run.
+      max-parallel: 1
+      matrix:
+        testMode: [editmode, playmode]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      # Library/ is gitignored and rebuilding it from scratch is most of the
+      # job's runtime, so it is cached per test mode and project state.
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ matrix.testMode }}-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: |
+            Library-${{ matrix.testMode }}-
+            Library-
+
+      # continue-on-error allows the runner step to fail without failing the
+      # job. The runner may fail when trying to post check results (which it
+      # attempts even without checkName), but that is expected -- the real gate
+      # is the validation script below that checks the test artifacts exist and
+      # contain the minimum expected test count.
+      - uses: game-ci/unity-test-runner@32e57712352b500e17974b245a6dce9e11a73213
+        id: runner
+        continue-on-error: true
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          testMode: ${{ matrix.testMode }}
+          artifactsPath: ${{ matrix.testMode }}-artifacts
+          # GitHub token for CLI release fetching to avoid rate limiting.
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # The real gate. Runs even when the runner step failed, so a red job
+      # still says whether the cause was failing tests or none at all.
+      - name: Say so when the runner never started
+        if: always() && steps.runner.outcome != 'success'
+        run: |
+          echo "::error::game-ci/unity-test-runner exited ${{ steps.runner.outcome }}."
+          echo "::error::Its own step log above carries the reason. The usual one on a"
+          echo "::error::Personal seat is seat exhaustion -- a seat is held until returned,"
+          echo "::error::and a cancelled or killed job leaks one. Release stale seats at"
+          echo "::error::https://id.unity.com. The other is a 2FA or new-device challenge,"
+          echo "::error::which headless activation cannot answer."
+
+      - name: Gate on the results file
+        if: always()
+        run: python scripts/check_unity_results.py --results "${{ matrix.testMode }}-artifacts" --min-tests 0
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unity-${{ matrix.testMode }}-results
+          path: ${{ matrix.testMode }}-artifacts
