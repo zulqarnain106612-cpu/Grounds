@@ -29,7 +29,12 @@ namespace JetFighter.Economy
         [Min(0f)]
         [SerializeField] private float saveIntervalSeconds = 10f;
 
-        private float survivalRemainder;
+        // double, not float: Tick accumulates one frame delta at a time, and
+        // float32 loses enough per addition that 300 frames of 1/60s sum to
+        // just under 5s -- paying 4 seconds' worth instead of 5, and making the
+        // rate depend on frame rate. Kept in double, the sum is exact enough
+        // that 1/60s and 1/30s frames pay identically.
+        private double survivalRemainder;
         private float sinceLastSave;
         private bool dirty;
 
@@ -111,7 +116,7 @@ namespace JetFighter.Economy
             if (coinsPerSecondSurvived > 0)
             {
                 survivalRemainder += deltaTime;
-                int wholeSeconds = Mathf.FloorToInt(survivalRemainder);
+                int wholeSeconds = (int)System.Math.Floor(survivalRemainder);
                 if (wholeSeconds > 0)
                 {
                     survivalRemainder -= wholeSeconds;

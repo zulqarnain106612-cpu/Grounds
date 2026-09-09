@@ -129,8 +129,13 @@ namespace JetFighter.Tests.EditMode
         {
             GameObject spawned = spawner.SpawnOne(4f, Dps);
             var health = spawned.GetComponent<EnemyHealth>();
-            float expected = basic.maxHealth *
-                DifficultyManager.ComputeStatMultiplier(curve, 4f, Dps, basic.maxHealth);
+            // Read the archetype off the spawn rather than assuming `basic`:
+            // at power 4 `heavy` is unlocked too (threshold 2) and ChooseKillable
+            // is free to pick it, so pinning the expectation to `basic` asserts
+            // the choice rather than the scaling this test is about.
+            EnemyDef def = health.Def;
+            float expected = def.maxHealth *
+                DifficultyManager.ComputeStatMultiplier(curve, 4f, Dps, def.maxHealth);
             Assert.AreEqual(expected, health.MaxHealth, 1e-3f);
             Assert.AreEqual(expected, health.CurrentHealth, 1e-3f);
         }
