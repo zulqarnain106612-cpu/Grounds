@@ -33,9 +33,15 @@ on:
 permissions:
   contents: read
 
+# Repo-wide, not per-ref, and deliberately not cancelling. A Unity Personal
+# account holds very few seats, and every activation takes one until it is
+# returned. Two branches -- or even this workflow's own two matrix legs --
+# activating at once exhausts them, and the symptom is not "no seats", it is
+# the runner dying before it writes a results file, which reads exactly like a
+# broken test suite. Queue instead.
 concurrency:
-  group: unity-test-${{ github.ref }}
-  cancel-in-progress: true
+  group: unity-test
+  cancel-in-progress: false
 
 jobs:
   # Separated from the test job so the licence problem is reported as its own
@@ -50,12 +56,18 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         run: |
-          if [ -n "$UNITY_LICENSE" ] || { [ -n "$UNITY_EMAIL" ] && [ -n "$UNITY_PASSWORD" ]; }; then
-            echo "Unity credentials present."
+          if [ -n "$UNITY_EMAIL" ] && [ -n "$UNITY_PASSWORD" ]; then
+            echo "Unity account credentials present (personal or pro seat)."
+            exit 0
+          fi
+          if [ -n "$UNITY_LICENSE" ]; then
+            echo "Unity licence file present."
             exit 0
           fi
           echo "::error::No Unity licence configured, so the C# suites cannot run."
-          echo "::error::Set the UNITY_LICENSE secret (Personal), or UNITY_EMAIL + UNITY_PASSWORD (Pro)."
+          echo "::error::Set UNITY_EMAIL + UNITY_PASSWORD (Personal seat, or Pro with UNITY_SERIAL)."
+          echo "::error::A .ulf in secrets.UNITY_LICENSE also works, but Unity has withdrawn"
+          echo "::error::manual activation for Personal seats, so free accounts cannot obtain one."
           echo "::error::Failing rather than skipping on purpose: a skipped test gate is a green lie."
           exit 1
 
@@ -64,6 +76,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      # One seat at a time: editmode and playmode activating in parallel is
+      # two Personal seats for one run.
+      max-parallel: 1
       matrix:
         testMode: [editmode, playmode]
     steps:
@@ -81,6 +96,10 @@ jobs:
             Library-${{ matrix.testMode }}-
             Library-
 
+      # continue-on-error, plus `if: always()` on the gate below, so a failing
+      # suite does not short-circuit before the gate can say *why* the job is
+      # red -- and so the runner's own output (licence activation errors among
+      # them) still lands in the log rather than being swallowed.
       - uses: game-ci/unity-test-runner@v4
         id: runner
         continue-on-error: true
@@ -116,7 +135,18 @@ jobs:
 
       # The real gate. Runs even when the runner step failed, so a red job
       # still says whether the cause was failing tests or none at all.
+      - name: Say so when the runner never started
+        if: always() && steps.runner.outcome != 'success'
+        run: |
+          echo "::error::game-ci/unity-test-runner exited ${{ steps.runner.outcome }}."
+          echo "::error::Its own step log above carries the reason. The usual one on a"
+          echo "::error::Personal seat is seat exhaustion -- a seat is held until returned,"
+          echo "::error::and a cancelled or killed job leaks one. Release stale seats at"
+          echo "::error::https://id.unity.com. The other is a 2FA or new-device challenge,"
+          echo "::error::which headless activation cannot answer."
+
       - name: Gate on the results file
+        if: always()
         run: python scripts/check_unity_results.py --results "${{ matrix.testMode }}-artifacts" --min-tests 1
 
       - uses: actions/upload-artifact@v4
