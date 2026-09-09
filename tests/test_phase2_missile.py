@@ -105,7 +105,10 @@ def test_the_cooldown_cannot_be_banked():
     """Left to run negative, two minutes of idling buys two minutes of instant
     missiles the moment the player presses."""
     body = _method_body(LAUNCHER, "public void Tick(float deltaTime)")
-    assert "Mathf.Max(0f," in body
+    # Clamped at zero, in whichever Max the field's type calls for: the
+    # remaining cooldown is a double so that 180 frames of 1/60 leave a 3s
+    # cooldown at zero rather than a microsecond above it.
+    assert "Mathf.Max(0f," in body or "Math.Max(0d," in body
 
 
 def test_a_refused_press_does_not_spend_the_cooldown():
