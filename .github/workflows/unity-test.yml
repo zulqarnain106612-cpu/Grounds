@@ -128,8 +128,6 @@ jobs:
           artifactsPath: ${{ matrix.testMode }}-artifacts
           # GitHub token for CLI release fetching to avoid rate limiting.
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          # Use container image version 2 for compatibility with available CLI versions.
-          containerRegistryImageVersion: 2
 
       - uses: actions/setup-python@v5
         with:
