@@ -33,15 +33,18 @@ on:
 permissions:
   contents: read
 
-# Repo-wide, not per-ref, and deliberately not cancelling. A Unity Personal
-# account holds very few seats, and every activation takes one until it is
-# returned. Two branches -- or even this workflow's own two matrix legs --
-# activating at once exhausts them, and the symptom is not "no seats", it is
-# the runner dying before it writes a results file, which reads exactly like a
-# broken test suite. Queue instead.
+# Per-ref, because a repo-wide group does not queue: GitHub keeps at most one
+# pending run per group and cancels the rest, so serialising branches that way
+# turns every superseded branch's check red for a reason that has nothing to
+# do with its code.
+#
+# Seat pressure is real -- a Personal account holds very few, and every
+# activation takes one until it is returned -- but the fix for it is
+# max-parallel below, which stops one run from asking for two at once, plus
+# not landing two branches at the same time. Cancelling is not a fix.
 concurrency:
-  group: unity-test
-  cancel-in-progress: false
+  group: unity-test-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   # Separated from the test job so the licence problem is reported as its own
@@ -74,6 +77,14 @@ jobs:
   test:
     needs: preflight
     runs-on: ubuntu-latest
+    # game-ci posts the suite's results as a check run, which needs more than
+    # the read-only default. Without it the action fails with "Resource not
+    # accessible by integration" *after* every test has passed -- a red job
+    # with a green results file behind it. It went unnoticed for as long as
+    # continue-on-error was swallowing the runner's exit code.
+    permissions:
+      contents: read
+      checks: write
     strategy:
       fail-fast: false
       # One seat at a time: editmode and playmode activating in parallel is

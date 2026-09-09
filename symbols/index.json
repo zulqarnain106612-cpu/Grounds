@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-09T08:21:21.618318Z",
+  "updated_at": "2026-09-09T08:34:19.815376Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -362,6 +362,78 @@
       "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
       "line": 103,
       "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
+      "name": "EnemyHealthBarUI",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 20,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "OnEnable",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 82,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "OnDisable",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 88,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "Subscribe",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 93,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "Unsubscribe",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 109,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "Refresh",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 120,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "HandleDeath",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 136,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "LateUpdate",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 144,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "ColorFor",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/EnemyHealthBarUI.cs",
+      "line": 169,
+      "namespace": "JetFighter.UI",
       "tags": []
     },
     {
