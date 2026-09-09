@@ -14,8 +14,12 @@ namespace JetFighter.Weapon
     /// is fired, not when it lands.
     ///
     /// Returning to the pool is this class's own responsibility because it is
-    /// the only thing that knows the shot is over. Leaving it to the gun would
-    /// mean the gun tracking every bullet in flight.
+    /// the only thing that knows the shot is over.
+    ///
+    /// The bullet does not advance itself. Whatever fired it calls Step with
+    /// the same deltaTime it was ticked with, so the shot and the gun that
+    /// fired it share one clock -- a bullet reading Time.deltaTime while the
+    /// gun ran on a simulated step would outlive every soak.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     public class Bullet : MonoBehaviour
@@ -45,11 +49,6 @@ namespace JetFighter.Weapon
             speed = travelSpeed;
             lifetimeRemaining = Mathf.Max(0.01f, lifetimeSeconds);
             spent = false;
-        }
-
-        private void Update()
-        {
-            Step(Time.deltaTime);
         }
 
         /// <summary>
