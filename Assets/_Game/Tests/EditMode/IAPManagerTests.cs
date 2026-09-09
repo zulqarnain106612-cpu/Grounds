@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
+using UnityEngine.TestTools;
 using UnityEngine;
 using JetFighter.Economy;
 
@@ -259,6 +261,12 @@ namespace JetFighter.Tests.EditMode
             var freshRoot = new GameObject("IAP4");
             var fresh = freshRoot.AddComponent<IAPManager>();
             fresh.Catalog = catalog;
+
+            // The refusal is meant to be loud -- a silent one is the bug this
+            // guards. Expected rather than muted, so the message keeps being
+            // asserted instead of being allowed to disappear.
+            LogAssert.Expect(LogType.Error,
+                new Regex(@"\[IAPManager\] catalog problem: .*duplicate product id"));
             Assert.IsFalse(fresh.Initialize(new FakeStore(), new Wallet()));
 
             UnityEngine.Object.DestroyImmediate(freshRoot);

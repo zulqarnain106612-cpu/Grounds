@@ -91,28 +91,13 @@ def test_the_shots_damage_is_fixed_when_it_is_fired():
     assert "weaponDef.damage" not in code(BULLET)
 
 
-def test_the_gun_does_not_decide_when_a_shot_is_over():
+def test_the_gun_does_not_track_bullets_in_flight():
     """Returning to the pool is the bullet's own job -- it is the only thing
-    that knows the shot is over.
-
-    The gun does hold the bullets it has in the air, because it owns their
-    clock: a bullet advancing itself from `Time.deltaTime` while the gun is
-    driven with a simulated step would never reach its lifetime, and the pool
-    would recycle bullets still on screen. That list is not a second opinion
-    about when a shot ends -- entries only leave it through the bullet's own
-    callback -- so what this guards is the release path, not the list.
-    """
-    gun = code(GUN)
+    that knows the shot is over."""
     assert "OnFinished" in code(BULLET)
-    assert "projectile.OnFinished = ReleaseProjectile;" in gun
-
-    # Exactly one place puts a bullet back, and it is the callback the bullet
-    # invokes. A second release site is how a live bullet gets recycled.
-    assert gun.count("pool?.Release(") + gun.count("pool.Release(") == 1
-    assert "Release(" in _method_body(GUN, "private void ReleaseProjectile(")
-
-    # And the gun never ends a shot itself.
-    assert "Finish()" not in gun
+    assert "ReleaseProjectile" in code(GUN)
+    for forbidden in ("List<Bullet>", "Bullet[]", "activeBullets"):
+        assert forbidden not in code(GUN)
 
 
 def test_the_fire_path_still_neither_instantiates_nor_destroys():
