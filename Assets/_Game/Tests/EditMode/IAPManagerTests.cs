@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
+using UnityEngine.TestTools;
 using UnityEngine;
 using JetFighter.Economy;
 
@@ -92,8 +94,8 @@ namespace JetFighter.Tests.EditMode
             {
                 Directory.Delete(saveDirectory, true);
             }
-            Object.DestroyImmediate(root);
-            Object.DestroyImmediate(catalog);
+            UnityEngine.Object.DestroyImmediate(root);
+            UnityEngine.Object.DestroyImmediate(catalog);
         }
 
         [Test]
@@ -171,7 +173,7 @@ namespace JetFighter.Tests.EditMode
             Assert.AreEqual(100, wallet.GetBalance(CurrencyType.Gems));
             Assert.AreEqual(1, fresh.DuplicateTransactions);
 
-            Object.DestroyImmediate(freshRoot);
+            UnityEngine.Object.DestroyImmediate(freshRoot);
         }
 
         [Test]
@@ -242,7 +244,7 @@ namespace JetFighter.Tests.EditMode
             Assert.IsFalse(lonely.PurchaseProduct(SmallPack));
             Assert.AreEqual("store not ready", reason);
 
-            Object.DestroyImmediate(lonelyRoot);
+            UnityEngine.Object.DestroyImmediate(lonelyRoot);
         }
 
         [Test]
@@ -259,9 +261,21 @@ namespace JetFighter.Tests.EditMode
             var freshRoot = new GameObject("IAP4");
             var fresh = freshRoot.AddComponent<IAPManager>();
             fresh.Catalog = catalog;
+
+            // The refusal is meant to be loud -- a silent one is the bug this
+            // guards. Expected rather than muted, so the message keeps being
+            // asserted instead of being allowed to disappear.
+            // Both problems the catalog reports, in the order Validate walks
+            // them: the per-product faults first, then the cross-tier one. A
+            // duplicated id at a higher tier is also a tier that grants fewer
+            // gems than the one below it.
+            LogAssert.Expect(LogType.Error,
+                new Regex(@"\[IAPManager\] catalog problem: .*duplicate product id"));
+            LogAssert.Expect(LogType.Error,
+                new Regex(@"\[IAPManager\] catalog problem: tier .* grants fewer gems than"));
             Assert.IsFalse(fresh.Initialize(new FakeStore(), new Wallet()));
 
-            Object.DestroyImmediate(freshRoot);
+            UnityEngine.Object.DestroyImmediate(freshRoot);
         }
 
         [Test]
@@ -279,7 +293,7 @@ namespace JetFighter.Tests.EditMode
             fresh.Catalog = catalog;
             Assert.IsFalse(fresh.Initialize(null, new Wallet()));
             Assert.IsFalse(fresh.Initialize(new FakeStore(), null));
-            Object.DestroyImmediate(freshRoot);
+            UnityEngine.Object.DestroyImmediate(freshRoot);
         }
 
         [Test]

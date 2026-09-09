@@ -29,6 +29,11 @@ namespace JetFighter.Network
 
         [SerializeField] private Mode mode = Mode.Loopback;
 
+        // The far end of the same-process link. Owned here because nothing
+        // else can dispose it, and a leaked peer keeps the old session's
+        // inbox alive across a rematch.
+        private LocalLoopbackTransport loopbackPeer;
+
         /// <summary>
         /// Builds the GameKit transport. Injected rather than constructed
         /// here so the plugin dependency stays optional at compile time: the
@@ -84,6 +89,14 @@ namespace JetFighter.Network
         /// <summary>Tears the session down. Safe to call when nothing is running.</summary>
         public void Dispose()
         {
+            // The peer is released first and unconditionally: a Begin() that
+            // failed after Create() leaves a peer behind with no Transport to
+            // hang it off, and an early return would strand it.
+            if (loopbackPeer != null)
+            {
+                loopbackPeer.Disconnect();
+                loopbackPeer = null;
+            }
             if (Transport == null)
             {
                 return;
@@ -109,7 +122,21 @@ namespace JetFighter.Network
                     // still gets a working single-player game.
                     return GameKitFactory?.Invoke();
                 default:
-                    return new LocalLoopbackTransport(SystemInfo.deviceUniqueIdentifier);
+                    // Both ends, not one. A lone loopback transport has no
+                    // peer, so Connect() reports Failed and same-process mode
+                    // could never start a session. The far end is held for the
+                    // session's lifetime and torn down with it.
+                    //
+                    // Left unconnected here so Begin() subscribes before the
+                    // link comes up; otherwise OnMatchReady never fires for
+                    // the mode a developer without the plugin actually uses.
+                    var pair = LocalLoopbackTransport.CreatePair(
+                        SystemInfo.deviceUniqueIdentifier,
+                        SystemInfo.deviceUniqueIdentifier + "-peer",
+                        connect: false);
+                    loopbackPeer = pair.guest;
+                    loopbackPeer.Connect();
+                    return pair.host;
             }
         }
 
