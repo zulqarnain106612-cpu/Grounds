@@ -22,6 +22,10 @@ namespace JetFighter.Weapon
 
         [SerializeField] private bool autoFire = true;
 
+        // See the catch-up loop in Tick. A cooldown refilled to within this
+        // much of zero counts as exactly consumed rather than overrun.
+        private const float CooldownEpsilon = 1e-4f;
+
         private ObjectPool pool;
 
         // Scratch space for one frame's walk over the pool's live instances.
@@ -153,6 +157,25 @@ namespace JetFighter.Weapon
             {
                 Fire();
                 cooldownTimer += cooldown;
+                // A cooldown that lands exactly on zero has been exactly
+                // consumed, not overrun: it owes the *next* tick a shot, not
+                // this one. Without this the very first Tick fires twice --
+                // the timer starts at zero, goes negative, is refilled back to
+                // exactly zero, and `<= 0f` is still true. One extra round in
+                // the air is one the pool does not have back, which is the
+                // difference between a bounded pool and a live bullet being
+                // stolen out of it.
+                //
+                // Guarding the catch-up step rather than the loop entry, so a
+                // gun whose timer starts at zero still fires immediately
+                // (TheFirstShotIsImmediate) and a hitch still owes every shot
+                // it swallowed. Same epsilon and same reason as
+                // Bullet.LifetimeEpsilon: float subtraction does not land on
+                // zero exactly.
+                if (cooldownTimer > -CooldownEpsilon)
+                {
+                    break;
+                }
             }
         }
 
