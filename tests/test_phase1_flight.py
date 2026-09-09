@@ -15,6 +15,8 @@ import pytest
 
 from gateway import symbol_scanner
 
+from tests._csharp import code, mentions
+
 REAL_ROOT = Path(__file__).resolve().parent.parent
 PLAYER = REAL_ROOT / "Assets" / "_Game" / "Scripts" / "Player"
 CONTROLLER = PLAYER / "JetController.cs"
@@ -51,8 +53,10 @@ def test_the_flight_model_is_free_of_engine_singletons(indexed):
     """The pure functions take deltaTime as an argument rather than reading
     Time.fixedDeltaTime, which is what makes the frame-rate independence test
     possible at all."""
-    body = CONTROLLER.read_text()
-    tail = body[body.index("// --- pure functions"):]
+    assert "// --- pure functions" in CONTROLLER.read_text(), \
+        "the pure section is no longer marked, so this check has nothing to anchor to"
+    stripped = code(CONTROLLER)
+    tail = stripped[stripped.index("public static Vector3 ComputeAcceleration"):]
     for forbidden in ("Time.", "GetComponent", "FindObjectOf"):
         assert forbidden not in tail, f"the pure section reaches for {forbidden}"
 
@@ -67,9 +71,7 @@ def test_the_flight_model_knows_nothing_about_the_constraint():
     no reference to it. A JetController that special-cased the locked axis
     would put the plane rule in two places, and the two would drift.
     """
-    code = [l for l in CONTROLLER.read_text().splitlines()
-            if not l.lstrip().startswith(("//", "///", "*", "/*"))]
-    assert not any("PlaneConstraint" in l for l in code)
+    assert not mentions(CONTROLLER, "PlaneConstraint")
 
 
 def test_banking_never_rotates_the_rigidbody():
