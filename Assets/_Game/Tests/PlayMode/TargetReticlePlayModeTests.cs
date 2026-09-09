@@ -71,6 +71,15 @@ namespace JetFighter.Tests.PlayMode
             };
         }
 
+        // Physics.autoSyncTransforms defaults to false, so moving a transform
+        // does not move its collider in the physics scene until a simulation
+        // step or an explicit sync. Every test here places the enemy by
+        // transform and then raycasts through it, and without this the ray
+        // still saw the enemy at its old position -- so nothing ever locked,
+        // and the tests that assert a lock failed while the ones asserting no
+        // lock passed for the wrong reason.
+        private static void SyncPhysics() => UnityEngine.Physics.SyncTransforms();
+
         private void Press(Vector2 p, int id = 0) =>
             ((IPointerDownHandler)reticle).OnPointerDown(Pointer(p, id));
 
@@ -95,6 +104,7 @@ namespace JetFighter.Tests.PlayMode
             // runner's screen size.
             groundEnemy.transform.position = cam.ScreenToWorldPoint(
                 new Vector3(Screen.width * 0.75f, Screen.height * 0.5f, 20f));
+            SyncPhysics();
             yield return null;
 
             Press(new Vector2(Screen.width * 0.75f, Screen.height * 0.5f));
@@ -110,6 +120,7 @@ namespace JetFighter.Tests.PlayMode
             // The mirror of Phase 1's proof, and the cell's stated criterion.
             groundEnemy.transform.position = cam.ScreenToWorldPoint(
                 new Vector3(Screen.width * 0.25f, Screen.height * 0.5f, 20f));
+            SyncPhysics();
             yield return null;
 
             Press(LeftHalf);
@@ -126,6 +137,7 @@ namespace JetFighter.Tests.PlayMode
         {
             groundEnemy.transform.position = cam.ScreenToWorldPoint(
                 new Vector3(Screen.width * 0.75f, Screen.height * 0.5f, 20f));
+            SyncPhysics();
             yield return null;
 
             Press(new Vector2(Screen.width * 0.75f, Screen.height * 0.5f), id: 0);
@@ -143,6 +155,7 @@ namespace JetFighter.Tests.PlayMode
             // that died with the touch would make the weapon unusable.
             groundEnemy.transform.position = cam.ScreenToWorldPoint(
                 new Vector3(Screen.width * 0.75f, Screen.height * 0.5f, 20f));
+            SyncPhysics();
             yield return null;
 
             Vector2 p = new Vector2(Screen.width * 0.75f, Screen.height * 0.5f);
@@ -161,6 +174,7 @@ namespace JetFighter.Tests.PlayMode
             airEnemy.transform.position = cam.ScreenToWorldPoint(
                 new Vector3(Screen.width * 0.75f, Screen.height * 0.5f, 20f));
             groundEnemy.transform.position = new Vector3(0f, -500f, 0f);
+            SyncPhysics();
             yield return null;
 
             Press(new Vector2(Screen.width * 0.75f, Screen.height * 0.5f));
@@ -176,6 +190,7 @@ namespace JetFighter.Tests.PlayMode
             // destroyed. A stale lock would have the launcher firing at it.
             groundEnemy.transform.position = cam.ScreenToWorldPoint(
                 new Vector3(Screen.width * 0.75f, Screen.height * 0.5f, 20f));
+            SyncPhysics();
             yield return null;
             Press(new Vector2(Screen.width * 0.75f, Screen.height * 0.5f));
             yield return null;
