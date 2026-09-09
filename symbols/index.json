@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-09T13:04:13.556518Z",
+  "updated_at": "2026-09-09T20:03:33.975465Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -2336,7 +2336,7 @@
       "name": "Awake",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 92,
+      "line": 96,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2344,7 +2344,7 @@
       "name": "EnsurePool",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 102,
+      "line": 106,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2352,7 +2352,7 @@
       "name": "Update",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 112,
+      "line": 116,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2360,7 +2360,7 @@
       "name": "Tick",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 137,
+      "line": 141,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2368,7 +2368,7 @@
       "name": "ReleaseProjectile",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 174,
+      "line": 185,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2376,7 +2376,7 @@
       "name": "StepLiveProjectiles",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 194,
+      "line": 205,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2384,7 +2384,7 @@
       "name": "Fire",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 221,
+      "line": 232,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
