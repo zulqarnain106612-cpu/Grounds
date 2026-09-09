@@ -232,21 +232,120 @@ def h_ci_dispatch(req: dict) -> dict:
     return _ok(result={"dispatched": workflow, "ref": ci_op.get("ref", "main"), "blocking": False})
 
 
+_ERROR_MARKER = "##[error]"
+
+
 def h_ci_status(req: dict) -> dict:
+    """Check status for exactly one PR.
+
+    A repo-wide listing is not expressible: CIOp requires `pr` when op is
+    'status', and this refuses without it. `gh pr checks` is PR-scoped by
+    construction, so there is no `gh run list` on this path at all.
+    """
     ci_op = req["payload"].get("ci_op") or {}
-    limit = enforcement.cap_output_lines(ci_op.get("limit"))
-    args = ["run", "list", "--limit", str(min(limit, 20)),
-            "--json", "databaseId,name,status,conclusion,headBranch,createdAt"]
-    if ci_op.get("workflow"):
-        args += ["--workflow", ci_op["workflow"]]
-    code, out = _gh(args)
-    if code != 0:
+    pr = ci_op.get("pr")
+    if not pr:
+        return _error("missing_pr", "ci_op.pr required: status is always scoped to one PR")
+    limit = min(enforcement.cap_output_lines(ci_op.get("limit")), 20)
+
+    code, out = _gh(["pr", "checks", str(pr),
+                     "--json", "bucket,state,workflow,name"])
+    # 8 means checks are still pending -- a state to report, not a failure.
+    if code not in (0, 8):
         return _error("status_failed", out.strip()[:500])
     try:
-        runs = json.loads(out)
+        checks = json.loads(out)
     except json.JSONDecodeError:
         return _error("bad_gh_output", out.strip()[:500])
-    return _ok(result={"runs": runs})
+    failed = [c.get("name") for c in checks if c.get("bucket") == "fail"]
+    return _ok(result={"pr": pr, "checks": checks[:limit],
+                       "failed": failed, "total": len(checks)})
+
+
+def h_ci_logs(req: dict) -> dict:
+    """Lines from the newest failed run of exactly one PR.
+
+    Omitting log_tail_lines returns the fixed probe: the last two
+    `##[error]` annotations plus the position of the last one. The last
+    *physical* lines of a failed job are runner teardown, not the cause, so a
+    plain tail would report noise -- the annotations are the cause, and the
+    position is what sizes a follow-up request. A named count returns exactly
+    that many lines, ceilinged server-side by cap_ci_log_tail().
+    """
+    ci_op = req["payload"].get("ci_op") or {}
+    pr = ci_op.get("pr")
+    if not pr:
+        return _error("missing_pr", "ci_op.pr required: logs are always scoped to one PR")
+    requested = ci_op.get("log_tail_lines")
+    count = enforcement.cap_ci_log_tail(requested)
+    offset = ci_op.get("log_offset", 0)
+
+    code, out = _gh(["pr", "view", str(pr), "--json", "headRefName,headRefOid"])
+    if code != 0:
+        return _error("pr_lookup_failed", out.strip()[:500])
+    try:
+        parsed = json.loads(out)
+        branch, head = parsed["headRefName"], parsed["headRefOid"]
+    except (json.JSONDecodeError, KeyError, TypeError):
+        # TypeError covers gh returning a list where an object was expected --
+        # which is exactly what the stubbed `gh` in the example replay returns.
+        return _error("bad_gh_output", out.strip()[:500])
+
+    run_id = ci_op.get("run_id")
+    if not run_id:
+        # Pinned to the PR's current head. Without --commit, a branch that has
+        # since been fixed still reports its old failure, sending the caller to
+        # debug a problem that no longer exists.
+        code, out = _gh(["run", "list", "--branch", branch, "--commit", head,
+                         "--status", "failure", "--limit", "1", "--json", "databaseId"])
+        if code != 0:
+            return _error("run_lookup_failed", out.strip()[:500])
+        try:
+            runs = json.loads(out)
+        except json.JSONDecodeError:
+            return _error("bad_gh_output", out.strip()[:500])
+        if not runs:
+            return _ok(result={"pr": pr, "branch": branch, "failed_run": None,
+                               "lines": [], "probe": requested is None})
+        run_id = runs[0]["databaseId"]
+
+    code, out = _gh(["run", "view", str(run_id), "--log-failed"], timeout_s=60.0)
+    lines = [_strip_runner_prefix(l) for l in out.splitlines()]
+
+    if requested is None:
+        errors = [(i, l) for i, l in enumerate(lines, start=1) if _ERROR_MARKER in l]
+        if errors:
+            picked = errors[-count:]
+            return _ok(result={
+                "pr": pr, "branch": branch, "failed_run": run_id, "probe": True,
+                "lines": [l for _, l in picked],
+                "error_line": picked[-1][0], "total_lines": len(lines),
+            })
+        return _ok(result={
+            "pr": pr, "branch": branch, "failed_run": run_id, "probe": True,
+            "lines": lines[-count:], "error_line": None, "total_lines": len(lines),
+        })
+
+    end = len(lines) - offset
+    window = lines[max(0, end - count):max(0, end)]
+    return _ok(result={"pr": pr, "branch": branch, "failed_run": run_id, "probe": False,
+                       "lines": window, "total_lines": len(lines)})
+
+
+def _strip_runner_prefix(line: str) -> str:
+    """Drop the constant '<job>\\t<step>\\t<timestamp>Z ' prefix.
+
+    It is identical on every line and would otherwise consume most of a
+    two-line probe budget.
+    """
+    parts = line.split("\t", 2)
+    if len(parts) == 3:
+        tail = parts[2]
+        head, sep, rest = tail.partition("Z ")
+        if sep and head[:4].isdigit():
+            return rest
+        return tail
+    return line
 
 
 def _remote_only(action: str, workflow: str, req: dict, run_local, describe) -> dict:
@@ -317,6 +416,7 @@ DISPATCH = {
     "build": h_build,
     "ci_dispatch": h_ci_dispatch,
     "ci_status": h_ci_status,
+    "ci_logs": h_ci_logs,
     "ingest": h_ingest,
     "manifest": h_manifest,
 }
