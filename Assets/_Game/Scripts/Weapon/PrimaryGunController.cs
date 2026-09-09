@@ -1,4 +1,5 @@
 using UnityEngine;
+using JetFighter.Player;
 using JetFighter.Shared;
 
 namespace JetFighter.Weapon
@@ -22,6 +23,27 @@ namespace JetFighter.Weapon
 
         private ObjectPool pool;
         private float cooldownTimer;
+        private IPlayerStats stats = DefaultPlayerStats.Instance;
+
+        /// <summary>
+        /// Live player multipliers. Assigning null restores the unmodified
+        /// defaults rather than silencing the gun -- a jet that stops shooting
+        /// because a power-up system has not spawned yet is a worse bug than
+        /// any this would prevent.
+        /// </summary>
+        public IPlayerStats Stats
+        {
+            get => stats;
+            set => stats = value ?? DefaultPlayerStats.Instance;
+        }
+
+        /// <summary>Seconds between shots, after the player's fire-rate multiplier.</summary>
+        public float EffectiveCooldownSeconds =>
+            weaponDef == null ? 0f : weaponDef.CooldownSeconds / Mathf.Max(0.01f, stats.FireRateMultiplier);
+
+        /// <summary>Damage per projectile, after the player's damage multiplier.</summary>
+        public float EffectiveDamage =>
+            weaponDef == null ? 0f : weaponDef.damage * Mathf.Max(0f, stats.DamageMultiplier);
 
         /// <summary>Shots fired since the gun woke. Exposed for soak tests.</summary>
         public int ShotsFired { get; private set; }
@@ -45,6 +67,20 @@ namespace JetFighter.Weapon
         {
             get => muzzleTransform;
             set => muzzleTransform = value;
+        }
+
+        /// <summary>
+        /// Whether Update drives the cooldown by itself.
+        ///
+        /// Exposed for the same reason Tick takes a deltaTime: a scene test
+        /// that wants to observe the pool before the first shot cannot do it
+        /// while the player loop is firing between its setup and its
+        /// assertions.
+        /// </summary>
+        public bool AutoFire
+        {
+            get => autoFire;
+            set => autoFire = value;
         }
 
         private void Awake()
@@ -95,7 +131,7 @@ namespace JetFighter.Weapon
             EnsurePool();
             cooldownTimer -= deltaTime;
 
-            float cooldown = weaponDef.CooldownSeconds;
+            float cooldown = EffectiveCooldownSeconds;
             // A loop, not an `if`: a frame longer than the cooldown (a hitch,
             // or a fire-rate power-up in Phase 3) still owes the player every
             // shot that elapsed during it.
