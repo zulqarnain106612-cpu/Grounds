@@ -77,6 +77,14 @@ jobs:
   test:
     needs: preflight
     runs-on: ubuntu-latest
+    # game-ci posts the suite's results as a check run, which needs more than
+    # the read-only default. Without it the action fails with "Resource not
+    # accessible by integration" *after* every test has passed -- a red job
+    # with a green results file behind it. It went unnoticed for as long as
+    # continue-on-error was swallowing the runner's exit code.
+    permissions:
+      contents: read
+      checks: write
     strategy:
       fail-fast: false
       # One seat at a time: editmode and playmode activating in parallel is
