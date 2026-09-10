@@ -51,6 +51,19 @@ def test_power_level_is_an_argument_rather_than_looked_up_in_the_hot_path():
     assert "public GameObject SpawnOne(float playerPowerLevel, float playerDps)" in code(SPAWNER)
 
 
+def test_the_spawner_does_not_search_the_scene_every_frame():
+    """Found by the Cycle 6 hot-path sweep: Update ran two
+    FindFirstObjectByType calls per frame for the whole run. That never appears
+    as one obvious slow frame, which is exactly the kind the profiling pass
+    exists to catch, so the references are cached and BindPlayer lets a scene
+    avoid the search entirely."""
+    source = code(SPAWNER)
+    assert "cachedPowerUps" in source and "cachedGun" in source
+    assert "public void BindPlayer(" in source
+    body = _method_body(SPAWNER, "private float CurrentPowerLevel()")
+    assert "cachedPowerUps == null" in body
+
+
 def test_every_archetype_is_pooled_and_bounded():
     """A spawner is the easiest place in an endless runner to leak instances
     forever, because nothing ever tells it to stop."""

@@ -40,3 +40,10 @@
 {"ts": "2026-09-07T04:57:57.996143Z", "action": "context_push", "domain": "scene", "session_id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "response_status": "ok"}
 {"ts": "2026-09-07T04:57:57.999334Z", "action": "context_pop", "domain": "scene", "session_id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "response_status": "ok"}
 {"ts": "2026-09-07T04:57:58.004608Z", "action": "knowledge_update", "domain": "knowledge_base", "session_id": "550e8400-e29b-41d4-a716-446655440000", "response_status": "ok"}
+{"ts": "2026-09-07T05:03:05.578500Z", "action": "command_exec", "domain": "build_pipeline", "session_id": "550e8400-e29b-41d4-a716-446655440000", "response_status": "ok"}
+{"ts": "2026-09-07T05:03:05.579984Z", "action": "command_exec", "domain": "build_pipeline", "session_id": "550e8400-e29b-41d4-a716-446655440000", "response_status": "error"}
+{"ts": "2026-09-07T05:03:05.581442Z", "action": "command_exec", "domain": "log", "session_id": "550e8400-e29b-41d4-a716-446655440000", "response_status": "error"}
+{"ts": "2026-09-07T05:03:05.605729Z", "action": "retrieve", "domain": "knowledge_base", "session_id": "550e8400-e29b-41d4-a716-446655440000", "response_status": "ok"}
+{"ts": "2026-09-07T05:03:05.620455Z", "action": "context_push", "domain": "scene", "session_id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "response_status": "ok"}
+{"ts": "2026-09-07T05:03:05.621538Z", "action": "context_pop", "domain": "scene", "session_id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "response_status": "ok"}
+{"ts": "2026-09-07T05:03:05.623943Z", "action": "knowledge_update", "domain": "knowledge_base", "session_id": "550e8400-e29b-41d4-a716-446655440000", "response_status": "ok"}

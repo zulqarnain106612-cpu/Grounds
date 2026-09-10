@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-09T21:08:12.767278Z",
+  "updated_at": "2026-09-09T21:08:39.914603Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -114,6 +114,70 @@
       "file": "Assets/_Game/Scripts/Analytics/RunAnalytics.cs",
       "line": 87,
       "namespace": "JetFighter.Analytics",
+      "tags": []
+    },
+    {
+      "name": "FrameBudgetProbe",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Build/FrameBudgetProbe.cs",
+      "line": 19,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "Awake",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Build/FrameBudgetProbe.cs",
+      "line": 48,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "EnsureWindow",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Build/FrameBudgetProbe.cs",
+      "line": 53,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "Update",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Build/FrameBudgetProbe.cs",
+      "line": 63,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "Sample",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Build/FrameBudgetProbe.cs",
+      "line": 72,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "OnePercentLowMs",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Build/FrameBudgetProbe.cs",
+      "line": 104,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "MedianMs",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Build/FrameBudgetProbe.cs",
+      "line": 128,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "ResetStatistics",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Build/FrameBudgetProbe.cs",
+      "line": 141,
+      "namespace": "JetFighter.Build",
       "tags": []
     },
     {
@@ -1008,7 +1072,7 @@
       "name": "CurrentPowerLevel",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Enemy/EnemySpawner.cs",
-      "line": 232,
+      "line": 250,
       "namespace": "JetFighter.Enemy",
       "tags": []
     },
@@ -1016,7 +1080,7 @@
       "name": "CurrentPlayerDps",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Enemy/EnemySpawner.cs",
-      "line": 238,
+      "line": 261,
       "namespace": "JetFighter.Enemy",
       "tags": []
     },
