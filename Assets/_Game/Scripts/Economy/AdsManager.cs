@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using JetFighter.Analytics;
 
 namespace JetFighter.Economy
 {
@@ -103,6 +104,13 @@ namespace JetFighter.Economy
                 {
                     RewardedAbandoned++;
                 }
+
+                // Every outcome is logged, not just completions. The ratio is
+                // the number worth having: completions alone cannot tell a
+                // placement nobody accepts from one nobody is offered.
+                AnalyticsService.LogEvent(AnalyticsEvents.AdWatched,
+                    AnalyticsEvents.ParamAdOutcome, outcome.ToString());
+
                 onFinished?.Invoke(outcome);
             });
         }

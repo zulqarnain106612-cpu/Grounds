@@ -289,6 +289,14 @@
       "tags": ["ui", "economy", "phase5", "adr-004"],
       "phase": ["5"],
       "symbols": ["StoreUI", "StoreItemDef", "PurchaseResult", "CanPurchase"]
+    },
+    {
+      "id": "phase6_analytics_instrumentation",
+      "type": "system",
+      "label": "Firebase Analytics Event Wiring",
+      "tags": ["scene", "analytics", "phase6"],
+      "phase": ["6"],
+      "symbols": ["AnalyticsService", "AnalyticsEvents", "RunAnalytics", "IsValidName"]
     }
   ],
   "edges": [
@@ -345,6 +353,8 @@
     {"from": "phase5_store_ui", "to": "cycle:5", "kind": "part_of"},
     {"from": "phase5_ads_integration", "to": "cycle:5", "kind": "part_of"},
     {"from": "phase5_compliance_odds_ui", "to": "cycle:5", "kind": "part_of"},
+    {"from": "phase6_analytics_instrumentation", "to": "cycle:6", "kind": "part_of"},
+    {"from": "phase6_analytics_instrumentation", "to": "domain:scene", "kind": "delivers"},
     {"from": "phase5_compliance_odds_ui", "to": "domain:ui", "kind": "delivers"},
     {"from": "phase5_ads_integration", "to": "domain:scene", "kind": "delivers"},
     {"from": "phase5_ads_integration", "to": "phase5_iap_integration", "kind": "depends_on"},

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using JetFighter.Analytics;
 using JetFighter.Player;
 
 namespace JetFighter.PowerUp
@@ -116,6 +117,16 @@ namespace JetFighter.PowerUp
                 Permanent = def.IsPermanentForRun,
             });
             Recompose();
+
+            // Reported after Recompose, so PlayerPowerLevel is the value the
+            // difficulty curve will actually see -- a pickup logged with the
+            // pre-pickup level makes the two datasets disagree.
+            AnalyticsService.LogEvent(AnalyticsEvents.PowerUpCollected,
+                new System.Collections.Generic.Dictionary<string, object>
+                {
+                    { AnalyticsEvents.ParamPowerUpType, def.type.ToString() },
+                    { AnalyticsEvents.ParamPowerLevel, PlayerPowerLevel },
+                });
             return true;
         }
 
