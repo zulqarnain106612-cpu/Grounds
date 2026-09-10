@@ -297,6 +297,14 @@
       "tags": ["scene", "analytics", "phase6"],
       "phase": ["6"],
       "symbols": ["AnalyticsService", "AnalyticsEvents", "RunAnalytics", "IsValidName"]
+    },
+    {
+      "id": "phase6_settings_ui",
+      "type": "system",
+      "label": "Adjustable Quality Settings (override layered over detection)",
+      "tags": ["ui", "settings", "phase6"],
+      "phase": ["6"],
+      "symbols": ["SettingsUI", "QualityTierManager", "DefaultFrameRateFor"]
     }
   ],
   "edges": [
@@ -354,6 +362,9 @@
     {"from": "phase5_ads_integration", "to": "cycle:5", "kind": "part_of"},
     {"from": "phase5_compliance_odds_ui", "to": "cycle:5", "kind": "part_of"},
     {"from": "phase6_analytics_instrumentation", "to": "cycle:6", "kind": "part_of"},
+    {"from": "phase6_settings_ui", "to": "cycle:6", "kind": "part_of"},
+    {"from": "phase6_settings_ui", "to": "domain:ui", "kind": "delivers"},
+    {"from": "phase6_settings_ui", "to": "phase1_build_ios_scaffold", "kind": "depends_on"},
     {"from": "phase6_analytics_instrumentation", "to": "domain:scene", "kind": "delivers"},
     {"from": "phase5_compliance_odds_ui", "to": "domain:ui", "kind": "delivers"},
     {"from": "phase5_ads_integration", "to": "domain:scene", "kind": "delivers"},

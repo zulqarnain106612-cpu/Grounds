@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-09T21:06:48.972862Z",
+  "updated_at": "2026-09-09T21:08:12.767278Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -2026,6 +2026,78 @@
       "file": "Assets/_Game/Scripts/PowerUp/PowerUpPickup.cs",
       "line": 116,
       "namespace": "JetFighter.PowerUp",
+      "tags": []
+    },
+    {
+      "name": "SettingsUI",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 23,
+      "namespace": "JetFighter.Settings",
+      "tags": []
+    },
+    {
+      "name": "Data",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 26,
+      "namespace": "JetFighter.Settings",
+      "tags": []
+    },
+    {
+      "name": "Awake",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 62,
+      "namespace": "JetFighter.Settings",
+      "tags": []
+    },
+    {
+      "name": "DefaultFrameRateFor",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 77,
+      "namespace": "JetFighter.Settings",
+      "tags": []
+    },
+    {
+      "name": "SetTierOverride",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 89,
+      "namespace": "JetFighter.Settings",
+      "tags": []
+    },
+    {
+      "name": "ClearOverride",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 105,
+      "namespace": "JetFighter.Settings",
+      "tags": []
+    },
+    {
+      "name": "Apply",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 122,
+      "namespace": "JetFighter.Settings",
+      "tags": []
+    },
+    {
+      "name": "Load",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 130,
+      "namespace": "JetFighter.Settings",
+      "tags": []
+    },
+    {
+      "name": "Save",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 164,
+      "namespace": "JetFighter.Settings",
       "tags": []
     },
     {
