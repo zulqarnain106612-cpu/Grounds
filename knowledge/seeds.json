@@ -299,6 +299,14 @@
       "symbols": ["AnalyticsService", "AnalyticsEvents", "RunAnalytics", "IsValidName"]
     },
     {
+      "id": "phase6_appstore_cert_checklist",
+      "type": "system",
+      "label": "App Store Readiness Gate (archive still owed)",
+      "tags": ["build_pipeline", "compliance", "phase6", "adr-006", "open"],
+      "phase": ["6"],
+      "symbols": []
+    },
+    {
       "id": "phase6_perf_profiling_pass",
       "type": "system",
       "label": "Frame Budget Probe + Profiling Procedure (capture still owed)",
@@ -372,6 +380,8 @@
     {"from": "phase6_analytics_instrumentation", "to": "cycle:6", "kind": "part_of"},
     {"from": "phase6_settings_ui", "to": "cycle:6", "kind": "part_of"},
     {"from": "phase6_perf_profiling_pass", "to": "cycle:6", "kind": "part_of"},
+    {"from": "phase6_appstore_cert_checklist", "to": "cycle:6", "kind": "part_of"},
+    {"from": "phase6_appstore_cert_checklist", "to": "domain:build_pipeline", "kind": "delivers"},
     {"from": "phase6_perf_profiling_pass", "to": "domain:physics", "kind": "delivers"},
     {"from": "phase6_settings_ui", "to": "domain:ui", "kind": "delivers"},
     {"from": "phase6_settings_ui", "to": "phase1_build_ios_scaffold", "kind": "depends_on"},
