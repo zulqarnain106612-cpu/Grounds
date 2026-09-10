@@ -109,8 +109,8 @@ show, and the evidence a passing run has to produce.
 | [x] | `phase5/product-catalog` | scene | Roadmap §5 — data-only pricing | ADR-004 | Price changes touch no code | `phase5_product_catalog` |
 | [x] | `phase5/iap-integration` | scene | Roadmap §5 — IAP ladder | ADR-004 | Sandbox purchase credits gems via the Phase 3 `Wallet` | `phase5_iap_integration` |
 | [x] | `phase5/store-ui` | ui | Roadmap §5 — dual-currency store | ADR-004 | Both currencies purchase and deduct correctly | `phase5_store_ui` |
-| [ ] | `phase5/ads-integration` | scene | Roadmap §5 — rewarded + interstitial, remove-ads IAP | — | Remove-ads suppresses interstitials permanently | `phase5_ads_integration` |
-| [ ] | `phase5/compliance-odds-ui` | ui | Roadmap §5 — Guideline 3.1.1 slot | **ADR-006** | Renders correctly in a test harness while dormant | `phase5_compliance_odds_ui` |
+| [x] | `phase5/ads-integration` | scene | Roadmap §5 — rewarded + interstitial, remove-ads IAP | — | Remove-ads suppresses interstitials permanently | `phase5_ads_integration` |
+| [x] | `phase5/compliance-odds-ui` | ui | Roadmap §5 — Guideline 3.1.1 slot | **ADR-006** | Renders correctly in a test harness while dormant. **Still human-owned:** ADR-006 says to re-read the current App Store guidelines at Cycle 5 rather than trusting the note — the component being testable is not the same as the disclosure being what Guideline 3.1.1 currently requires | `phase5_compliance_odds_ui` |
 
 **Cycle gate:** a sandbox IAP completes end-to-end and unlocks a store item.
 
@@ -118,10 +118,10 @@ show, and the evidence a passing run has to produce.
 
 | Done | Branch | Domain | Requirement | ADR | Verified by | Seed node |
 |---|---|---|---|---|---|---|
-| [ ] | `phase6/analytics-instrumentation` | scene | Roadmap §7 — Firebase event set | — | Every listed event appears in the Firebase dashboard on a real run | `phase6_analytics_instrumentation` |
-| [ ] | `phase6/settings-ui` | ui | Spec item 2c — adjustable settings | — | Manual override persists across relaunch and visibly changes rendering | `phase6_settings_ui` |
-| [ ] | `phase6/perf-profiling-pass` | physics | Roadmap §2 `build_pipeline` — Burst decided from data | — | Sustained fps floor at low tier on the lowest supported device | `phase6_perf_profiling_pass` |
-| [ ] | `phase6/appstore-cert-checklist` | build_pipeline | Roadmap §8 Phase 6 | ADR-006 | Archives cleanly with all required Privacy Manifests | `phase6_appstore_cert_checklist` |
+| [x] | `phase6/analytics-instrumentation` | scene | Roadmap §7 — Firebase event set | — | Every listed event appears in the Firebase dashboard on a real run | `phase6_analytics_instrumentation` |
+| [x] | `phase6/settings-ui` | ui | Spec item 2c — adjustable settings | — | Manual override persists across relaunch and visibly changes rendering | `phase6_settings_ui` |
+| [ ] | `phase6/perf-profiling-pass` | physics | Roadmap §2 `build_pipeline` — Burst decided from data | — | Sustained fps floor at low tier on the lowest supported device. **Deliberately still open:** a profiler capture is the criterion and no CI run produces one. What shipped is `FrameBudgetProbe` (worst frame, 1% low, hitch count — not the average) and the hot-path property checks that stop a capture being invalidated later; the capture itself is `docs/PERF_PROFILING_PROCEDURE.md` | `phase6_perf_profiling_pass` |
+| [ ] | `phase6/appstore-cert-checklist` | build_pipeline | Roadmap §8 Phase 6 | ADR-006 | Archives cleanly with all required Privacy Manifests. **Deliberately still open:** an Xcode archive is the criterion and no CI run produces one, and the three SDK manifests arrive with SDKs not yet installed. What shipped is the game's own manifest, `config/appstore.checklist.json` and `scripts/check_appstore_readiness.py` (`--release` blocks on the SDK manifests); the archive and the manual gates are `docs/APPSTORE_SUBMISSION.md` | `phase6_appstore_cert_checklist` |
 
 **Cycle gate:** acceptable frame rate at low tier on the lowest supported
 device, and analytics visible in Firebase.

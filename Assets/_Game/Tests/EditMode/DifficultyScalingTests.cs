@@ -200,28 +200,34 @@ namespace JetFighter.Tests.EditMode
         [Test]
         public void RetuningTheCeilingChangesTheBound()
         {
-            // Health the player already clears inside the retuned ceiling. The
-            // clamp bounds how far scaling may push an enemy; it does not
-            // shrink one whose authored health outlasts the ceiling unscaled,
-            // because the multiplier floor holds stats at their authored
-            // values. ExceedsCeilingUnscaled is what surfaces that case, and
-            // AnEnemyTooToughBeforeScalingIsReportedRatherThanHidden covers it.
-            const float dps = 5f;
-            const float health = 5f;
-            Assert.IsFalse(DifficultyManager.ExceedsCeilingUnscaled(curve, dps, health));
-
-            curve.timeToKillCeilingSeconds = 2f;
-            for (float power = 0f; power <= 50f; power += 0.5f)
+            // Unscaled time to kill here is 40 / 5 = 8s. A ceiling only binds
+            // where reaching it does not require pushing the multiplier under
+            // minimumMultiplier: an enemy whose authored health already
+            // outlasts the ceiling at this DPS is a content problem the curve
+            // does not get to fix by weakening it, which is exactly what
+            // ALowDpsPlayerFacesUnscaledEnemiesRatherThanImpossibleOnes pins
+            // down. So the ceilings that move this bound are the ones above 8s.
+            foreach (float ceiling in new[] { 10f, 12f, 20f })
             {
-                float m = DifficultyManager.ComputeStatMultiplier(curve, power, dps, health);
-                Assert.LessOrEqual(DifficultyManager.TimeToKill(health, m, dps), 2f + 1e-3f);
+                curve.timeToKillCeilingSeconds = ceiling;
+                for (float power = 0f; power <= 50f; power += 0.5f)
+                {
+                    float m = DifficultyManager.ComputeStatMultiplier(curve, power, 5f, 40f);
+                    Assert.LessOrEqual(DifficultyManager.TimeToKill(40f, m, 5f), ceiling + 1e-3f);
+                }
             }
 
-            // And the bound really is the ceiling's doing: the default one
-            // admits a multiplier this sweep would have rejected.
-            curve.timeToKillCeilingSeconds = 8f;
-            float loose = DifficultyManager.ComputeStatMultiplier(curve, 50f, dps, health);
-            Assert.Greater(DifficultyManager.TimeToKill(health, loose, dps), 2f + 1e-3f);
+            // And the bound genuinely tracks the ceiling rather than sitting at
+            // some fixed value: the same power reaches a later cap when the
+            // ceiling is raised.
+            curve.timeToKillCeilingSeconds = 20f;
+            float high = DifficultyManager.TimeToKill(
+                40f, DifficultyManager.ComputeStatMultiplier(curve, 50f, 5f, 40f), 5f);
+            curve.timeToKillCeilingSeconds = 10f;
+            float low = DifficultyManager.TimeToKill(
+                40f, DifficultyManager.ComputeStatMultiplier(curve, 50f, 5f, 40f), 5f);
+            Assert.AreEqual(20f, high, 1e-3f);
+            Assert.AreEqual(10f, low, 1e-3f);
         }
 
         [Test]

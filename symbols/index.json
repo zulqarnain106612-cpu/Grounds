@@ -1,9 +1,185 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-10T00:07:15.006789Z",
+  "updated_at": "2026-09-09T21:10:03.651073Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
+    {
+      "name": "AnalyticsEvents",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Analytics/AnalyticsEvents.cs",
+      "line": 16,
+      "namespace": "JetFighter.Analytics",
+      "tags": []
+    },
+    {
+      "name": "AnalyticsService",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Analytics/AnalyticsService.cs",
+      "line": 21,
+      "namespace": "JetFighter.Analytics",
+      "tags": []
+    },
+    {
+      "name": "IAnalyticsBackend",
+      "kind": "interface",
+      "file": "Assets/_Game/Scripts/Analytics/AnalyticsService.cs",
+      "line": 24,
+      "namespace": "JetFighter.Analytics",
+      "tags": []
+    },
+    {
+      "name": "Bind",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Analytics/AnalyticsService.cs",
+      "line": 40,
+      "namespace": "JetFighter.Analytics",
+      "tags": []
+    },
+    {
+      "name": "Reset",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Analytics/AnalyticsService.cs",
+      "line": 46,
+      "namespace": "JetFighter.Analytics",
+      "tags": []
+    },
+    {
+      "name": "LogEvent",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Analytics/AnalyticsService.cs",
+      "line": 60,
+      "namespace": "JetFighter.Analytics",
+      "tags": []
+    },
+    {
+      "name": "LogEvent",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Analytics/AnalyticsService.cs",
+      "line": 99,
+      "namespace": "JetFighter.Analytics",
+      "tags": []
+    },
+    {
+      "name": "IsValidName",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Analytics/AnalyticsService.cs",
+      "line": 111,
+      "namespace": "JetFighter.Analytics",
+      "tags": []
+    },
+    {
+      "name": "RunAnalytics",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Analytics/RunAnalytics.cs",
+      "line": 21,
+      "namespace": "JetFighter.Analytics",
+      "tags": []
+    },
+    {
+      "name": "BeginRun",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Analytics/RunAnalytics.cs",
+      "line": 33,
+      "namespace": "JetFighter.Analytics",
+      "tags": []
+    },
+    {
+      "name": "Update",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Analytics/RunAnalytics.cs",
+      "line": 40,
+      "namespace": "JetFighter.Analytics",
+      "tags": []
+    },
+    {
+      "name": "Tick",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Analytics/RunAnalytics.cs",
+      "line": 46,
+      "namespace": "JetFighter.Analytics",
+      "tags": []
+    },
+    {
+      "name": "EndRun",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Analytics/RunAnalytics.cs",
+      "line": 61,
+      "namespace": "JetFighter.Analytics",
+      "tags": []
+    },
+    {
+      "name": "ResumeAfterContinue",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Analytics/RunAnalytics.cs",
+      "line": 87,
+      "namespace": "JetFighter.Analytics",
+      "tags": []
+    },
+    {
+      "name": "FrameBudgetProbe",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Build/FrameBudgetProbe.cs",
+      "line": 19,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "Awake",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Build/FrameBudgetProbe.cs",
+      "line": 48,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "EnsureWindow",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Build/FrameBudgetProbe.cs",
+      "line": 53,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "Update",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Build/FrameBudgetProbe.cs",
+      "line": 63,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "Sample",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Build/FrameBudgetProbe.cs",
+      "line": 72,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "OnePercentLowMs",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Build/FrameBudgetProbe.cs",
+      "line": 104,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "MedianMs",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Build/FrameBudgetProbe.cs",
+      "line": 128,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "ResetStatistics",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Build/FrameBudgetProbe.cs",
+      "line": 141,
+      "namespace": "JetFighter.Build",
+      "tags": []
+    },
     {
       "name": "QualityTierManager",
       "kind": "class",
@@ -42,6 +218,54 @@
       "file": "Assets/_Game/Scripts/Build/QualityTierManager.cs",
       "line": 68,
       "namespace": "JetFighter.Build",
+      "tags": []
+    },
+    {
+      "name": "AdsManager",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Economy/AdsManager.cs",
+      "line": 20,
+      "namespace": "JetFighter.Economy",
+      "tags": []
+    },
+    {
+      "name": "AdOutcome",
+      "kind": "enum",
+      "file": "Assets/_Game/Scripts/Economy/AdsManager.cs",
+      "line": 23,
+      "namespace": "JetFighter.Economy",
+      "tags": []
+    },
+    {
+      "name": "IAdBackend",
+      "kind": "interface",
+      "file": "Assets/_Game/Scripts/Economy/AdsManager.cs",
+      "line": 39,
+      "namespace": "JetFighter.Economy",
+      "tags": []
+    },
+    {
+      "name": "Bind",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Economy/AdsManager.cs",
+      "line": 66,
+      "namespace": "JetFighter.Economy",
+      "tags": []
+    },
+    {
+      "name": "ShowRewardedAd",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Economy/AdsManager.cs",
+      "line": 78,
+      "namespace": "JetFighter.Economy",
+      "tags": []
+    },
+    {
+      "name": "ShowInterstitial",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Economy/AdsManager.cs",
+      "line": 124,
+      "namespace": "JetFighter.Economy",
       "tags": []
     },
     {
@@ -136,7 +360,7 @@
       "name": "IAPManager",
       "kind": "class",
       "file": "Assets/_Game/Scripts/Economy/IAPManager.cs",
-      "line": 23,
+      "line": 24,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -144,7 +368,7 @@
       "name": "IStoreBackend",
       "kind": "interface",
       "file": "Assets/_Game/Scripts/Economy/IAPManager.cs",
-      "line": 32,
+      "line": 33,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -152,7 +376,7 @@
       "name": "Initialize",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/IAPManager.cs",
-      "line": 80,
+      "line": 81,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -160,7 +384,7 @@
       "name": "Detach",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/IAPManager.cs",
-      "line": 110,
+      "line": 111,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -168,7 +392,7 @@
       "name": "OnDestroy",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/IAPManager.cs",
-      "line": 120,
+      "line": 121,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -176,7 +400,7 @@
       "name": "PurchaseProduct",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/IAPManager.cs",
-      "line": 130,
+      "line": 131,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -184,7 +408,7 @@
       "name": "HandleSucceeded",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/IAPManager.cs",
-      "line": 148,
+      "line": 149,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -192,7 +416,7 @@
       "name": "Credit",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/IAPManager.cs",
-      "line": 157,
+      "line": 158,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -200,7 +424,7 @@
       "name": "HandleFailed",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/IAPManager.cs",
-      "line": 198,
+      "line": 206,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -208,7 +432,7 @@
       "name": "RestoreCreditedTransactions",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/IAPManager.cs",
-      "line": 207,
+      "line": 215,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -265,6 +489,54 @@
       "kind": "method",
       "file": "Assets/_Game/Scripts/Economy/ProductCatalog.cs",
       "line": 103,
+      "namespace": "JetFighter.Economy",
+      "tags": []
+    },
+    {
+      "name": "RemoveAdsFlag",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Economy/RemoveAdsFlag.cs",
+      "line": 22,
+      "namespace": "JetFighter.Economy",
+      "tags": []
+    },
+    {
+      "name": "Data",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Economy/RemoveAdsFlag.cs",
+      "line": 25,
+      "namespace": "JetFighter.Economy",
+      "tags": []
+    },
+    {
+      "name": "Grant",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Economy/RemoveAdsFlag.cs",
+      "line": 69,
+      "namespace": "JetFighter.Economy",
+      "tags": []
+    },
+    {
+      "name": "Reset",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Economy/RemoveAdsFlag.cs",
+      "line": 94,
+      "namespace": "JetFighter.Economy",
+      "tags": []
+    },
+    {
+      "name": "InvalidateCache",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Economy/RemoveAdsFlag.cs",
+      "line": 111,
+      "namespace": "JetFighter.Economy",
+      "tags": []
+    },
+    {
+      "name": "Read",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Economy/RemoveAdsFlag.cs",
+      "line": 116,
       "namespace": "JetFighter.Economy",
       "tags": []
     },
@@ -496,7 +768,23 @@
       "name": "DifficultyManager",
       "kind": "class",
       "file": "Assets/_Game/Scripts/Enemy/DifficultyManager.cs",
-      "line": 34,
+      "line": 35,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "ReportTierIfNew",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Enemy/DifficultyManager.cs",
+      "line": 60,
+      "namespace": "JetFighter.Enemy",
+      "tags": []
+    },
+    {
+      "name": "ResetTierReporting",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Enemy/DifficultyManager.cs",
+      "line": 84,
       "namespace": "JetFighter.Enemy",
       "tags": []
     },
@@ -504,7 +792,7 @@
       "name": "ComputeStatMultiplier",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Enemy/DifficultyManager.cs",
-      "line": 48,
+      "line": 93,
       "namespace": "JetFighter.Enemy",
       "tags": []
     },
@@ -512,7 +800,7 @@
       "name": "TimeToKill",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Enemy/DifficultyManager.cs",
-      "line": 94,
+      "line": 139,
       "namespace": "JetFighter.Enemy",
       "tags": []
     },
@@ -520,7 +808,7 @@
       "name": "ExceedsCeilingUnscaled",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Enemy/DifficultyManager.cs",
-      "line": 112,
+      "line": 157,
       "namespace": "JetFighter.Enemy",
       "tags": []
     },
@@ -528,7 +816,7 @@
       "name": "GetUnlockedArchetypes",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Enemy/DifficultyManager.cs",
-      "line": 126,
+      "line": 171,
       "namespace": "JetFighter.Enemy",
       "tags": []
     },
@@ -536,7 +824,7 @@
       "name": "GetUnlockedArchetypes",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Enemy/DifficultyManager.cs",
-      "line": 135,
+      "line": 180,
       "namespace": "JetFighter.Enemy",
       "tags": []
     },
@@ -784,7 +1072,7 @@
       "name": "CurrentPowerLevel",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Enemy/EnemySpawner.cs",
-      "line": 232,
+      "line": 250,
       "namespace": "JetFighter.Enemy",
       "tags": []
     },
@@ -792,7 +1080,7 @@
       "name": "CurrentPlayerDps",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Enemy/EnemySpawner.cs",
-      "line": 238,
+      "line": 261,
       "namespace": "JetFighter.Enemy",
       "tags": []
     },
@@ -944,7 +1232,7 @@
       "name": "Connect",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/LocalLoopbackTransport.cs",
-      "line": 107,
+      "line": 106,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -952,7 +1240,7 @@
       "name": "SendState",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/LocalLoopbackTransport.cs",
-      "line": 116,
+      "line": 115,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -960,7 +1248,7 @@
       "name": "Pump",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/LocalLoopbackTransport.cs",
-      "line": 159,
+      "line": 177,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -968,7 +1256,7 @@
       "name": "Interrupt",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/LocalLoopbackTransport.cs",
-      "line": 186,
+      "line": 211,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -976,15 +1264,7 @@
       "name": "Disconnect",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/LocalLoopbackTransport.cs",
-      "line": 192,
-      "namespace": "JetFighter.Network",
-      "tags": []
-    },
-    {
-      "name": "DropsToLoss",
-      "kind": "method",
-      "file": "Assets/_Game/Scripts/Network/LocalLoopbackTransport.cs",
-      "line": 213,
+      "line": 217,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -992,7 +1272,7 @@
       "name": "SetState",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/LocalLoopbackTransport.cs",
-      "line": 223,
+      "line": 226,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -1016,7 +1296,7 @@
       "name": "Begin",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/NetworkMatchmaker.cs",
-      "line": 66,
+      "line": 61,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -1024,7 +1304,7 @@
       "name": "Dispose",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/NetworkMatchmaker.cs",
-      "line": 90,
+      "line": 85,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -1032,7 +1312,7 @@
       "name": "OnDestroy",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/NetworkMatchmaker.cs",
-      "line": 109,
+      "line": 96,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -1040,7 +1320,7 @@
       "name": "Create",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/NetworkMatchmaker.cs",
-      "line": 114,
+      "line": 101,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -1048,7 +1328,7 @@
       "name": "HandleStateChanged",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/NetworkMatchmaker.cs",
-      "line": 143,
+      "line": 123,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -1056,7 +1336,7 @@
       "name": "if",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Network/NetworkMatchmaker.cs",
-      "line": 149,
+      "line": 129,
       "namespace": "JetFighter.Network",
       "tags": []
     },
@@ -1472,7 +1752,7 @@
       "name": "IntroSequenceController",
       "kind": "class",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 22,
+      "line": 23,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1480,7 +1760,7 @@
       "name": "State",
       "kind": "enum",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 24,
+      "line": 25,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1488,7 +1768,7 @@
       "name": "Awake",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 96,
+      "line": 92,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1496,7 +1776,7 @@
       "name": "Begin",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 106,
+      "line": 102,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1504,7 +1784,7 @@
       "name": "Update",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 118,
+      "line": 110,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1512,7 +1792,7 @@
       "name": "Tick",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 129,
+      "line": 121,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1520,15 +1800,7 @@
       "name": "TickSpawn",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 151,
-      "namespace": "JetFighter.Player",
-      "tags": []
-    },
-    {
-      "name": "ApplySpawnPose",
-      "kind": "method",
-      "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 172,
+      "line": 161,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1536,7 +1808,7 @@
       "name": "TickCountdown",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 180,
+      "line": 183,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1544,7 +1816,7 @@
       "name": "Enter",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 194,
+      "line": 197,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1552,7 +1824,7 @@
       "name": "ApplyControl",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 214,
+      "line": 231,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1680,7 +1952,7 @@
       "name": "PowerUpController",
       "kind": "class",
       "file": "Assets/_Game/Scripts/PowerUp/PowerUpController.cs",
-      "line": 22,
+      "line": 23,
       "namespace": "JetFighter.PowerUp",
       "tags": []
     },
@@ -1688,7 +1960,7 @@
       "name": "ActiveStack",
       "kind": "struct",
       "file": "Assets/_Game/Scripts/PowerUp/PowerUpController.cs",
-      "line": 25,
+      "line": 26,
       "namespace": "JetFighter.PowerUp",
       "tags": []
     },
@@ -1696,7 +1968,7 @@
       "name": "MultiplierFor",
       "kind": "method",
       "file": "Assets/_Game/Scripts/PowerUp/PowerUpController.cs",
-      "line": 85,
+      "line": 86,
       "namespace": "JetFighter.PowerUp",
       "tags": []
     },
@@ -1704,7 +1976,7 @@
       "name": "Apply",
       "kind": "method",
       "file": "Assets/_Game/Scripts/PowerUp/PowerUpController.cs",
-      "line": 103,
+      "line": 104,
       "namespace": "JetFighter.PowerUp",
       "tags": []
     },
@@ -1712,7 +1984,7 @@
       "name": "Update",
       "kind": "method",
       "file": "Assets/_Game/Scripts/PowerUp/PowerUpController.cs",
-      "line": 122,
+      "line": 133,
       "namespace": "JetFighter.PowerUp",
       "tags": []
     },
@@ -1720,7 +1992,7 @@
       "name": "Tick",
       "kind": "method",
       "file": "Assets/_Game/Scripts/PowerUp/PowerUpController.cs",
-      "line": 131,
+      "line": 142,
       "namespace": "JetFighter.PowerUp",
       "tags": []
     },
@@ -1728,7 +2000,7 @@
       "name": "ClearAll",
       "kind": "method",
       "file": "Assets/_Game/Scripts/PowerUp/PowerUpController.cs",
-      "line": 165,
+      "line": 176,
       "namespace": "JetFighter.PowerUp",
       "tags": []
     },
@@ -1736,7 +2008,7 @@
       "name": "Recompose",
       "kind": "method",
       "file": "Assets/_Game/Scripts/PowerUp/PowerUpController.cs",
-      "line": 180,
+      "line": 191,
       "namespace": "JetFighter.PowerUp",
       "tags": []
     },
@@ -1821,6 +2093,78 @@
       "tags": []
     },
     {
+      "name": "SettingsUI",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 23,
+      "namespace": "JetFighter.Settings",
+      "tags": []
+    },
+    {
+      "name": "Data",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 26,
+      "namespace": "JetFighter.Settings",
+      "tags": []
+    },
+    {
+      "name": "Awake",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 62,
+      "namespace": "JetFighter.Settings",
+      "tags": []
+    },
+    {
+      "name": "DefaultFrameRateFor",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 77,
+      "namespace": "JetFighter.Settings",
+      "tags": []
+    },
+    {
+      "name": "SetTierOverride",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 89,
+      "namespace": "JetFighter.Settings",
+      "tags": []
+    },
+    {
+      "name": "ClearOverride",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 105,
+      "namespace": "JetFighter.Settings",
+      "tags": []
+    },
+    {
+      "name": "Apply",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 122,
+      "namespace": "JetFighter.Settings",
+      "tags": []
+    },
+    {
+      "name": "Load",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 130,
+      "namespace": "JetFighter.Settings",
+      "tags": []
+    },
+    {
+      "name": "Save",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
+      "line": 164,
+      "namespace": "JetFighter.Settings",
+      "tags": []
+    },
+    {
       "name": "IDamageable",
       "kind": "interface",
       "file": "Assets/_Game/Scripts/Shared/IDamageable.cs",
@@ -1890,6 +2234,38 @@
       "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
       "line": 124,
       "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
+      "name": "ContinueOnDeathUI",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/UI/ContinueOnDeathUI.cs",
+      "line": 20,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "BeginRun",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/ContinueOnDeathUI.cs",
+      "line": 52,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "AcceptOffer",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/ContinueOnDeathUI.cs",
+      "line": 61,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "DeclineOffer",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/ContinueOnDeathUI.cs",
+      "line": 85,
+      "namespace": "JetFighter.UI",
       "tags": []
     },
     {
@@ -2181,6 +2557,54 @@
       "tags": []
     },
     {
+      "name": "OddsDisclosureUI",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/UI/OddsDisclosureUI.cs",
+      "line": 27,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "Entry",
+      "kind": "struct",
+      "file": "Assets/_Game/Scripts/UI/OddsDisclosureUI.cs",
+      "line": 31,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "SetEntries",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/OddsDisclosureUI.cs",
+      "line": 57,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "PercentFor",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/OddsDisclosureUI.cs",
+      "line": 91,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "BuildDisclosureText",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/OddsDisclosureUI.cs",
+      "line": 110,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "Validate",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/OddsDisclosureUI.cs",
+      "line": 137,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
       "name": "Bullet",
       "kind": "class",
       "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
@@ -2280,7 +2704,7 @@
       "name": "Awake",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 81,
+      "line": 83,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2288,7 +2712,7 @@
       "name": "EnsurePool",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 86,
+      "line": 88,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2296,7 +2720,7 @@
       "name": "Update",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 96,
+      "line": 98,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2304,7 +2728,7 @@
       "name": "Tick",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 107,
+      "line": 109,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2312,7 +2736,7 @@
       "name": "Fire",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 120,
+      "line": 122,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2320,7 +2744,7 @@
       "name": "ReleaseMissile",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 158,
+      "line": 160,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2368,7 +2792,7 @@
       "name": "ReleaseProjectile",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 185,
+      "line": 186,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2376,7 +2800,7 @@
       "name": "StepLiveProjectiles",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 205,
+      "line": 206,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2384,7 +2808,7 @@
       "name": "Fire",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 232,
+      "line": 233,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },

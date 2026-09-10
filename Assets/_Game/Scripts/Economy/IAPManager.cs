@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using JetFighter.Analytics;
 
 namespace JetFighter.Economy
 {
@@ -190,6 +191,13 @@ namespace JetFighter.Economy
             // transaction it was told was handled.
             SaveService.Save(wallet);
             backend?.ConfirmPendingPurchase(transactionId);
+
+            AnalyticsService.LogEvent(AnalyticsEvents.IapPurchase,
+                new Dictionary<string, object>
+                {
+                    { AnalyticsEvents.ParamProductId, productId },
+                    { AnalyticsEvents.ParamGemsGranted, gems },
+                });
 
             OnPurchaseCredited?.Invoke(productId, gems);
             return true;

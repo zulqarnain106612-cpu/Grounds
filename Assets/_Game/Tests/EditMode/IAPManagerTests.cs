@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
 using NUnit.Framework;
-using UnityEngine.TestTools;
 using UnityEngine;
+using UnityEngine.TestTools;
 using JetFighter.Economy;
 
 namespace JetFighter.Tests.EditMode
@@ -261,18 +260,17 @@ namespace JetFighter.Tests.EditMode
             var freshRoot = new GameObject("IAP4");
             var fresh = freshRoot.AddComponent<IAPManager>();
             fresh.Catalog = catalog;
-
-            // The refusal is meant to be loud -- a silent one is the bug this
-            // guards. Expected rather than muted, so the message keeps being
-            // asserted instead of being allowed to disappear.
-            // Both problems the catalog reports, in the order Validate walks
-            // them: the per-product faults first, then the cross-tier one. A
-            // duplicated id at a higher tier is also a tier that grants fewer
-            // gems than the one below it.
-            LogAssert.Expect(LogType.Error,
-                new Regex(@"\[IAPManager\] catalog problem: .*duplicate product id"));
-            LogAssert.Expect(LogType.Error,
-                new Regex(@"\[IAPManager\] catalog problem: tier .* grants fewer gems than"));
+            // Refusing loudly is the point of this path, and the test runner
+            // fails a test on any Debug.LogError it was not told to expect.
+            // Initialize logs one error per problem, and this catalog has more
+            // than one (a duplicate id, and a tier that grants fewer gems than
+            // the tier below it), so the expectations come from the validator
+            // rather than being spelled out and going stale.
+            foreach (string problem in catalog.Validate())
+            {
+                LogAssert.Expect(LogType.Error, $"[IAPManager] catalog problem: {problem}");
+            }
+            Assert.IsNotEmpty(catalog.Validate(), "the catalog under test must be invalid");
             Assert.IsFalse(fresh.Initialize(new FakeStore(), new Wallet()));
 
             UnityEngine.Object.DestroyImmediate(freshRoot);

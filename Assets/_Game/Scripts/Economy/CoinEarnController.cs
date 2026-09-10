@@ -29,11 +29,11 @@ namespace JetFighter.Economy
         [Min(0f)]
         [SerializeField] private float saveIntervalSeconds = 10f;
 
-        // Double, not float: the remainder is carried across frames, and a
-        // float's ~1e-7 resolution near 1.0 survives every subtraction. Over a
-        // five-minute run at 60fps that shortfall compounds into whole seconds
-        // the player survived and was not paid for -- 29 coins where 30 were
-        // earned, and a 60fps run earning less than the same run at 30.
+        // double, not float: Tick accumulates one frame delta at a time, and
+        // float32 loses enough per addition that 300 frames of 1/60s sum to
+        // just under 5s -- paying 4 seconds' worth instead of 5, and making the
+        // rate depend on frame rate. Kept in double, the sum is exact enough
+        // that 1/60s and 1/30s frames pay identically.
         private double survivalRemainder;
         private float sinceLastSave;
         private bool dirty;

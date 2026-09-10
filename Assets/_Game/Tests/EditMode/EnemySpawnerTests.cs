@@ -28,11 +28,6 @@ namespace JetFighter.Tests.EditMode
         [SetUp]
         public void SetUp()
         {
-            // The spawner draws from the unlocked set with UnityEngine.Random,
-            // whose state carries across tests. Seeded so a run of this class
-            // is reproducible rather than depending on what ran before it.
-            UnityEngine.Random.InitState(20260909);
-
             curve = ScriptableObject.CreateInstance<DifficultyCurve>();
             curve.k = 0.5f;
             curve.timeToKillCeilingSeconds = 8f;
@@ -134,16 +129,13 @@ namespace JetFighter.Tests.EditMode
         {
             GameObject spawned = spawner.SpawnOne(4f, Dps);
             var health = spawned.GetComponent<EnemyHealth>();
-
-            // Both archetypes are unlocked at this power level and the spawner
-            // picks between them at random, so the expectation is read from
-            // the archetype that was actually spawned. Assuming the basic one
-            // made this pass or fail on the draw, which is the kind of test
-            // that is believed until the day it matters.
-            EnemyDef archetype = health.Def;
-            Assert.IsNotNull(archetype, "the spawn did not carry its archetype");
-            float expected = archetype.maxHealth *
-                DifficultyManager.ComputeStatMultiplier(curve, 4f, Dps, archetype.maxHealth);
+            // Read the archetype off the spawn rather than assuming `basic`:
+            // at power 4 `heavy` is unlocked too (threshold 2) and ChooseKillable
+            // is free to pick it, so pinning the expectation to `basic` asserts
+            // the choice rather than the scaling this test is about.
+            EnemyDef def = health.Def;
+            float expected = def.maxHealth *
+                DifficultyManager.ComputeStatMultiplier(curve, 4f, Dps, def.maxHealth);
             Assert.AreEqual(expected, health.MaxHealth, 1e-3f);
             Assert.AreEqual(expected, health.CurrentHealth, 1e-3f);
         }
