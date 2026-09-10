@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-09T20:55:35.209741Z",
+  "updated_at": "2026-09-09T21:06:19.581538Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -2290,6 +2290,54 @@
       "file": "Assets/_Game/Scripts/UI/Input/TargetReticleInput.cs",
       "line": 164,
       "namespace": "JetFighter.UI.Input",
+      "tags": []
+    },
+    {
+      "name": "OddsDisclosureUI",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/UI/OddsDisclosureUI.cs",
+      "line": 27,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "Entry",
+      "kind": "struct",
+      "file": "Assets/_Game/Scripts/UI/OddsDisclosureUI.cs",
+      "line": 31,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "SetEntries",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/OddsDisclosureUI.cs",
+      "line": 57,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "PercentFor",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/OddsDisclosureUI.cs",
+      "line": 91,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "BuildDisclosureText",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/OddsDisclosureUI.cs",
+      "line": 110,
+      "namespace": "JetFighter.UI",
+      "tags": []
+    },
+    {
+      "name": "Validate",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/UI/OddsDisclosureUI.cs",
+      "line": 137,
+      "namespace": "JetFighter.UI",
       "tags": []
     },
     {

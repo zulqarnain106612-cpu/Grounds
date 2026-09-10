@@ -110,7 +110,7 @@ show, and the evidence a passing run has to produce.
 | [x] | `phase5/iap-integration` | scene | Roadmap §5 — IAP ladder | ADR-004 | Sandbox purchase credits gems via the Phase 3 `Wallet` | `phase5_iap_integration` |
 | [x] | `phase5/store-ui` | ui | Roadmap §5 — dual-currency store | ADR-004 | Both currencies purchase and deduct correctly | `phase5_store_ui` |
 | [x] | `phase5/ads-integration` | scene | Roadmap §5 — rewarded + interstitial, remove-ads IAP | — | Remove-ads suppresses interstitials permanently | `phase5_ads_integration` |
-| [ ] | `phase5/compliance-odds-ui` | ui | Roadmap §5 — Guideline 3.1.1 slot | **ADR-006** | Renders correctly in a test harness while dormant | `phase5_compliance_odds_ui` |
+| [x] | `phase5/compliance-odds-ui` | ui | Roadmap §5 — Guideline 3.1.1 slot | **ADR-006** | Renders correctly in a test harness while dormant. **Still human-owned:** ADR-006 says to re-read the current App Store guidelines at Cycle 5 rather than trusting the note — the component being testable is not the same as the disclosure being what Guideline 3.1.1 currently requires | `phase5_compliance_odds_ui` |
 
 **Cycle gate:** a sandbox IAP completes end-to-end and unlocks a store item.
 

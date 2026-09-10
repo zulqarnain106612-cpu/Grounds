@@ -259,6 +259,14 @@
       "symbols": ["AdsManager", "RemoveAdsFlag", "ContinueOnDeathUI", "AdOutcome"]
     },
     {
+      "id": "phase5_compliance_odds_ui",
+      "type": "system",
+      "label": "Odds Disclosure Slot (dormant, Guideline 3.1.1)",
+      "tags": ["ui", "compliance", "phase5", "adr-006"],
+      "phase": ["5"],
+      "symbols": ["OddsDisclosureUI", "BuildDisclosureText", "PercentFor"]
+    },
+    {
       "id": "phase5_iap_integration",
       "type": "system",
       "label": "Unity IAP + Gem Crediting (idempotent per transaction)",
@@ -336,6 +344,8 @@
     {"from": "phase5_iap_integration", "to": "cycle:5", "kind": "part_of"},
     {"from": "phase5_store_ui", "to": "cycle:5", "kind": "part_of"},
     {"from": "phase5_ads_integration", "to": "cycle:5", "kind": "part_of"},
+    {"from": "phase5_compliance_odds_ui", "to": "cycle:5", "kind": "part_of"},
+    {"from": "phase5_compliance_odds_ui", "to": "domain:ui", "kind": "delivers"},
     {"from": "phase5_ads_integration", "to": "domain:scene", "kind": "delivers"},
     {"from": "phase5_ads_integration", "to": "phase5_iap_integration", "kind": "depends_on"},
     {"from": "phase5_store_ui", "to": "domain:ui", "kind": "delivers"},
