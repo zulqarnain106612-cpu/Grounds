@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-09T17:58:04.694571Z",
+  "updated_at": "2026-09-09T18:03:58.768365Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -349,10 +349,18 @@
       "tags": []
     },
     {
+      "name": "CopyLiveTo",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
+      "line": 97,
+      "namespace": "JetFighter.Shared",
+      "tags": []
+    },
+    {
       "name": "Release",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
-      "line": 92,
+      "line": 113,
       "namespace": "JetFighter.Shared",
       "tags": []
     },
@@ -360,7 +368,7 @@
       "name": "RemoveFromLive",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Shared/ObjectPool.cs",
-      "line": 103,
+      "line": 124,
       "namespace": "JetFighter.Shared",
       "tags": []
     },
@@ -525,10 +533,58 @@
       "tags": []
     },
     {
+      "name": "Bullet",
+      "kind": "class",
+      "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
+      "line": 25,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Launch",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
+      "line": 53,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Step",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
+      "line": 69,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "OnTriggerEnter",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
+      "line": 83,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "HandleHit",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
+      "line": 93,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "Finish",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/Bullet.cs",
+      "line": 114,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
       "name": "PrimaryGunController",
       "kind": "class",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 15,
+      "line": 16,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -536,7 +592,7 @@
       "name": "Awake",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 86,
+      "line": 96,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -544,7 +600,7 @@
       "name": "EnsurePool",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 96,
+      "line": 106,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -552,7 +608,7 @@
       "name": "Update",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 106,
+      "line": 116,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -560,7 +616,23 @@
       "name": "Tick",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 125,
+      "line": 141,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "ReleaseProjectile",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
+      "line": 186,
+      "namespace": "JetFighter.Weapon",
+      "tags": []
+    },
+    {
+      "name": "StepLiveProjectiles",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
+      "line": 206,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -568,7 +640,7 @@
       "name": "Fire",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 151,
+      "line": 233,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },

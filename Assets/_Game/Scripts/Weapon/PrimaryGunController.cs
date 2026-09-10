@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using JetFighter.Player;
 using JetFighter.Shared;
@@ -21,7 +22,17 @@ namespace JetFighter.Weapon
 
         [SerializeField] private bool autoFire = true;
 
+        // See the catch-up loop in Tick. A cooldown refilled to within this
+        // much of zero counts as exactly consumed rather than overrun.
+        private const float CooldownEpsilon = 1e-4f;
+
         private ObjectPool pool;
+
+        // Scratch space for one frame's walk over the pool's live instances.
+        // Not a record of what is in flight -- the pool holds that, and
+        // returning a spent round stays the round's own job. Reused so the
+        // walk does not allocate every frame.
+        private readonly List<GameObject> stepBuffer = new List<GameObject>();
         private float cooldownTimer;
         private IPlayerStats stats = DefaultPlayerStats.Instance;
 
@@ -70,12 +81,11 @@ namespace JetFighter.Weapon
         }
 
         /// <summary>
-        /// Whether Update drives the cooldown by itself.
-        ///
-        /// Exposed for the same reason Tick takes a deltaTime: a scene test
-        /// that wants to observe the pool before the first shot cannot do it
-        /// while the player loop is firing between its setup and its
-        /// assertions.
+        /// Whether Update drives the gun. Turned off by the intro sequence
+        /// (Phase 2) so the gun is silent until Go, and by tests that need to
+        /// place every shot themselves -- a scene test cannot observe the pool
+        /// before the first shot while the player loop is firing between its
+        /// setup and its assertions.
         /// </summary>
         public bool AutoFire
         {
@@ -107,6 +117,12 @@ namespace JetFighter.Weapon
         {
             if (!autoFire)
             {
+                // Firing is off, but rounds already in the air still have to
+                // travel and expire. Bullets do not advance themselves any
+                // more, so returning here would strand every one of them: they
+                // would hang in place and never come back to the pool, and the
+                // gun would starve the moment firing resumed.
+                StepLiveProjectiles(Time.deltaTime);
                 return;
             }
             Tick(Time.deltaTime);
@@ -129,6 +145,7 @@ namespace JetFighter.Weapon
                 return;
             }
             EnsurePool();
+            StepLiveProjectiles(deltaTime);
             cooldownTimer -= deltaTime;
 
             float cooldown = EffectiveCooldownSeconds;
@@ -140,6 +157,71 @@ namespace JetFighter.Weapon
             {
                 Fire();
                 cooldownTimer += cooldown;
+                // A cooldown that lands exactly on zero has been exactly
+                // consumed, not overrun: it owes the *next* tick a shot, not
+                // this one. Without this the very first Tick fires twice --
+                // the timer starts at zero, goes negative, is refilled back to
+                // exactly zero, and `<= 0f` is still true. One extra round in
+                // the air is one the pool does not have back, which is the
+                // difference between a bounded pool and a live bullet being
+                // stolen out of it.
+                //
+                // Guarding the catch-up step rather than the loop entry, so a
+                // gun whose timer starts at zero still fires immediately
+                // (TheFirstShotIsImmediate) and a hitch still owes every shot
+                // it swallowed. Same epsilon and same reason as
+                // Bullet.LifetimeEpsilon: float subtraction does not land on
+                // zero exactly.
+                if (cooldownTimer > -CooldownEpsilon)
+                {
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns a spent projectile. Assigned to each bullet as it launches,
+        /// so the gun never has to track what is in flight.
+        /// </summary>
+        private void ReleaseProjectile(GameObject projectile)
+        {
+            pool?.Release(projectile);
+        }
+
+        /// <summary>
+        /// Advances every round in the air by the same deltaTime the gun was
+        /// ticked with.
+        ///
+        /// The gun owns the clock because it is the only way the two agree. A
+        /// bullet that advanced itself from Time.deltaTime while the gun ran
+        /// on a simulated step would never reach its lifetime during a
+        /// simulated soak: the gun fires four seconds' worth of shots inside
+        /// one second of real time, none expire, and the pool starts recycling
+        /// rounds that are still on screen.
+        ///
+        /// Which instances are live is asked of the pool each time rather than
+        /// tracked here. The gun keeping its own list of bullets is the thing
+        /// test_the_gun_does_not_track_bullets_in_flight exists to prevent.
+        /// </summary>
+        private void StepLiveProjectiles(float deltaTime)
+        {
+            if (pool == null)
+            {
+                return;
+            }
+            pool.CopyLiveTo(stepBuffer);
+            for (int i = 0; i < stepBuffer.Count; i++)
+            {
+                GameObject instance = stepBuffer[i];
+                if (instance == null)
+                {
+                    continue;
+                }
+                Bullet projectile = instance.GetComponent<Bullet>();
+                if (projectile != null)
+                {
+                    projectile.Step(deltaTime);
+                }
             }
         }
 
@@ -158,6 +240,17 @@ namespace JetFighter.Weapon
             GameObject bullet = pool.Get();
             Transform origin = muzzleTransform != null ? muzzleTransform : transform;
             bullet.transform.SetPositionAndRotation(origin.position, origin.rotation);
+
+            // Armed on every Get, not once at spawn: a recycled bullet still
+            // carrying the previous shot's countdown would expire mid-screen.
+            // EffectiveDamage is read here, so the shot carries the player's
+            // multiplier as it was at fire time.
+            var projectile = bullet.GetComponent<Bullet>();
+            if (projectile != null)
+            {
+                projectile.OnFinished = ReleaseProjectile;
+                projectile.Launch(EffectiveDamage, weaponDef.projectileSpeed, weaponDef.projectileLifetime);
+            }
         }
     }
 }

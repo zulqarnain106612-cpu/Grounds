@@ -37,13 +37,10 @@ namespace JetFighter.Tests.PlayMode
             gunObject.transform.position = new Vector3(2f, 3f, 0f);
             gun = gunObject.AddComponent<PrimaryGunController>();
             gun.WeaponDef = weapon;
-            gun.EnsurePool();
-            // A frame elapses between SetUp and the test body, and the gun's
-            // first shot is immediate by design (PrimaryGunControllerTests
-            // .TheFirstShotIsImmediate). Left driven, it empties a pool slot
-            // before any test has said a word. The one case that needs the
-            // player loop turns it back on for itself.
+            // Off by default here so each test places its own shots; the
+            // autofire test turns it back on explicitly.
             gun.AutoFire = false;
+            gun.EnsurePool();
         }
 
         [TearDown]
