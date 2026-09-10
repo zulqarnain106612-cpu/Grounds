@@ -27,7 +27,11 @@ namespace JetFighter.Weapon
         [SerializeField] private float cooldownSeconds = 3f;
 
         private ObjectPool pool;
-        private float cooldownRemaining;
+        // Double, not float: this is decremented one frame at a time and
+        // compared against zero. A 3s cooldown ticked down by 180 float
+        // additions of 1/60 lands ~1e-6 above zero, so the launcher is still
+        // refusing presses a frame after the UI's radial fill shows it ready.
+        private double cooldownRemaining;
         private IPlayerStats stats = DefaultPlayerStats.Instance;
 
         /// <summary>Missiles launched since this launcher woke. For soak tests.</summary>
@@ -36,7 +40,7 @@ namespace JetFighter.Weapon
         /// <summary>Presses refused by the cooldown. Surfaced so UI can show the lockout.</summary>
         public int BlockedByCooldown { get; private set; }
 
-        public float CooldownRemaining => cooldownRemaining;
+        public float CooldownRemaining => (float)cooldownRemaining;
 
         // Same constant and the same reasoning as Bullet.LifetimeEpsilon and
         // PrimaryGunController.CooldownEpsilon: float subtraction does not land
@@ -48,7 +52,7 @@ namespace JetFighter.Weapon
 
         /// <summary>Fraction of the cooldown elapsed, 0..1. For a radial UI fill.</summary>
         public float CooldownProgress =>
-            cooldownSeconds <= 0f ? 1f : Mathf.Clamp01(1f - cooldownRemaining / cooldownSeconds);
+            cooldownSeconds <= 0f ? 1f : Mathf.Clamp01(1f - (float)(cooldownRemaining / cooldownSeconds));
 
         public ObjectPool Pool => pool;
 
@@ -110,7 +114,7 @@ namespace JetFighter.Weapon
         {
             if (cooldownRemaining > 0f)
             {
-                cooldownRemaining = Mathf.Max(0f, cooldownRemaining - deltaTime);
+                cooldownRemaining = System.Math.Max(0d, cooldownRemaining - deltaTime);
             }
         }
 

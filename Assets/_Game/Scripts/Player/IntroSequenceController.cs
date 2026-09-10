@@ -63,7 +63,12 @@ namespace JetFighter.Player
         public event Action OnPlayerControl;
 
         private Vector3 restPosition;
-        private float stateElapsed;
+        // Double, not float: this is summed one frame at a time and compared
+        // against a whole-second duration. Sixty float additions of 1/60 come
+        // to 0.9999997, so a one-second spawn is still unfinished after a
+        // second of frames and the countdown starts a frame late -- and every
+        // count after it inherits the shortfall.
+        private double stateElapsed;
         private int currentCount;
 
         public State Current { get; private set; } = State.Idle;
@@ -105,6 +110,10 @@ namespace JetFighter.Player
             currentCount = countFrom;
             stateElapsed = 0f;
             Enter(State.Spawn);
+            // Posed at the entry point now rather than on the first Tick: a
+            // frame drawn between Begin and that tick shows the jet already on
+            // its plane, and the player sees it snap below and fly back up.
+            ApplySpawnPose(0f);
         }
 
         private void Update()
@@ -160,9 +169,7 @@ namespace JetFighter.Player
 
         private void TickSpawn()
         {
-            float t = Mathf.Clamp01(stateElapsed / spawnSeconds);
-            transform.position = Vector3.LerpUnclamped(
-                restPosition + spawnOffset, restPosition, spawnCurve.Evaluate(t));
+            float t = ApplySpawnPose(stateElapsed / spawnSeconds);
 
             if (t >= 1f)
             {
@@ -174,10 +181,22 @@ namespace JetFighter.Player
                 // Carry the overshoot rather than zeroing it: the frame that
                 // ends the spawn may be long enough to cover part of the
                 // countdown too, and that time belongs to the countdown.
-                stateElapsed = Mathf.Max(0f, stateElapsed - spawnSeconds);
+                stateElapsed = System.Math.Max(0d, stateElapsed - spawnSeconds);
                 Enter(State.Countdown);
                 OnCountChanged?.Invoke(currentCount);
             }
+        }
+
+        /// <summary>
+        /// Places the jet along the entry tween. Returns the clamped progress
+        /// so the caller can test for arrival without recomputing it.
+        /// </summary>
+        private float ApplySpawnPose(double progress)
+        {
+            float t = Mathf.Clamp01((float)progress);
+            transform.position = Vector3.LerpUnclamped(
+                restPosition + spawnOffset, restPosition, spawnCurve.Evaluate(t));
+            return t;
         }
 
         private void TickCountdown()

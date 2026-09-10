@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-09T21:10:03.651073Z",
+  "updated_at": "2026-09-10T00:42:19.702813Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -1768,7 +1768,7 @@
       "name": "Awake",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 92,
+      "line": 97,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1776,7 +1776,7 @@
       "name": "Begin",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 102,
+      "line": 107,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1784,7 +1784,7 @@
       "name": "Update",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 110,
+      "line": 119,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1792,7 +1792,7 @@
       "name": "Tick",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 121,
+      "line": 130,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1800,7 +1800,15 @@
       "name": "TickSpawn",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 161,
+      "line": 170,
+      "namespace": "JetFighter.Player",
+      "tags": []
+    },
+    {
+      "name": "ApplySpawnPose",
+      "kind": "method",
+      "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
+      "line": 194,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1808,7 +1816,7 @@
       "name": "TickCountdown",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 183,
+      "line": 202,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1816,7 +1824,7 @@
       "name": "Enter",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 197,
+      "line": 216,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -1824,7 +1832,7 @@
       "name": "ApplyControl",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Player/IntroSequenceController.cs",
-      "line": 231,
+      "line": 250,
       "namespace": "JetFighter.Player",
       "tags": []
     },
@@ -2704,7 +2712,7 @@
       "name": "Awake",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 83,
+      "line": 87,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2712,7 +2720,7 @@
       "name": "EnsurePool",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 88,
+      "line": 92,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2720,7 +2728,7 @@
       "name": "Update",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 98,
+      "line": 102,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2728,7 +2736,7 @@
       "name": "Tick",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 109,
+      "line": 113,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2736,7 +2744,7 @@
       "name": "Fire",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 122,
+      "line": 126,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2744,7 +2752,7 @@
       "name": "ReleaseMissile",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/MissileLauncher.cs",
-      "line": 160,
+      "line": 164,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2792,7 +2800,7 @@
       "name": "ReleaseProjectile",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 186,
+      "line": 185,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2800,7 +2808,7 @@
       "name": "StepLiveProjectiles",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 206,
+      "line": 205,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },
@@ -2808,7 +2816,7 @@
       "name": "Fire",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Weapon/PrimaryGunController.cs",
-      "line": 233,
+      "line": 232,
       "namespace": "JetFighter.Weapon",
       "tags": []
     },

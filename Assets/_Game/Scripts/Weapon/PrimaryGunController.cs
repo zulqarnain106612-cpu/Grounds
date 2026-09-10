@@ -152,30 +152,29 @@ namespace JetFighter.Weapon
             // A loop, not an `if`: a frame longer than the cooldown (a hitch,
             // or a fire-rate power-up in Phase 3) still owes the player every
             // shot that elapsed during it.
+            //
+            // The first check admits a timer of exactly zero, which is what
+            // makes the opening shot immediate. The carry after a shot has to
+            // be strictly negative to fire again inside the same frame: a
+            // frame that lands exactly on the cadence -- every frame, when the
+            // step is the cooldown -- otherwise pays twice, once for the shot
+            // due at its start and once for the one due at its end. That extra
+            // opening round is one more bullet in the air than the pool was
+            // sized for, and the pool answers by recycling a live one.
+            bool due = cooldownTimer <= 0f;
             int guard = 0;
-            while (cooldownTimer <= 0f && guard++ < 64)
+            while (due && guard++ < 64)
             {
                 Fire();
                 cooldownTimer += cooldown;
-                // A cooldown that lands exactly on zero has been exactly
-                // consumed, not overrun: it owes the *next* tick a shot, not
-                // this one. Without this the very first Tick fires twice --
-                // the timer starts at zero, goes negative, is refilled back to
-                // exactly zero, and `<= 0f` is still true. One extra round in
-                // the air is one the pool does not have back, which is the
-                // difference between a bounded pool and a live bullet being
-                // stolen out of it.
-                //
-                // Guarding the catch-up step rather than the loop entry, so a
-                // gun whose timer starts at zero still fires immediately
-                // (TheFirstShotIsImmediate) and a hitch still owes every shot
-                // it swallowed. Same epsilon and same reason as
-                // Bullet.LifetimeEpsilon: float subtraction does not land on
-                // zero exactly.
-                if (cooldownTimer > -CooldownEpsilon)
-                {
-                    break;
-                }
+                // Strictly past zero, not merely at it, and by more than
+                // float noise: a carry that lands exactly on the cadence has
+                // been exactly consumed, so it owes the *next* tick a shot
+                // rather than this one. The epsilon is there because float
+                // subtraction does not land on zero exactly -- same constant
+                // and same reason as Bullet.LifetimeEpsilon, and without it a
+                // carry of -1e-9 pays the same frame twice again.
+                due = cooldownTimer <= -CooldownEpsilon;
             }
         }
 
