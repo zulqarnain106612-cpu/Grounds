@@ -26,10 +26,27 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const { owner, repo, number } = context.issue;
+            const { owner, repo } = context.repo;
+
+            // context.issue carries a number only for pull_request and issue
+            // events. check_run and workflow_run are the two triggers that fire
+            // *after* CI finishes -- the one moment a merge gate matters -- and
+            // their payloads carry no issue at all, so reading the number from
+            // context.issue alone made this workflow report "not a pull request
+            // context" at exactly the point it was supposed to act. Those
+            // payloads name the pull requests the commit belongs to instead.
+            const fromEvent =
+              (context.payload.check_run && context.payload.check_run.pull_requests) ||
+              (context.payload.workflow_run && context.payload.workflow_run.pull_requests) ||
+              [];
+            const number = context.issue.number
+              || (context.payload.pull_request && context.payload.pull_request.number)
+              || (fromEvent.length > 0 ? fromEvent[0].number : undefined);
 
             if (!number) {
-              console.log('Not a pull request context, skipping');
+              // A push or a status event on no pull request. GitHub also omits
+              // pull_requests for a check run from a fork.
+              console.log(`No pull request on this ${context.eventName} event, skipping`);
               return;
             }
 
