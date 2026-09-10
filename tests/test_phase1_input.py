@@ -73,14 +73,19 @@ def test_a_missing_joystick_reads_as_no_input():
     assert "Vector2.zero" in code(ROUTER)
 
 
-def test_the_right_hand_seam_is_declared_but_not_implemented():
-    """ADR-002 gives targeting to Phase 2. Naming the interface now keeps
-    Phase 1 from growing a right-hand code path it would have to unpick."""
+def test_the_router_holds_the_seam_not_the_implementation():
+    """ADR-002 gave targeting to Phase 2, and Phase 1 declared `ITargetInput`
+    so it would not grow a right-hand code path it had to unpick.
+
+    Phase 2's `TargetReticleInput` now implements it — which is the point of
+    having declared it. What must stay true is that the router never learns
+    the concrete type, so a third targeting source (a gamepad, a Phase 4
+    remote player) drops in without touching this class."""
     interface = (INPUT_DIR / "ITargetInput.cs").read_text()
     assert "interface ITargetInput" in interface
     assert "ITargetInput" in code(ROUTER)
-    implementations = [p for p in INPUT_DIR.glob("*.cs") if ": ITargetInput" in p.read_text()]
-    assert not implementations, "an ITargetInput implementation is Phase 2 scope"
+    assert "TargetReticleInput" not in code(ROUTER), \
+        "the router named a concrete targeting source"
 
 
 @pytest.mark.parametrize("name,namespace", [

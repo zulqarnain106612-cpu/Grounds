@@ -36,6 +36,15 @@ namespace JetFighter.Weapon
         [Min(0.1f)]
         public float projectileLifetime = 3f;
 
+        [Header("Homing (missiles only)")]
+        [Tooltip("Maximum turn rate, in degrees/second. The cap is what makes a missile dodgeable.")]
+        [Min(0f)]
+        public float turnDegreesPerSecond = 180f;
+
+        [Tooltip("Distance at which the projectile counts as having hit its target.")]
+        [Min(0.01f)]
+        public float impactRadius = 1f;
+
         /// <summary>Seconds between shots. Guarded so a zero rate cannot divide by zero.</summary>
         public float CooldownSeconds => 1f / Mathf.Max(0.01f, fireRatePerSecond);
     }
