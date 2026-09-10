@@ -180,27 +180,43 @@ namespace JetFighter.Tests.EditMode
         [Test]
         public void LossIsDeterministicRatherThanRandom()
         {
-            // A flaky test is worse than no test: the same packets are lost on
-            // every run. The dropped slot rotates within the cycle rather than
-            // sitting still -- a fixed slot aliases with an interleaved sender,
-            // and one stream then loses every packet while the counter reports
-            // the configured rate. Over a whole cycle the rate is exact, so the
-            // window here is a multiple of one.
-            (LocalLoopbackTransport host, LocalLoopbackTransport guest) = LocalLoopbackTransport.CreatePair();
-            host.LossRate = 0.5f;
-
-            for (int i = 0; i < 12; i++)
+            // A flaky test is worse than no test: the same packets must be lost
+            // on every run. And the dropped slot must not sit still -- a fixed
+            // slot aliases with an interleaved sender, and one stream then loses
+            // every packet while the counter still reports the configured rate.
+            //
+            // Both properties are asserted directly rather than by pinning one
+            // hard-coded sequence. The scheme that satisfies them has already
+            // been rewritten once, and a test naming the exact packets fails on
+            // a change of scheme even when determinism and the rate still hold,
+            // which says nothing about either property.
+            List<string> Run()
             {
-                host.SendState(Payload(i.ToString()));
-            }
-            Assert.AreEqual(6, host.DroppedByLoss);
-            Assert.AreEqual(6, guest.PendingCount);
+                (LocalLoopbackTransport host, LocalLoopbackTransport guest) =
+                    LocalLoopbackTransport.CreatePair();
+                host.LossRate = 0.5f;
+                for (int i = 0; i < 12; i++)
+                {
+                    host.SendState(Payload(i.ToString()));
+                }
+                Assert.AreEqual(6, host.DroppedByLoss, "half of a 12-packet window");
+                Assert.AreEqual(6, guest.PendingCount);
 
-            // The same packets, not merely the same count.
-            var arrived = new List<string>();
-            guest.OnStateReceived += p => arrived.Add(Text(p));
-            guest.Pump();
-            CollectionAssert.AreEqual(new[] { "0", "1", "4", "5", "8", "9" }, arrived);
+                var arrived = new List<string>();
+                guest.OnStateReceived += p => arrived.Add(Text(p));
+                guest.Pump();
+                return arrived;
+            }
+
+            List<string> first = Run();
+            CollectionAssert.AreEqual(first, Run(), "the same packets, not merely the same count");
+
+            // Neither half of an alternating two-stream interleave is starved:
+            // that is the aliasing this rate is chosen to expose.
+            var even = first.FindAll(t => int.Parse(t) % 2 == 0);
+            var odd = first.FindAll(t => int.Parse(t) % 2 == 1);
+            Assert.IsNotEmpty(even, "every even-slot packet was dropped -- the drop slot is aliasing");
+            Assert.IsNotEmpty(odd, "every odd-slot packet was dropped -- the drop slot is aliasing");
         }
 
         [Test]
