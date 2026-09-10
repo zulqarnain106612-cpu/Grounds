@@ -181,7 +181,7 @@ namespace JetFighter.Player
                 // Carry the overshoot rather than zeroing it: the frame that
                 // ends the spawn may be long enough to cover part of the
                 // countdown too, and that time belongs to the countdown.
-                stateElapsed = Mathf.Max(0f, stateElapsed - spawnSeconds);
+                stateElapsed = System.Math.Max(0d, stateElapsed - spawnSeconds);
                 Enter(State.Countdown);
                 OnCountChanged?.Invoke(currentCount);
             }
