@@ -114,7 +114,9 @@ jobs:
       # log is not in the failed-step log. Every licence activation error this
       # runner printed was therefore invisible, and the only symptom reaching
       # anyone was the gate downstream reporting a missing artifacts directory.
-      - uses: game-ci/unity-test-runner@v4
+      # Pinned to a commit, not @v4: a floating tag on a third-party action
+      # is an unreviewed code path into a job that holds a Unity credential.
+      - uses: game-ci/unity-test-runner@32e57712352b500e17974b245a6dce9e11a73213
         id: runner
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
