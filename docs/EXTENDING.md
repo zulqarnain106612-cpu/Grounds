@@ -16,8 +16,20 @@ skipped, so it's hard to add an unenforced action by accident.
    up automatically — but add a dedicated test if the action needs
    specific enforcement checks, following the pattern in
    `tests/test_enforcement.py`).
-5. Run `make validate && make test`.
-6. Regenerate docs: `python3 -m gateway.docgen` (also run automatically by
+5. Regenerate the contract golden **in the same commit**:
+
+   ```bash
+   python -m tests.contract_surface --update-golden
+   ```
+
+   `tests/test_schema_contract.py` compares the schema's public surface
+   against `tests/golden/schema_contract.json` and fails on any drift. That
+   is the point — an action appearing or vanishing should be a line in a
+   diff somebody reads, not a silent change. Regenerating to make a red
+   build green, without knowing which line moved and why, defeats the check
+   entirely.
+6. Run `make validate && make test`.
+7. Regenerate docs: `python3 -m gateway.docgen` (also run automatically by
    CI as a diff check — add it to `.githooks/pre-commit` if you want local
    enforcement too).
 

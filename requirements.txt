@@ -1,3 +1,13 @@
 jsonschema>=4.20,<5
 pytest>=7.4,<9
 pytest-cov>=4.1,<8
+
+# Property-based testing (tests/test_property_invariants.py). Capped at the
+# next major for the same reason as everything above it: a major bump should
+# be a reviewed commit, not something a fresh CI runner picks up on its own.
+hypothesis>=6.98,<7
+
+# Mutation testing (.github/workflows/qa.yml, suite=mutation). Not imported by
+# any test -- it runs the suite repeatedly against a mutated gateway/ and
+# reports how many mutants the suite failed to kill.
+mutmut>=2.4,<3

@@ -6,123 +6,378 @@
       "id": "cycle:0",
       "type": "cycle",
       "label": "Cycle 0 - Harness Bootstrap",
-      "tags": ["cycle", "build_pipeline", "knowledge_base", "ci"],
-      "phase": ["0"],
+      "tags": [
+        "cycle",
+        "build_pipeline",
+        "knowledge_base",
+        "ci"
+      ],
+      "phase": [
+        "0"
+      ],
       "symbols": []
     },
     {
       "id": "cycle:1",
       "type": "cycle",
       "label": "Cycle 1 - Constrained-Physics Flight Feel",
-      "tags": ["cycle", "player", "physics", "ui", "weapon"],
-      "phase": ["1"],
+      "tags": [
+        "cycle",
+        "player",
+        "physics",
+        "ui",
+        "weapon"
+      ],
+      "phase": [
+        "1"
+      ],
       "symbols": []
     },
     {
       "id": "cycle:2",
       "type": "cycle",
       "label": "Cycle 2 - Combat Core",
-      "tags": ["cycle", "enemy", "weapon", "ui", "player"],
-      "phase": ["2"],
+      "tags": [
+        "cycle",
+        "enemy",
+        "weapon",
+        "ui",
+        "player"
+      ],
+      "phase": [
+        "2"
+      ],
       "symbols": []
     },
     {
       "id": "cycle:3",
       "type": "cycle",
       "label": "Cycle 3 - Endless Loop and Scaling",
-      "tags": ["cycle", "enemy", "asset", "player", "scene"],
-      "phase": ["3"],
+      "tags": [
+        "cycle",
+        "enemy",
+        "asset",
+        "player",
+        "scene"
+      ],
+      "phase": [
+        "3"
+      ],
       "symbols": []
     },
     {
       "id": "cycle:4",
       "type": "cycle",
       "label": "Cycle 4 - Two-Player P2P",
-      "tags": ["cycle", "network", "enemy"],
-      "phase": ["4"],
+      "tags": [
+        "cycle",
+        "network",
+        "enemy"
+      ],
+      "phase": [
+        "4"
+      ],
       "symbols": []
     },
     {
       "id": "cycle:5",
       "type": "cycle",
       "label": "Cycle 5 - Economy and Monetization",
-      "tags": ["cycle", "scene", "ui"],
-      "phase": ["5"],
+      "tags": [
+        "cycle",
+        "scene",
+        "ui"
+      ],
+      "phase": [
+        "5"
+      ],
       "symbols": []
     },
     {
       "id": "cycle:6",
       "type": "cycle",
       "label": "Cycle 6 - iOS Hardening and Analytics",
-      "tags": ["cycle", "build_pipeline", "scene", "ui", "physics"],
-      "phase": ["6"],
+      "tags": [
+        "cycle",
+        "build_pipeline",
+        "scene",
+        "ui",
+        "physics"
+      ],
+      "phase": [
+        "6"
+      ],
       "symbols": []
     },
     {
       "id": "phase0_ci_unity_test_workflow",
       "type": "system",
       "label": "Unity C# Test Workflow (EditMode + PlayMode)",
-      "tags": ["ci", "phase0", "cycle0", "harness", "build_pipeline"],
-      "phase": ["0"],
+      "tags": [
+        "ci",
+        "phase0",
+        "cycle0",
+        "harness",
+        "build_pipeline"
+      ],
+      "phase": [
+        "0"
+      ],
       "symbols": []
     },
     {
       "id": "phase0_knowledge_base_seeds_layer",
       "type": "system",
       "label": "Durable Knowledge Seed Layer",
-      "tags": ["knowledge_base", "phase0", "cycle0", "harness"],
-      "phase": ["0"],
+      "tags": [
+        "knowledge_base",
+        "phase0",
+        "cycle0",
+        "harness"
+      ],
+      "phase": [
+        "0"
+      ],
       "symbols": []
+    },
+    {
+      "id": "phase0_qa_advanced_test_suite",
+      "type": "system",
+      "label": "Advanced Verification Suite (contract, property, metamorphic, mutation)",
+      "tags": [
+        "qa",
+        "ci",
+        "phase0",
+        "harness",
+        "testing"
+      ],
+      "phase": [
+        "0"
+      ],
+      "symbols": [
+        "h_test_run",
+        "TestOp",
+        "JetFlightAdvancedTests",
+        "JetFlightSoakTests"
+      ]
     },
     {
       "id": "phase1_build_ios_scaffold",
       "type": "system",
       "label": "iOS Project Scaffold (Unity 6 LTS)",
-      "tags": ["build_pipeline", "phase1", "cycle0", "harness", "ios"],
-      "phase": ["0", "1"],
-      "symbols": ["QualityTierManager", "DetectTier", "ApplySettings"]
+      "tags": [
+        "build_pipeline",
+        "phase1",
+        "cycle0",
+        "harness",
+        "ios"
+      ],
+      "phase": [
+        "0",
+        "1"
+      ],
+      "symbols": [
+        "QualityTierManager",
+        "DetectTier",
+        "ApplySettings"
+      ]
     },
     {
       "id": "phase1_player_flight_rigidbody",
       "type": "system",
       "label": "Jet Flight Rigidbody Controller (unconstrained)",
-      "tags": ["player", "physics", "phase1"],
-      "phase": ["1"],
-      "symbols": ["JetController", "JetFlightConfig", "ComputeAcceleration", "ComputeTargetBankAngle", "StepTowardBank"]
+      "tags": [
+        "player",
+        "physics",
+        "phase1"
+      ],
+      "phase": [
+        "1"
+      ],
+      "symbols": [
+        "JetController",
+        "JetFlightConfig",
+        "ComputeAcceleration",
+        "ComputeTargetBankAngle",
+        "StepTowardBank"
+      ]
     }
   ],
   "edges": [
-    {"from": "cycle:0", "to": "domain:build_pipeline", "kind": "delivers"},
-    {"from": "cycle:0", "to": "domain:knowledge_base", "kind": "delivers"},
-    {"from": "cycle:0", "to": "domain:ci", "kind": "delivers"},
-    {"from": "cycle:1", "to": "domain:physics", "kind": "delivers"},
-    {"from": "cycle:1", "to": "domain:player", "kind": "delivers"},
-    {"from": "cycle:1", "to": "domain:ui", "kind": "delivers"},
-    {"from": "cycle:1", "to": "domain:weapon", "kind": "delivers"},
-    {"from": "cycle:2", "to": "domain:enemy", "kind": "delivers"},
-    {"from": "cycle:2", "to": "domain:weapon", "kind": "delivers"},
-    {"from": "cycle:2", "to": "domain:ui", "kind": "delivers"},
-    {"from": "cycle:3", "to": "domain:asset", "kind": "delivers"},
-    {"from": "cycle:3", "to": "domain:enemy", "kind": "delivers"},
-    {"from": "cycle:3", "to": "domain:scene", "kind": "delivers"},
-    {"from": "cycle:4", "to": "domain:network", "kind": "delivers"},
-    {"from": "cycle:5", "to": "domain:scene", "kind": "delivers"},
-    {"from": "cycle:6", "to": "domain:build_pipeline", "kind": "delivers"},
-    {"from": "cycle:1", "to": "cycle:0", "kind": "depends_on"},
-    {"from": "cycle:2", "to": "cycle:1", "kind": "depends_on"},
-    {"from": "cycle:3", "to": "cycle:2", "kind": "depends_on"},
-    {"from": "cycle:4", "to": "cycle:3", "kind": "depends_on"},
-    {"from": "cycle:5", "to": "cycle:3", "kind": "depends_on"},
-    {"from": "cycle:6", "to": "cycle:5", "kind": "depends_on"},
-    {"from": "phase0_knowledge_base_seeds_layer", "to": "cycle:0", "kind": "part_of"},
-    {"from": "phase0_ci_unity_test_workflow", "to": "cycle:0", "kind": "part_of"},
-    {"from": "phase0_ci_unity_test_workflow", "to": "domain:ci", "kind": "delivers"},
-    {"from": "phase0_ci_unity_test_workflow", "to": "phase1_build_ios_scaffold", "kind": "depends_on"},
-    {"from": "phase0_knowledge_base_seeds_layer", "to": "domain:knowledge_base", "kind": "delivers"},
-    {"from": "phase1_build_ios_scaffold", "to": "cycle:0", "kind": "part_of"},
-    {"from": "phase1_player_flight_rigidbody", "to": "cycle:1", "kind": "part_of"},
-    {"from": "phase1_player_flight_rigidbody", "to": "domain:player", "kind": "delivers"},
-    {"from": "phase1_player_flight_rigidbody", "to": "phase1_build_ios_scaffold", "kind": "depends_on"},
-    {"from": "phase1_build_ios_scaffold", "to": "domain:build_pipeline", "kind": "delivers"}
+    {
+      "from": "cycle:0",
+      "to": "domain:build_pipeline",
+      "kind": "delivers"
+    },
+    {
+      "from": "cycle:0",
+      "to": "domain:ci",
+      "kind": "delivers"
+    },
+    {
+      "from": "cycle:0",
+      "to": "domain:knowledge_base",
+      "kind": "delivers"
+    },
+    {
+      "from": "cycle:1",
+      "to": "cycle:0",
+      "kind": "depends_on"
+    },
+    {
+      "from": "cycle:1",
+      "to": "domain:physics",
+      "kind": "delivers"
+    },
+    {
+      "from": "cycle:1",
+      "to": "domain:player",
+      "kind": "delivers"
+    },
+    {
+      "from": "cycle:1",
+      "to": "domain:ui",
+      "kind": "delivers"
+    },
+    {
+      "from": "cycle:1",
+      "to": "domain:weapon",
+      "kind": "delivers"
+    },
+    {
+      "from": "cycle:2",
+      "to": "cycle:1",
+      "kind": "depends_on"
+    },
+    {
+      "from": "cycle:2",
+      "to": "domain:enemy",
+      "kind": "delivers"
+    },
+    {
+      "from": "cycle:2",
+      "to": "domain:ui",
+      "kind": "delivers"
+    },
+    {
+      "from": "cycle:2",
+      "to": "domain:weapon",
+      "kind": "delivers"
+    },
+    {
+      "from": "cycle:3",
+      "to": "cycle:2",
+      "kind": "depends_on"
+    },
+    {
+      "from": "cycle:3",
+      "to": "domain:asset",
+      "kind": "delivers"
+    },
+    {
+      "from": "cycle:3",
+      "to": "domain:enemy",
+      "kind": "delivers"
+    },
+    {
+      "from": "cycle:3",
+      "to": "domain:scene",
+      "kind": "delivers"
+    },
+    {
+      "from": "cycle:4",
+      "to": "cycle:3",
+      "kind": "depends_on"
+    },
+    {
+      "from": "cycle:4",
+      "to": "domain:network",
+      "kind": "delivers"
+    },
+    {
+      "from": "cycle:5",
+      "to": "cycle:3",
+      "kind": "depends_on"
+    },
+    {
+      "from": "cycle:5",
+      "to": "domain:scene",
+      "kind": "delivers"
+    },
+    {
+      "from": "cycle:6",
+      "to": "cycle:5",
+      "kind": "depends_on"
+    },
+    {
+      "from": "cycle:6",
+      "to": "domain:build_pipeline",
+      "kind": "delivers"
+    },
+    {
+      "from": "phase0_ci_unity_test_workflow",
+      "to": "cycle:0",
+      "kind": "part_of"
+    },
+    {
+      "from": "phase0_ci_unity_test_workflow",
+      "to": "domain:ci",
+      "kind": "delivers"
+    },
+    {
+      "from": "phase0_ci_unity_test_workflow",
+      "to": "phase1_build_ios_scaffold",
+      "kind": "depends_on"
+    },
+    {
+      "from": "phase0_knowledge_base_seeds_layer",
+      "to": "cycle:0",
+      "kind": "part_of"
+    },
+    {
+      "from": "phase0_knowledge_base_seeds_layer",
+      "to": "domain:knowledge_base",
+      "kind": "delivers"
+    },
+    {
+      "from": "phase0_qa_advanced_test_suite",
+      "to": "cycle:0",
+      "kind": "part_of"
+    },
+    {
+      "from": "phase0_qa_advanced_test_suite",
+      "to": "domain:ci",
+      "kind": "delivers"
+    },
+    {
+      "from": "phase0_qa_advanced_test_suite",
+      "to": "domain:qa",
+      "kind": "delivers"
+    },
+    {
+      "from": "phase1_build_ios_scaffold",
+      "to": "cycle:0",
+      "kind": "part_of"
+    },
+    {
+      "from": "phase1_build_ios_scaffold",
+      "to": "domain:build_pipeline",
+      "kind": "delivers"
+    },
+    {
+      "from": "phase1_player_flight_rigidbody",
+      "to": "cycle:1",
+      "kind": "part_of"
+    },
+    {
+      "from": "phase1_player_flight_rigidbody",
+      "to": "domain:player",
+      "kind": "delivers"
+    },
+    {
+      "from": "phase1_player_flight_rigidbody",
+      "to": "phase1_build_ios_scaffold",
+      "kind": "depends_on"
+    }
   ]
 }

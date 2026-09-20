@@ -1,0 +1,714 @@
+{
+  "actions": [
+    "build",
+    "ci_dispatch",
+    "ci_logs",
+    "ci_status",
+    "command_exec",
+    "context_pop",
+    "context_push",
+    "daemon_start",
+    "daemon_status",
+    "daemon_stop",
+    "delete",
+    "index",
+    "ingest",
+    "knowledge_update",
+    "log_query",
+    "manifest",
+    "query",
+    "retrieve",
+    "schema_validate",
+    "symbol_lookup",
+    "test_run",
+    "tool_call",
+    "write"
+  ],
+  "definitions": {
+    "AgentError": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "fatal": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "type": "object"
+    },
+    "CIOp": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "op": {
+                "const": "status"
+              }
+            },
+            "required": [
+              "op"
+            ]
+          },
+          "then": {
+            "required": [
+              "pr"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "op": {
+                "const": "logs"
+              }
+            },
+            "required": [
+              "op"
+            ]
+          },
+          "then": {
+            "required": [
+              "pr"
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "inputs": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "limit": {
+          "maximum": 20,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "log_offset": {
+          "default": 0,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "log_tail_lines": {
+          "maximum": 50,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "op": {
+          "enum": [
+            "dispatch",
+            "status",
+            "logs"
+          ],
+          "type": "string"
+        },
+        "pr": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "ref": {
+          "default": "main",
+          "type": "string"
+        },
+        "remote_only": {
+          "const": true,
+          "type": "boolean"
+        },
+        "run_id": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "wait": {
+          "const": false,
+          "type": "boolean"
+        },
+        "workflow": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "remote_only"
+      ],
+      "type": "object"
+    },
+    "CommandExec": {
+      "additionalProperties": false,
+      "properties": {
+        "args": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "capped": {
+          "const": true,
+          "type": "boolean"
+        },
+        "cmd": {
+          "maxLength": 512,
+          "type": "string"
+        },
+        "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "output_lines": {
+          "maximum": 50,
+          "type": "integer"
+        },
+        "timeout_ms": {
+          "maximum": 30000,
+          "minimum": 100,
+          "type": "integer"
+        },
+        "working_dir": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cmd",
+        "capped"
+      ],
+      "type": "object"
+    },
+    "DaemonOp": {
+      "additionalProperties": false,
+      "properties": {
+        "daemon_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "daemon_id"
+      ],
+      "type": "object"
+    },
+    "FileOp": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "encoding": {
+          "default": "utf-8",
+          "type": "string"
+        },
+        "line_end": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "line_start": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "op": {
+          "enum": [
+            "write",
+            "append",
+            "delete",
+            "stat"
+          ],
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "path"
+      ],
+      "type": "object"
+    },
+    "InputSource": {
+      "enum": [
+        "json_payload",
+        "symbol_index",
+        "knowledge_base",
+        "knowledge_graph",
+        "retrieval_result",
+        "daemon_event"
+      ],
+      "type": "string"
+    },
+    "KnowledgeNode": {
+      "additionalProperties": false,
+      "properties": {
+        "edge_kind": {
+          "type": "string"
+        },
+        "edge_to": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "op": {
+          "enum": [
+            "add_node",
+            "update_node",
+            "add_edge",
+            "remove_node"
+          ],
+          "type": "string"
+        },
+        "phase": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "symbols": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "id"
+      ],
+      "type": "object"
+    },
+    "LogOp": {
+      "additionalProperties": false,
+      "properties": {
+        "domain": {
+          "type": "string"
+        },
+        "filter_level": {
+          "enum": [
+            "warn",
+            "error",
+            "fatal"
+          ],
+          "type": "string"
+        },
+        "level": {
+          "enum": [
+            "debug",
+            "info",
+            "warn",
+            "error",
+            "fatal"
+          ],
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "op": {
+          "enum": [
+            "write",
+            "query_failure",
+            "tail",
+            "stat"
+          ],
+          "type": "string"
+        },
+        "tail_lines": {
+          "maximum": 20,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "op"
+      ],
+      "type": "object"
+    },
+    "RetrievalContext": {
+      "additionalProperties": false,
+      "properties": {
+        "filter": {
+          "type": "object"
+        },
+        "line_range": {
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "max_tokens": {
+          "maximum": 2000,
+          "type": "integer"
+        },
+        "scope": {
+          "enum": [
+            "file",
+            "directory",
+            "kb",
+            "symbol_table",
+            "log"
+          ],
+          "type": "string"
+        },
+        "strategy": {
+          "enum": [
+            "exact",
+            "semantic",
+            "keyword",
+            "hybrid",
+            "symbol",
+            "log_failure"
+          ],
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        },
+        "top_k": {
+          "maximum": 20,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "strategy"
+      ],
+      "type": "object"
+    },
+    "RetrievedChunk": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "maxLength": 2000,
+          "type": "string"
+        },
+        "line_end": {
+          "type": "integer"
+        },
+        "line_start": {
+          "type": "integer"
+        },
+        "score": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "source": {
+          "type": "string"
+        },
+        "strategy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "score",
+        "content"
+      ],
+      "type": "object"
+    },
+    "Symbol": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "class",
+            "method",
+            "field",
+            "interface",
+            "enum",
+            "const",
+            "struct",
+            "prefab",
+            "scene",
+            "asset"
+          ],
+          "type": "string"
+        },
+        "line": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "kind",
+        "file",
+        "line"
+      ],
+      "type": "object"
+    },
+    "TestOp": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "suite": {
+                "const": "mutation"
+              }
+            },
+            "required": [
+              "suite"
+            ]
+          },
+          "then": {
+            "required": [
+              "mutation_score_min"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "suite": {
+                "const": "performance"
+              }
+            },
+            "required": [
+              "suite"
+            ]
+          },
+          "then": {
+            "required": [
+              "budget_ms"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "suite": {
+                "const": "regression"
+              }
+            },
+            "required": [
+              "suite"
+            ]
+          },
+          "then": {
+            "required": [
+              "baseline"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "suite": {
+                "enum": [
+                  "property",
+                  "soak"
+                ]
+              }
+            },
+            "required": [
+              "suite"
+            ]
+          },
+          "then": {
+            "required": [
+              "seed"
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "baseline": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "budget_ms": {
+          "exclusiveMinimum": 0,
+          "maximum": 600000,
+          "type": "number"
+        },
+        "coverage_min": {
+          "maximum": 100,
+          "minimum": 0,
+          "type": "number"
+        },
+        "min_tests": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "mutation_score_min": {
+          "maximum": 100,
+          "minimum": 0,
+          "type": "number"
+        },
+        "remote_only": {
+          "const": true,
+          "type": "boolean"
+        },
+        "scope": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "seed": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "suite": {
+          "enum": [
+            "unit",
+            "regression",
+            "property",
+            "metamorphic",
+            "mutation",
+            "contract",
+            "soak",
+            "performance",
+            "editmode",
+            "playmode",
+            "all"
+          ],
+          "type": "string"
+        },
+        "wait": {
+          "const": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "suite",
+        "remote_only",
+        "wait"
+      ],
+      "type": "object"
+    },
+    "ToolCall": {
+      "additionalProperties": false,
+      "properties": {
+        "capped": {
+          "const": true,
+          "type": "boolean"
+        },
+        "max_output": {
+          "maximum": 1000,
+          "type": "integer"
+        },
+        "parameters": {
+          "type": "object"
+        },
+        "tool_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "tool_name",
+        "capped"
+      ],
+      "type": "object"
+    }
+  },
+  "domains": [
+    "asset",
+    "audio",
+    "build_pipeline",
+    "ci",
+    "daemon",
+    "enemy",
+    "knowledge_base",
+    "log",
+    "network",
+    "physics",
+    "player",
+    "qa",
+    "retrieval",
+    "scene",
+    "schema",
+    "ui",
+    "weapon"
+  ],
+  "payload_fields": {
+    "ci_op": {
+      "$ref": "#/definitions/CIOp"
+    },
+    "command": {
+      "$ref": "#/definitions/CommandExec"
+    },
+    "context": {
+      "$ref": "#/definitions/RetrievalContext"
+    },
+    "daemon_op": {
+      "$ref": "#/definitions/DaemonOp"
+    },
+    "data": {
+      "type": [
+        "object",
+        "array",
+        "string",
+        "number",
+        "boolean",
+        "null"
+      ]
+    },
+    "file_op": {
+      "$ref": "#/definitions/FileOp"
+    },
+    "input_source": {
+      "$ref": "#/definitions/InputSource"
+    },
+    "knowledge_op": {
+      "$ref": "#/definitions/KnowledgeNode"
+    },
+    "log_op": {
+      "$ref": "#/definitions/LogOp"
+    },
+    "test_op": {
+      "$ref": "#/definitions/TestOp"
+    },
+    "tool": {
+      "$ref": "#/definitions/ToolCall"
+    }
+  },
+  "top_level": {
+    "additionalProperties": false,
+    "required": [
+      "meta",
+      "intent",
+      "payload"
+    ]
+  }
+}
