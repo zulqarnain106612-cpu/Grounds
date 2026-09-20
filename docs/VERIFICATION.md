@@ -23,6 +23,24 @@ failure that unit tests structurally cannot.
 | Soak | `Tests/PlayMode/JetFlightSoakTests.cs` | Drift, leaks and accumulation that need thousands of ticks to show | Anything visible in one frame |
 | Mutation | `.github/workflows/qa.yml`, `suite=mutation` | Tests that execute a line without asserting anything about it | Code no test runs at all — coverage catches that |
 | Coverage | `.coveragerc`, `scripts/check_coverage.py`, `scripts/report_unity_coverage.py` | Code no test runs | Code that runs but is never actually checked — mutation catches that |
+| Architecture fitness | `tests/test_architecture.py`, `Tests/EditMode/AssemblyWiringTests.cs` | Structural decay — layering violations, import cycles, a runtime assembly growing an editor dependency | Anything behavioural |
+| Integration / seam | `tests/test_pipeline_wiring.py` | Two components that each pass their own tests while disagreeing about a key, a path or a shape | Defects inside a single component |
+
+**Architecture fitness functions** come from *Building Evolutionary
+Architectures* (Ford, Parsons, Kua): an automated check on a structural
+property rather than on behaviour. They exist because structural decay never
+fails a unit test — every individual change that erodes a boundary works
+fine, and the bill arrives years later as a codebase nobody can change
+safely. `tests/test_architecture.py` derives the import graph with `ast` and
+pins the layering; the C# side uses reflection over the loaded assemblies,
+where the classic failure is a runtime type acquiring a `UnityEditor`
+reference that compiles in the editor and dies at IL2CPP time.
+
+**Integration tests** cover the seams. A wiring defect is invisible to unit
+tests by construction: both sides pass in isolation while disagreeing about
+the contract between them. `tests/test_pipeline_wiring.py` crosses each seam
+with no mock in between — ingest→index→retrieval, scanner→symbol_lookup,
+handler→response→schema, stdin→CLI→stdout, and the audit trail.
 
 Coverage and mutation are the pair worth understanding together. Coverage
 says a line was *executed*. Mutation says a test would have *noticed it

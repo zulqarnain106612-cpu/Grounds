@@ -54,6 +54,37 @@ hand-authored input that ingest merges in.
 Schema, `schema/examples.json` and `gateway/handlers.py` must move together
 or `validate_repo` fails the build. Steps: `docs/EXTENDING.md`.
 
+## Working agreement
+
+- **Act, don't ask.** Finish the cell, commit, push, open the PR, dispatch
+  `make ingest` when `docs/` or `README.md` changed. No "shall I push?",
+  no "that's your call". Only genuinely destructive actions (force-push to
+  `main`, history rewrites, deletions) are worth stopping for.
+- **Own the outcome.** Whoever made the change is accountable for it. "I
+  forgot" / "that wasn't me" is not a report.
+- **Keep chat short.** State the action and the result. Long explanations
+  belong in `docs/`, commit messages and PR bodies, not in the terminal.
+
+## IMPORTANT: read CI from the PR's comments, never from run logs
+
+`.github/workflows/pr-status-comment.yml` posts a comment on every PR each
+time a workflow finishes, carrying the exact error annotations that made it
+red. **That comment is the source of truth for CI state.**
+
+- Always work against a specific PR number. Never a repo-wide run listing.
+- Read the **last** `pr-status-comment` on the PR first. It already contains
+  the failure text, so no log fetch is needed in the common case.
+- Only if that comment is genuinely insufficient, fall back to
+  `make ci-logs PR=<n>` - the 2-line probe first, then the *exact* number of
+  lines the probe justified. Never a round number, never "to be safe", never
+  a full log.
+- Waiting for a merge means re-reading that comment after a sensible
+  interval. No watching a run, no polling loop, no live monitoring.
+
+```bash
+gh pr view <n> --json comments --jq '.comments[-1].body'
+```
+
 ## IMPORTANT: CI status and logs are always scoped to one PR
 
 Never list runs repo-wide, and never pull a full log.

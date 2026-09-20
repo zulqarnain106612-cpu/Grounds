@@ -1,8 +1,20 @@
 name: agent-schema-enforcement
+# `push` is restricted to main on purpose. A branch push and its own
+# pull_request event are two runs of the same workflow on the same commit, so
+# an unrestricted `push:` doubled every check's cost and queue time for zero
+# extra signal. PRs below still run on every commit.
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
+
+# Superseded commits stop running the moment a newer one arrives. Without
+# this, pushing three fixes in a row leaves three full runs competing for the
+# same runners and the newest one finishes last.
+concurrency:
+  group: enforce-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -17,11 +29,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          # Restores the pip wheel cache keyed on requirements.txt. A cold
+          # install of jsonschema + pytest + hypothesis is most of this job's
+          # runtime; a warm one is seconds.
+          cache: pip
+          cache-dependency-path: requirements.txt
       - run: pip install -r requirements.txt
       - name: Validate schema, config, examples, handler coverage
         run: python -m gateway.validate_repo
-      - name: Run test suite
-        run: python -m pytest tests/ -q
+      # The suite is NOT run here. coverage.yml runs the same tests with
+      # coverage instrumentation and fails on the same failures, so running
+      # them again in this job was a second full execution of tests/ for no
+      # additional signal. This job is the schema/index gate; that one is the
+      # test gate.
       - name: Rebuild indexes and fail if stale
         run: |
           python -m gateway.symbol_scanner

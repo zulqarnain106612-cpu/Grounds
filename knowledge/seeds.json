@@ -110,6 +110,26 @@
       "symbols": []
     },
     {
+      "id": "phase0_ci_pipeline_and_wiring",
+      "type": "system",
+      "label": "CI Pipeline Speed, PR Status Comments and Wiring Tests",
+      "tags": [
+        "ci",
+        "qa",
+        "phase0",
+        "harness",
+        "architecture"
+      ],
+      "phase": [
+        "0"
+      ],
+      "symbols": [
+        "test_architecture",
+        "test_pipeline_wiring",
+        "AssemblyWiringTests"
+      ]
+    },
+    {
       "id": "phase0_ci_unity_test_workflow",
       "type": "system",
       "label": "Unity C# Test Workflow (EditMode + PlayMode)",
@@ -312,6 +332,21 @@
     {
       "from": "cycle:6",
       "to": "domain:build_pipeline",
+      "kind": "delivers"
+    },
+    {
+      "from": "phase0_ci_pipeline_and_wiring",
+      "to": "cycle:0",
+      "kind": "part_of"
+    },
+    {
+      "from": "phase0_ci_pipeline_and_wiring",
+      "to": "domain:ci",
+      "kind": "delivers"
+    },
+    {
+      "from": "phase0_ci_pipeline_and_wiring",
+      "to": "domain:qa",
       "kind": "delivers"
     },
     {

@@ -1,0 +1,151 @@
+name: pr-status-comment
+
+# Posts the outcome of every workflow run onto its pull request, as a comment
+# carrying the exact `##[error]` annotations that made it red.
+#
+# Why this exists: reading CI state used to mean `gh run view --log`, which
+# pulls megabytes to find two lines. The annotations API returns only the
+# lines a check actually flagged, so the whole failure fits in a comment and
+# the PR's last comment becomes the single place to read status from -- no
+# polling a run, no streaming logs, no repo-wide run listing.
+#
+# `workflow_run` is used rather than `pull_request` because it is the only
+# trigger that fires *after* another workflow finishes and can see its
+# conclusion. Two consequences worth knowing:
+#   1. GitHub always runs the copy of this file that is on the default branch,
+#      so edits here do nothing until they land on main.
+#   2. It runs with a read-write token even for fork PRs, which is why this
+#      file never checks out or executes any PR code. It only reads the API.
+
+on:
+  workflow_run:
+    workflows:
+      - agent-schema-enforcement
+      - coverage
+      - unity-test
+      - qa
+      - retrieval-verify
+      - review
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+  checks: read
+  pull-requests: write
+
+# Per PR, not per run: two workflows finishing at once would otherwise post
+# interleaved comments. Not cancel-in-progress -- a cancelled reporter loses
+# the report, which is the one thing this workflow exists to deliver.
+concurrency:
+  group: pr-status-comment-${{ github.event.workflow_run.pull_requests[0].number || github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const { owner, repo } = context.repo;
+
+            // A workflow_run triggered from a branch push carries no PR link,
+            // so fall back to looking the PR up by head branch.
+            let prNumber = run.pull_requests?.[0]?.number;
+            if (!prNumber) {
+              const { data: prs } = await github.rest.pulls.list({
+                owner, repo, state: 'open',
+                head: `${owner}:${run.head_branch}`, per_page: 1,
+              });
+              prNumber = prs[0]?.number;
+            }
+            if (!prNumber) {
+              core.info(`no open PR for ${run.head_branch}; nothing to comment on`);
+              return;
+            }
+
+            const { data: jobsData } = await github.rest.actions.listJobsForWorkflowRun({
+              owner, repo, run_id: run.id, per_page: 100,
+            });
+            const jobs = jobsData.jobs || [];
+
+            // Everything that is not a clean pass is worth reporting: the
+            // brief asked for failed, skipped and neutral explicitly, and
+            // cancelled/timed_out are the two that otherwise look like
+            // nothing happened at all.
+            const NOT_PASSING = new Set([
+              'failure', 'cancelled', 'timed_out', 'action_required', 'neutral', 'skipped', 'stale',
+            ]);
+            const notPassing = jobs.filter(j => NOT_PASSING.has(j.conclusion));
+            const passed = jobs.filter(j => j.conclusion === 'success');
+
+            // The annotations API is the cheap channel: it returns only the
+            // lines a check flagged, never the log body.
+            const MAX_ANNOTATIONS_PER_JOB = 6;
+            const details = [];
+            for (const job of notPassing) {
+              let lines = [];
+              try {
+                const { data: ann } = await github.rest.checks.listAnnotations({
+                  owner, repo, check_run_id: job.id, per_page: 20,
+                });
+                lines = ann
+                  .filter(a => a.annotation_level === 'failure' || a.annotation_level === 'warning')
+                  .slice(0, MAX_ANNOTATIONS_PER_JOB)
+                  .map(a => {
+                    const where = a.path && a.path !== '.github' ? `${a.path}:${a.start_line} ` : '';
+                    return `${where}${(a.message || '').trim()}`;
+                  });
+              } catch (e) {
+                lines = [`(annotations unavailable: ${e.message})`];
+              }
+
+              // A job with no annotation still needs a reason, or the comment
+              // says a check is red and leaves the reader to go find out why.
+              if (lines.length === 0) {
+                const failedStep = (job.steps || []).find(s => NOT_PASSING.has(s.conclusion));
+                lines = [failedStep
+                  ? `no annotation; first non-passing step: "${failedStep.name}" (${failedStep.conclusion})`
+                  : 'no annotation and no failing step recorded'];
+              }
+              details.push({ job, lines });
+            }
+
+            const icon = c => ({
+              failure: '❌', cancelled: '⚪', timed_out: '⏱️', action_required: '⚠️',
+              neutral: '➖', skipped: '⏭️', stale: '🕸️',
+            }[c] || '❔');
+
+            const body = [];
+            body.push('<!-- pr-status-comment -->');
+            body.push(
+              notPassing.length === 0
+                ? `### ✅ \`${run.name}\` passed`
+                : `### ${icon(notPassing[0].conclusion)} \`${run.name}\` — ${notPassing.length} check(s) not passing`
+            );
+            body.push('');
+            body.push(`commit \`${run.head_sha.slice(0, 7)}\` · [run ${run.id}](${run.html_url}) · ${passed.length}/${jobs.length} jobs passed`);
+            body.push('');
+
+            for (const { job, lines } of details) {
+              body.push(`**${icon(job.conclusion)} ${job.name}** — ${job.conclusion}`);
+              body.push('');
+              body.push('```');
+              for (const line of lines) body.push(line);
+              body.push('```');
+              body.push('');
+            }
+
+            if (notPassing.length === 0) {
+              body.push('_No failing annotations._');
+              body.push('');
+            }
+
+            body.push('<sub>Posted by `pr-status-comment`. Read CI state from this comment rather than fetching run logs.</sub>');
+
+            await github.rest.issues.createComment({
+              owner, repo, issue_number: prNumber, body: body.join('\n'),
+            });
+            core.info(`commented on #${prNumber}: ${notPassing.length} not passing`);
