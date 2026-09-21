@@ -15,6 +15,13 @@ name: unity-test
 
 on:
   push:
+    # Scoped to main for the same reason enforce.yml and coverage.yml are:
+    # without it a push to a pull request branch runs this workflow once on
+    # `push` and again on `pull_request`, two full runs of the same commit.
+    # Here that is not merely slow -- each run activates a Unity seat per
+    # test mode, and a Personal account holds very few, so the duplicate run
+    # competes with the one the pull request actually gates on.
+    branches: [main]
     paths:
       - "Assets/**"
       - "ProjectSettings/**"
