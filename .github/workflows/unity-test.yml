@@ -137,9 +137,13 @@ jobs:
           # test assemblies would count code that is 100% covered by definition
           # and inflate the number until it stopped meaning anything. Same
           # reasoning as .coveragerc excluding tests/ on the Python side.
-          coverageOptions: >-
-            generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;
-            assemblyFilters:+JetFighter.Runtime,-*Tests*
+          # One line, not a folded scalar. `>-` joins its lines with a
+          # space, so the value Unity received carried a space after a
+          # semicolon -- harmless if its parser trims, and unverifiable
+          # either way while the report was landing somewhere nobody looked.
+          # With the report finally being read, the option string should not
+          # be the next suspect.
+          coverageOptions: "generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+JetFighter.Runtime,-*Tests*"
 
       - uses: actions/setup-python@v6
         with:
@@ -214,13 +218,22 @@ jobs:
             });
             console.log(`"${name}": ${run.conclusion} -> ${conclusion} (gate ${gate})`);
 
-      # No floor is enforced on this number yet, and that is a deliberate,
-      # temporary state rather than an oversight: the only runtime code in the
-      # repo is JetController, JetFlightConfig and QualityTierManager, and the
-      # last of those reads SystemInfo at Awake and has no test. Setting a floor
-      # today would mean picking a number the current code happens to hit, which
-      # is how a gate becomes decoration. The floor lands with the cell that
-      # gives QualityTierManager a seam worth testing.
+      # No floor is enforced on this number yet, and the reason has changed.
+      #
+      # It used to be that QualityTierManager had no testable seam. It has one
+      # now. The reason today is simpler and worse: until this commit the
+      # report was written to CodeCoverage and read from the artifacts
+      # directory, so the reporter printed "no coverage summary was produced"
+      # on every green run and the number has never once been measured. A
+      # floor cannot be set against a number nobody has seen, and setting one
+      # against a guess is how a gate becomes decoration.
+      #
+      # The floor lands in the commit that reads the first real figure.
+      #
+      # (The claim this comment used to carry -- that the only runtime code is
+      # JetController, JetFlightConfig and QualityTierManager -- was also
+      # wrong: Assets/_Game/Scripts holds some forty files across Economy,
+      # Enemy, Network, Weapon, UI and more.)
       - name: Report C# coverage
         if: always()
         # tee, not a bare redirect: the number belongs in the step log as well
@@ -235,8 +248,14 @@ jobs:
           set -o pipefail
           python scripts/report_unity_coverage.py "${{ matrix.testMode }}" | tee -a "$GITHUB_STEP_SUMMARY"
 
+      # Both paths. The runner writes its results XML to artifactsPath and its
+      # coverage report to CodeCoverage at the workspace root -- two outputs,
+      # two directories. Uploading only the first is why the coverage report
+      # had never been seen by anyone, in CI or afterwards.
       - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: unity-${{ matrix.testMode }}-results
-          path: ${{ matrix.testMode }}-artifacts
+          path: |
+            ${{ matrix.testMode }}-artifacts
+            CodeCoverage

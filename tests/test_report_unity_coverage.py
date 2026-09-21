@@ -14,6 +14,15 @@ so they were removed rather than annotated:
 The reporter must never gate. Every case here exits 0 or 2, never raises: a
 missing or unreadable coverage number is not a reason to fail a run whose
 tests passed.
+
+That tolerance hid a real defect for as long as the reporter existed. It
+searched the artifacts directory only, while game-ci/unity-test-runner writes
+its coverage report to a separate CodeCoverage directory at the workspace
+root. So it printed "No coverage summary was produced" on every run, under a
+green check, where nobody reads it -- and the number was never once measured.
+The cases below now cover both roots, and one asserts the CodeCoverage root
+is still searched, because losing it again would look exactly like this did:
+like nothing.
 """
 
 from __future__ import annotations
@@ -102,9 +111,68 @@ def test_a_missing_artifacts_directory_is_reported_not_raised(
 ):
     """The Unity runner can die before writing anything; that is the gate's
     business, not this reporter's."""
-    ws = _workspace(tmp_path, mode="editmode")
+    ws = tmp_path / "ws"
+    ws.mkdir()
     assert _run(monkeypatch, ws, "playmode") == 0
-    assert "No coverage summary was produced" in capsys.readouterr().out
+    out = capsys.readouterr().out
+    assert "No coverage summary was produced" in out
+    # Naming both roots is what would have made the original defect legible:
+    # the old message said only that a report was missing, never where it had
+    # been looked for.
+    assert "playmode-artifacts" in out and "CodeCoverage" in out
+
+
+def test_the_report_is_found_where_the_runner_actually_writes_it(
+    tmp_path, monkeypatch, capsys
+):
+    """The defect itself. game-ci/unity-test-runner declares its coverage
+    output separately from its test results -- `setOutput('coveragePath',
+    'CodeCoverage')` -- so the report lands at the workspace root, not under
+    artifactsPath. Searching artifacts alone found nothing on every run."""
+    ws = tmp_path / "ws"
+    report = ws / "CodeCoverage" / "Report"
+    report.mkdir(parents=True)
+    (report / "Summary.xml").write_text(SUMMARY_XML, encoding="utf-8")
+    # No artifacts directory at all: this is the shape a real run had.
+    assert _run(monkeypatch, ws, "editmode") == 0
+    assert "73.4" in capsys.readouterr().out
+
+
+def test_the_artifacts_copy_wins_when_both_exist(tmp_path, monkeypatch, capsys):
+    """If a future runner version does write under artifactsPath, that copy
+    belongs to this test mode; the shared CodeCoverage root does not."""
+    ws = _workspace(tmp_path, mode="editmode")
+    shared = ws / "CodeCoverage" / "Report"
+    shared.mkdir(parents=True)
+    (shared / "Summary.xml").write_text(
+        SUMMARY_XML.replace("73.4", "99.9"), encoding="utf-8"
+    )
+    assert _run(monkeypatch, ws, "editmode") == 0
+    out = capsys.readouterr().out
+    assert "73.4" in out and "99.9" not in out
+
+
+def test_the_workflow_uploads_the_coverage_directory_too() -> None:
+    """Uploading only artifactsPath is why the report had never been seen by
+    anyone, in CI or afterwards."""
+    workflow = (REPO_ROOT / ".github/workflows/unity-test.yml").read_text(
+        encoding="utf-8"
+    )
+    upload = workflow.split("upload-artifact", 1)[1]
+    assert "CodeCoverage" in upload
+
+
+def test_the_coverage_options_are_a_single_line() -> None:
+    """A folded scalar joins its lines with a space, so Unity received a space
+    after a semicolon in the option string. Unverifiable while the report was
+    landing somewhere nobody looked; now that it is read, the option string
+    should not be the next suspect."""
+    workflow = (REPO_ROOT / ".github/workflows/unity-test.yml").read_text(
+        encoding="utf-8"
+    )
+    line = next(l for l in workflow.splitlines() if "coverageOptions:" in l)
+    assert ">-" not in line
+    assert "assemblyFilters:+JetFighter.Runtime,-*Tests*" in line
 
 
 def test_an_unreadable_summary_is_reported_not_raised(tmp_path, monkeypatch, capsys):
@@ -143,6 +211,7 @@ def test_the_artifacts_path_is_a_constant_not_an_interpolation() -> None:
     ARTIFACTS is a literal, so the path used is a constant on both branches.
     """
     module = _load()
+    assert module.COVERAGE == Path("CodeCoverage")
     assert set(module.ARTIFACTS) == {"editmode", "playmode"}
     assert module.MODES == tuple(module.ARTIFACTS)
     for mode, path in module.ARTIFACTS.items():
