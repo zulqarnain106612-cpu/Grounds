@@ -275,3 +275,27 @@ def test_auto_merge_unity_paths_match_the_workflow_they_mirror():
         f"unity-test.yml paths {sorted(declared)} != auto-merge UNITY_PATHS "
         f"{sorted(mirrored)}; update both together"
     )
+
+
+def test_pr_triggered_workflows_do_not_also_run_on_branch_pushes():
+    """Two full runs of the same commit, which this cell exists to stop.
+
+    A workflow with a bare `push:` and a `pull_request:` runs twice for every
+    commit on a pull request branch. enforce.yml and coverage.yml scope push
+    to main for that reason; unity-test.yml was missed, and there it is worse
+    than slow -- each run activates a Unity seat per test mode, and a Personal
+    account holds very few, so the duplicate competes with the run the pull
+    request actually gates on.
+    """
+    for path in _workflows():
+        text = _text(path)
+        on_block = _block(text, "on")
+        if not re.search(r"^  push:", on_block, re.M):
+            continue
+        if not re.search(r"^  pull_request:", on_block, re.M):
+            continue  # push-only is fine; nothing duplicates it
+        push = _block(on_block, "push", indent=2)
+        assert re.search(r"^    branches:", push, re.M), (
+            f"{path.name}: has both push: and pull_request:, so every commit "
+            f"on a PR branch runs it twice. Scope push to branches: [main]."
+        )
