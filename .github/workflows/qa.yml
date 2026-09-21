@@ -197,23 +197,69 @@ jobs:
       # Scoped to gateway/ because that is what .coveragerc measures.
       - name: Mutation score
         if: inputs.suite == 'mutation'
+        # Bounded, from a measurement rather than a guess: the first dispatch
+        # of this suite (run 35564128623) was still running after four hours
+        # eighteen minutes, on its way to being killed by GitHub's six-hour job
+        # cap -- which produces no score at all, and no log line saying why.
+        # This bound fails readably instead, well inside the cap.
+        timeout-minutes: 300
         run: |
           set -o pipefail
-          mutmut run --paths-to-mutate gateway/ --no-progress || true
-          mutmut results > mutants.txt || true
+          # Coverage first, so mutmut can skip mutants no test executes.
+          #
+          # Without it every uncovered mutant costs a full run of the suite
+          # before being recorded as survived -- and an uncovered mutant is
+          # exactly the one that runs every test to the end, because nothing
+          # fails early. That is where the four hours went. A mutant on a line
+          # no test touches is not a finding either: it is already reported by
+          # the coverage floor, which is a cheaper instrument for the same
+          # fact.
+          coverage run -m pytest -q tests/ > /dev/null || true
+          mutmut run --paths-to-mutate gateway/ --use-coverage --no-progress || true
+          # junitxml, not `mutmut results`. The previous parser looked for
+          # "<n> killed" in the results text, which mutmut does not print
+          # there -- killed was therefore always 0, the score always 0.0%, and
+          # this gate could only ever fail. A gate that cannot pass is the
+          # same defect as one that cannot fail, and harder to notice because
+          # it looks like bad news rather than no news.
+          #
+          # The JUnit document is a stable contract: one testcase per mutant,
+          # <failure> for survived, <skipped> for not covered.
+          mutmut junitxml > mutants.xml || true
           python - <<'PY'
-          import os, re, sys, pathlib
-          text = pathlib.Path("mutants.txt").read_text() if pathlib.Path("mutants.txt").exists() else ""
-          survived = len(re.findall(r"^\s*#\d+", text, re.M))
-          killed_m = re.search(r"(\d+)\s+killed", text)
-          killed = int(killed_m.group(1)) if killed_m else 0
+          import os, sys, xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          path = Path("mutants.xml")
+          if not path.exists() or not path.stat().st_size:
+              print("::error::mutmut produced no JUnit output; the run did not happen")
+              sys.exit(1)
+          try:
+              root = ET.parse(path).getroot()
+          except ET.ParseError as error:
+              print(f"::error::mutmut's JUnit output is unreadable: {error}")
+              sys.exit(1)
+
+          cases = root.iter("testcase")
+          survived = skipped = killed = 0
+          for case in cases:
+              if case.find("skipped") is not None:
+                  skipped += 1
+              elif case.find("failure") is not None or case.find("error") is not None:
+                  survived += 1
+              else:
+                  killed += 1
+
           total = killed + survived
           if not total:
-              print("::error::mutmut produced no mutants; the run did not happen")
+              print(f"::error::every mutant was skipped ({skipped} of them): no line "
+                    f"mutmut mutated is covered by a test, so this measures nothing")
               sys.exit(1)
+
           score = 100.0 * killed / total
           floor = float(os.environ["FLOOR"])
-          print(f"mutation score {score:.1f}% ({killed}/{total} killed), floor {floor}%")
+          print(f"mutation score {score:.1f}% ({killed}/{total} killed, "
+                f"{survived} survived, {skipped} not covered), floor {floor}%")
           if score < floor:
               print(f"::error::mutation score {score:.1f}% is below the {floor}% floor -- "
                     f"the suite executes this code but would not notice it changing")
