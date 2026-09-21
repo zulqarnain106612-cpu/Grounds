@@ -399,3 +399,41 @@ def test_mutants_no_test_covers_are_skipped_rather_than_run():
     also not a finding -- the coverage floor already reports that line, more
     cheaply."""
     assert "--use-coverage" in _text(WORKFLOW_DIR / "qa.yml")
+
+
+def test_ingest_does_not_open_a_pull_request_it_cannot_merge():
+    """The other half of the #199-#208 story.
+
+    ADR-013 stopped the nightly cron creating pull requests with no content.
+    It did not address why even a useful one could not land: GitHub suppresses
+    `pull_request` workflow triggers for pull requests opened with
+    GITHUB_TOKEN, so on the default branch -- whose ruleset requires the
+    `validate` and `coverage` contexts -- neither check ever appears and the
+    merge is refused. Verified on #242, which sat at "2 of 2 required status
+    checks are expected" with only CodeQL runs against it.
+
+    So ten of them accumulated. A repeat looks like housekeeping rather than
+    like a defect, which is exactly how the first ten went unnoticed.
+    """
+    ingest = _text(WORKFLOW_DIR / "ingest.yml")
+    assert "default_branch" in ingest, (
+        "ingest.yml must recognise the default branch before opening a pull "
+        "request into it"
+    )
+    # The guard has to come before the branch is pushed, or the unmergeable
+    # branch exists whether or not a pull request was opened for it.
+    guard = ingest.index("default_branch")
+    assert guard < ingest.index("gh pr create")
+    assert guard < ingest.index('git push origin "$BRANCH"')
+
+
+def test_ingest_reports_the_drift_it_refuses_to_propose():
+    """Refusing silently would be worse than the pull request: a stale index
+    on the default branch fails every subsequent build's `validate`, with
+    nothing saying where the staleness came from."""
+    ingest = _text(WORKFLOW_DIR / "ingest.yml")
+    tail = ingest[ingest.index("default_branch"):]
+    assert "::error::" in tail
+    assert "exit 1" in tail
+    # And it must say what to do instead, in the form the Makefile takes.
+    assert "make ingest REF=" in tail
