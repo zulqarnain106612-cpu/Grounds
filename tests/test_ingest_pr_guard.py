@@ -37,7 +37,9 @@ def _git(root: Path, *args: str) -> None:
 @pytest.fixture
 def ingested(tmp_path: Path) -> Path:
     """A throwaway repo holding one committed generation of the four files."""
-    root = tmp_path / "repo"
+    # Not tmp_path/"repo": conftest's autouse `isolated_repo` fixture already
+    # creates that directory for every test, and mkdir() on it raises.
+    root = tmp_path / "ingest_repo"
     root.mkdir()
     _git(root, "init", "-q")
     _git(root, "config", "user.email", "t@example.com")
