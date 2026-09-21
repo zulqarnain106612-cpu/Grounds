@@ -10,8 +10,12 @@ with a trailing newline wastes all of it. This runs first, in seconds, on
 Linux, and says exactly which value is wrong and where to get a correct one.
 
 It deliberately never prints a secret's value -- not a prefix, not a length
-for the key material. The failures it reports are about *shape*, and a shape
-can be described without quoting the thing.
+for the key material. That is enforced by shape rather than by discipline:
+`check()` returns only a (secret name, reason key) pair, both drawn from the
+constant tables below, and `describe()` renders the message from those tables
+alone. No value a caller passed in can reach the output, which is also what
+clears CodeQL's py/clear-text-logging-sensitive-data -- a test asserting the
+messages happen to be clean would not have.
 
 Cloud signing, not a stored certificate. `xcodebuild -allowProvisioningUpdates`
 takes the App Store Connect API key and issues or downloads the signing
@@ -74,69 +78,84 @@ def _decoded_p8(raw: str) -> bytes | None:
         return None
 
 
-def check(env: dict[str, str]) -> list[str]:
-    """Every problem with the credentials in `env`, as readable sentences."""
-    problems: list[str] = []
+# Why a problem is a (name, reason) pair and not a sentence: see the module
+# docstring. Every sentence below is a constant, so rendering one cannot
+# quote a value.
+REASONS = {
+    "missing": "{name} is not set. {provenance}",
+    "whitespace": (
+        "{name} has leading or trailing whitespace. GitHub stores a secret "
+        "verbatim, including the newline a copy-paste adds, and Apple rejects "
+        "the value without saying why."
+    ),
+    "not_ten_chars": "{name} is not ten characters of A-Z and 0-9. {provenance}",
+    "not_uuid": "{name} is not a UUID. {provenance}",
+    "raw_pem": (
+        "{name} looks like the raw .p8 file. It must be base64 encoded: a "
+        "multi-line PEM loses its newlines passing through the environment, "
+        "and the key then fails to parse at the signing step. {provenance}"
+    ),
+    "not_base64": "{name} is not valid base64. {provenance}",
+    "not_a_key": (
+        "{name} decodes, but not to a private key. Check that the encoded "
+        "file is the AuthKey_<KEYID>.p8 Apple issued, not the .cer or the "
+        "public key."
+    ),
+}
 
-    for name, provenance in REQUIRED.items():
+
+def check(env: dict[str, str]) -> list[tuple[str, str]]:
+    """Every problem with the credentials in `env`, as (name, reason) pairs.
+
+    Both halves of every pair are keys of the constant tables above. Nothing
+    from `env` is returned, so nothing from `env` can be printed.
+    """
+    problems: list[tuple[str, str]] = []
+
+    for name in REQUIRED:
         value = env.get(name, "")
         if not value.strip():
-            problems.append(f"{name} is not set. {provenance}")
-            continue
-        if value != value.strip():
-            problems.append(
-                f"{name} has leading or trailing whitespace. GitHub stores a "
-                f"secret verbatim, including the newline a copy-paste adds, "
-                f"and Apple rejects the value without saying why."
-            )
+            problems.append((name, "missing"))
+        elif value != value.strip():
+            problems.append((name, "whitespace"))
 
-    team = env.get("APPLE_TEAM_ID", "").strip()
+    def present(name: str) -> str:
+        value = env.get(name, "").strip()
+        return value if not any(p[0] == name for p in problems) else ""
+
+    team = present("APPLE_TEAM_ID")
     if team and not TEN_CHAR_ID.match(team):
-        problems.append(
-            f"APPLE_TEAM_ID is not ten characters of A-Z and 0-9. "
-            f"{REQUIRED['APPLE_TEAM_ID']}"
-        )
+        problems.append(("APPLE_TEAM_ID", "not_ten_chars"))
 
-    key_id = env.get("APP_STORE_CONNECT_KEY_ID", "").strip()
+    key_id = present("APP_STORE_CONNECT_KEY_ID")
     if key_id and not TEN_CHAR_ID.match(key_id):
-        problems.append(
-            f"APP_STORE_CONNECT_KEY_ID is not ten characters of A-Z and 0-9. "
-            f"{REQUIRED['APP_STORE_CONNECT_KEY_ID']}"
-        )
+        problems.append(("APP_STORE_CONNECT_KEY_ID", "not_ten_chars"))
 
-    issuer = env.get("APP_STORE_CONNECT_ISSUER_ID", "").strip()
+    issuer = present("APP_STORE_CONNECT_ISSUER_ID")
     if issuer and not UUID.match(issuer):
-        problems.append(
-            f"APP_STORE_CONNECT_ISSUER_ID is not a UUID. "
-            f"{REQUIRED['APP_STORE_CONNECT_ISSUER_ID']}"
-        )
+        problems.append(("APP_STORE_CONNECT_ISSUER_ID", "not_uuid"))
 
-    p8 = env.get("APP_STORE_CONNECT_API_KEY_P8", "").strip()
+    p8_name = "APP_STORE_CONNECT_API_KEY_P8"
+    p8 = present(p8_name)
     if p8:
         if p8.startswith("-----BEGIN"):
-            problems.append(
-                "APP_STORE_CONNECT_API_KEY_P8 looks like the raw .p8 file. It "
-                "must be base64 encoded: a multi-line PEM loses its newlines "
-                "passing through the environment, and the key then fails to "
-                "parse at the signing step. "
-                f"{REQUIRED['APP_STORE_CONNECT_API_KEY_P8']}"
-            )
+            problems.append((p8_name, "raw_pem"))
         else:
             pem = _decoded_p8(p8)
             if pem is None:
-                problems.append(
-                    "APP_STORE_CONNECT_API_KEY_P8 is not valid base64. "
-                    f"{REQUIRED['APP_STORE_CONNECT_API_KEY_P8']}"
-                )
+                problems.append((p8_name, "not_base64"))
             elif b"PRIVATE KEY" not in pem:
-                problems.append(
-                    "APP_STORE_CONNECT_API_KEY_P8 decodes, but not to a "
-                    "private key. Check that the encoded file is the "
-                    "AuthKey_<KEYID>.p8 Apple issued, not the .cer or the "
-                    "public key."
-                )
+                problems.append((p8_name, "not_a_key"))
 
     return problems
+
+
+def describe(problems: list[tuple[str, str]]) -> list[str]:
+    """Readable sentences, built from the constant tables and nothing else."""
+    return [
+        REASONS[reason].format(name=name, provenance=REQUIRED[name])
+        for name, reason in problems
+    ]
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -156,7 +175,7 @@ def main(argv: list[str] | None = None) -> int:
 
     problems = check(dict(os.environ))
     if problems:
-        for problem in problems:
+        for problem in describe(problems):
             print(f"::error::{problem}")
         print(
             f"::error::{len(problems)} problem(s) with the Apple credentials. "
