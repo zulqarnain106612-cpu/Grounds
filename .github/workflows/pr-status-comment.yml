@@ -23,6 +23,7 @@ on:
       - agent-schema-enforcement
       - coverage
       - unity-test
+      - ios-build
       - qa
       - retrieval-verify
       - review
@@ -45,7 +46,7 @@ jobs:
   comment:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@v8
         with:
           script: |
             const run = context.payload.workflow_run;

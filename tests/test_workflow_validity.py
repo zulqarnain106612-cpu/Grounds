@@ -299,3 +299,60 @@ def test_pr_triggered_workflows_do_not_also_run_on_branch_pushes():
             f"{path.name}: has both push: and pull_request:, so every commit "
             f"on a PR branch runs it twice. Scope push to branches: [main]."
         )
+
+
+# --- action runtimes --------------------------------------------------------
+
+# The lowest major of each first-party action that runs on Node 24. Below it,
+# GitHub forces the action onto Node 24 anyway and prints a deprecation
+# warning on every job; the announced end of that forcing is the action
+# failing outright, which would take every workflow here down at once.
+#
+# These are floors, not pins: a newer major is fine, an older one is not. Each
+# was read from `runs.using` in that action's own action.yml at the tag, not
+# from release prose -- the manifest is what the runner obeys.
+NODE24_FLOOR = {
+    "actions/checkout": 5,
+    "actions/setup-python": 6,
+    "actions/cache": 5,
+    "actions/upload-artifact": 6,
+    "actions/download-artifact": 8,
+    "actions/github-script": 8,
+}
+
+
+def test_first_party_actions_run_on_a_supported_node():
+    """A copy-pasted `@v4` is the way this regresses: a new workflow borrows a
+    step from an old one and reintroduces the deprecated runtime silently,
+    because a warning is not a failure."""
+    stale = []
+    for path in _workflows():
+        for line_no, line in enumerate(_text(path).splitlines(), start=1):
+            match = re.search(r"uses:\s*(actions/[a-z-]+)@v(\d+)", line)
+            if not match:
+                continue
+            action, major = match.group(1), int(match.group(2))
+            floor = NODE24_FLOOR.get(action)
+            if floor is not None and major < floor:
+                stale.append(f"{path.name}:{line_no} {action}@v{major} < v{floor}")
+    assert not stale, (
+        "these steps run on a deprecated Node runtime:\n  " + "\n  ".join(stale)
+    )
+
+
+def test_the_floor_table_covers_every_first_party_action_in_use():
+    """An action not in the table is one nothing checks. It is allowed -- a
+    composite action has no Node runtime of its own -- but the omission has to
+    be a decision, so this lists what is unchecked and fails on a new one.
+    """
+    in_use = set()
+    for path in _workflows():
+        in_use.update(re.findall(r"uses:\s*(actions/[a-z-]+)@", _text(path)))
+    # actions/upload-code-coverage is a composite action: it runs no Node
+    # entry point of its own, so no floor applies to it.
+    unchecked = in_use - set(NODE24_FLOOR) - {"actions/upload-code-coverage"}
+    assert not unchecked, (
+        f"first-party actions with no Node floor recorded: {sorted(unchecked)}. "
+        f"Read runs.using from the action's action.yml at each major tag and "
+        f"add the lowest one that says node24."
+    )
