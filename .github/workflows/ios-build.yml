@@ -71,3 +71,144 @@ jobs:
             python scripts/check_apple_credentials.py --names
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+  # ---------------------------------------------------------------------
+  # Export, then archive. Dispatch-only for the same reason the preflight
+  # is: a Unity seat and a macOS runner are both scarce, and neither should
+  # be spent by a pull request that did not ask for them.
+  #
+  # Nothing here has run yet. It is written from each tool's documented
+  # interface, and the first dispatch is its verification -- said plainly
+  # rather than implied, because a workflow nobody has run is not evidence
+  # of anything and phase6/appstore-cert-checklist closes on evidence.
+  # ---------------------------------------------------------------------
+  export:
+    needs: apple-credentials
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          lfs: true
+
+      - uses: actions/cache@v5
+        with:
+          path: Library
+          key: Library-ios-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: |
+            Library-ios-
+            Library-
+
+      # Pinned to a commit, not a floating tag: a third-party action in a job
+      # that holds a Unity credential is an unreviewed code path. This is the
+      # v6 tag's commit; unity-test-runner is pinned to its own v4 because
+      # that action has no later major, not because the two are kept in step.
+      - uses: game-ci/unity-builder@eb1b9fba120c6e62c9fb7a7a81d6c107ce004c45
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: iOS
+          # Our own entry point, not the action's default one: it applies
+          # config/ios.build.json, generates the bootstrap scene, refuses a
+          # scene-less build and carries the BuildReport's verdict out of a
+          # process that would otherwise exit 0. See Assets/_Game/Editor.
+          buildMethod: JetFighter.Editor.IOSBuild.PerformBuild
+          buildsPath: build
+
+      - name: Say what was exported
+        run: |
+          set -o pipefail
+          python scripts/check_ios_export.py | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ios-xcode-project
+          path: build/iOS
+          retention-days: 1
+
+  archive:
+    needs: export
+    if: github.event_name == 'workflow_dispatch'
+    # macOS because xcodebuild exists nowhere else. It is roughly ten times a
+    # Linux runner, which is why the credential check and the export both had
+    # to pass before this job starts.
+    runs-on: macos-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: ios-xcode-project
+          path: build/iOS
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Check the Apple credentials again
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_P8: ${{ secrets.APP_STORE_CONNECT_API_KEY_P8 }}
+        # Cheap, and this is the job that would otherwise discover the problem
+        # forty minutes in. The preflight ran on a different runner; a secret
+        # can be edited between the two.
+        run: python scripts/check_apple_credentials.py
+
+      - name: Write the App Store Connect key where xcodebuild looks for it
+        env:
+          APP_STORE_CONNECT_API_KEY_P8: ${{ secrets.APP_STORE_CONNECT_API_KEY_P8 }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        run: |
+          set -euo pipefail
+          # RUNNER_TEMP, not the workspace: the workspace is what
+          # upload-artifact would collect, and a private key must not leave
+          # this runner. The runner is ephemeral, so nothing outlives the job.
+          mkdir -p "$RUNNER_TEMP/private_keys"
+          key="$RUNNER_TEMP/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8"
+          printf '%s' "$APP_STORE_CONNECT_API_KEY_P8" | base64 --decode > "$key"
+          chmod 600 "$key"
+          echo "ASC_KEY_PATH=$key" >> "$GITHUB_ENV"
+
+      - name: Archive
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        # -allowProvisioningUpdates with an App Store Connect key is the cloud
+        # signing path: Xcode obtains the distribution certificate and the
+        # provisioning profile itself, so no .p12 and no .mobileprovision are
+        # stored anywhere in this repository.
+        run: |
+          set -euo pipefail
+          xcodebuild archive \
+            -project build/iOS/Unity-iPhone.xcodeproj \
+            -scheme Unity-iPhone \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/JetFighter.xcarchive \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_ID" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID"
+
+      - name: Say what the archive contains
+        if: always()
+        run: |
+          set -o pipefail
+          python scripts/check_archive.py | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove the signing key
+        if: always()
+        # The runner is ephemeral, so this is belt and braces -- but a step
+        # added later that uploads $RUNNER_TEMP would otherwise take the key
+        # with it, and that step's author would have no reason to look here.
+        run: rm -f "${ASC_KEY_PATH:-}"
