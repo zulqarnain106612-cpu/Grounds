@@ -39,15 +39,37 @@ ARTIFACTS = {
 }
 MODES = tuple(ARTIFACTS)
 
+# Where the coverage report actually lands, which is NOT under artifactsPath.
+#
+# game-ci/unity-test-runner declares its coverage output separately from its
+# test results -- `core.setOutput('coveragePath', 'CodeCoverage')` in the
+# pinned commit -- so it writes to a CodeCoverage directory at the workspace
+# root while the results XML goes to artifactsPath. This script searched the
+# artifacts directory only, found nothing on every run, and printed "No
+# coverage summary was produced" under a green check. Nobody reads a line that
+# says a report is missing when the job is green, so the number was never
+# measured and docs/VERIFICATION.md described it as reported-but-not-gated
+# when it was not reported at all.
+#
+# Both are searched now. A literal, for the same reason ARTIFACTS is one: no
+# path here comes from input. The two test modes run in separate jobs with
+# separate workspaces, so one name needs no per-mode variant.
+COVERAGE = Path("CodeCoverage")
+
 
 def find_summary(artifacts: Path) -> Path | None:
-    """Unity's coverage package writes Report/Summary.xml under the artifacts
-    directory. Its exact depth has moved between package versions, so search
-    rather than hardcode."""
-    if not artifacts.is_dir():
-        return None
-    for candidate in sorted(artifacts.rglob("Summary.xml")):
-        return candidate
+    """The first Summary.xml in either place the report might be.
+
+    The package's exact depth has moved between versions, so each root is
+    searched rather than hardcoded. Artifacts first: if a future runner
+    version does start writing there, that copy is the one belonging to this
+    test mode.
+    """
+    for root in (artifacts, COVERAGE):
+        if not root.is_dir():
+            continue
+        for candidate in sorted(root.rglob("Summary.xml")):
+            return candidate
     return None
 
 
@@ -83,8 +105,9 @@ def main(argv: list[str]) -> int:
     summary = find_summary(artifacts)
     if summary is None:
         lines.append(
-            "No coverage summary was produced. The test suites themselves still "
-            "gated in the step above; only this report is missing."
+            f"No coverage summary was produced: no `Summary.xml` under "
+            f"`{artifacts}` or `{COVERAGE}`. The test suites themselves still "
+            f"gated in the step above; only this report is missing."
         )
     else:
         value = line_coverage(summary)

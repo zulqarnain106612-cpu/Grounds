@@ -73,7 +73,8 @@ jobs:
 
       # main is protected by a ruleset requiring changes to arrive via pull
       # request, so refreshed indexes are proposed on a branch rather than
-      # pushed straight to the base ref.
+      # pushed straight to the base ref -- except on the default branch
+      # itself, where such a pull request cannot merge at all. See below.
       - name: Propose refreshed indexes
         if: github.event.inputs.commit != 'false'
         env:
@@ -97,6 +98,48 @@ jobs:
             echo "indexes are content-identical; nothing to propose" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
+          # A pull request into the default branch would be unmergeable, so
+          # this reports the drift instead of opening one.
+          #
+          # GitHub suppresses `pull_request` workflow triggers for pull
+          # requests opened with GITHUB_TOKEN -- its loop prevention. The
+          # default branch's ruleset requires the `validate` and `coverage`
+          # contexts, and neither workflow ever runs on such a pull request,
+          # so the two required checks can never appear and the merge is
+          # refused with "2 of 2 required status checks are expected".
+          # Verified on #242.
+          #
+          # That is the other half of the #199-#208 story. ADR-013 stopped the
+          # useless ones from being created; this is why even a useful one
+          # could not land, and why ten of them accumulated rather than being
+          # merged and forgotten.
+          #
+          # A PAT would make the pull request mergeable and is the usual
+          # answer. It is declined here: a token with write access to the
+          # default branch, held to spare one dispatch, is a poor trade
+          # against the drift being visible and a human-or-agent branch
+          # carrying the fix through the same gates as any other change.
+          if [ "${{ github.ref_name }}" = "${{ github.event.repository.default_branch }}" ]; then
+            {
+              echo "### The indexes on \`${{ github.ref_name }}\` have drifted"
+              echo
+              echo "Not proposed as a pull request: one opened with GITHUB_TOKEN"
+              echo "triggers no \`pull_request\` workflows, so the \`validate\` and"
+              echo "\`coverage\` contexts this branch's ruleset requires never appear"
+              echo "and it cannot be merged."
+              echo
+              echo "Refresh it from a branch instead:"
+              echo '```'
+              echo "make ingest REF=<your-branch>"
+              echo '```'
+              echo
+              echo "Changed:"
+              git diff --cached --stat
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::indexes on ${{ github.ref_name }} have drifted; refresh them from a branch (see the job summary)"
+            exit 1
+          fi
+
           BRANCH="chore/ingest-${{ github.run_id }}"
           git checkout -b "$BRANCH"
           git commit -m "chore(ingest): refresh kb index, graph, symbols, manifest"
