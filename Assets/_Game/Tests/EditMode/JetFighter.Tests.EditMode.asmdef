@@ -3,6 +3,7 @@
   "rootNamespace": "JetFighter.Tests",
   "references": [
     "JetFighter.Runtime",
+    "JetFighter.Editor",
     "UnityEngine.TestRunner",
     "UnityEditor.TestRunner"
   ],
