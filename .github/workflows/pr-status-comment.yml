@@ -23,6 +23,7 @@ on:
       - agent-schema-enforcement
       - coverage
       - unity-test
+      - ios-build
       - qa
       - retrieval-verify
       - review
