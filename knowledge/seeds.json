@@ -141,6 +141,27 @@
       "symbols": []
     },
     {
+      "id": "phase0_qa_advanced_test_suite",
+      "type": "system",
+      "label": "Advanced Verification Suite (contract, property, metamorphic, mutation)",
+      "tags": [
+        "qa",
+        "ci",
+        "phase0",
+        "harness",
+        "testing"
+      ],
+      "phase": [
+        "0"
+      ],
+      "symbols": [
+        "h_test_run",
+        "TestOp",
+        "JetFlightAdvancedTests",
+        "JetFlightSoakTests"
+      ]
+    },
+    {
       "id": "phase1_build_ios_scaffold",
       "type": "system",
       "label": "iOS Project Scaffold (Unity 6 LTS)",
@@ -733,27 +754,6 @@
         "SettingsUI",
         "QualityTierManager",
         "DefaultFrameRateFor"
-      ]
-    },
-    {
-      "id": "phase0_qa_advanced_test_suite",
-      "type": "system",
-      "label": "Advanced Verification Suite (contract, property, metamorphic, mutation)",
-      "tags": [
-        "qa",
-        "ci",
-        "phase0",
-        "harness",
-        "testing"
-      ],
-      "phase": [
-        "0"
-      ],
-      "symbols": [
-        "h_test_run",
-        "TestOp",
-        "JetFlightAdvancedTests",
-        "JetFlightSoakTests"
       ]
     }
   ],
