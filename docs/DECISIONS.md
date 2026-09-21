@@ -282,3 +282,58 @@ The four below were not in the roadmap. They are recorded here because
   `bytes`/`sha256` entries for the three generated artifacts are no longer
   a change signal, which is sound because a real change to any of them is
   already caught by that file's own content keys.
+
+## ADR-014 — App Store signing uses an App Store Connect API key, not a stored certificate
+
+- **Context:** `phase6/appstore-cert-checklist` closes on an Xcode archive, and
+  an archive has to be signed. The conventional CI arrangement stores an Apple
+  Distribution `.p12`, its export password and a `.mobileprovision` as
+  repository secrets, imports the `.p12` into a temporary keychain on the
+  macOS runner and signs against the profile.
+- **Decision:** Cloud signing instead. Four secrets — `APPLE_TEAM_ID`,
+  `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID` and
+  `APP_STORE_CONNECT_API_KEY_P8` — and `xcodebuild -allowProvisioningUpdates`,
+  which obtains the certificate and the profile itself. No `.p12` and no
+  `.mobileprovision` exist anywhere in this repository.
+- **Rationale:** Three fewer secrets is the smaller half of it. The larger half
+  is expiry: a distribution certificate lasts a year and a provisioning profile
+  less, both expire silently, and both fail at the archive step with an error
+  that reads like a code problem rather than like a lapsed credential. A key
+  the API renews assets from has no such cliff. The `.p12` export is also the
+  step most easily done wrong — wrong keychain, wrong identity, password
+  mismatched against the secret — and none of those is detectable until
+  signing.
+- **Consequence:** The runner needs network access to App Store Connect during
+  the archive, and an API key revoked there breaks the build immediately rather
+  than at the next expiry. Both are wanted: a revoked key *should* stop
+  producing signed builds at once. `scripts/check_apple_credentials.py` runs
+  first, on Linux, and refuses a malformed key before any macOS time is spent;
+  it reports shape only, and by construction — it returns reason codes drawn
+  from constant tables, so no secret's value can reach a log.
+
+## ADR-015 — The bootstrap scene is generated at build time, not committed
+
+- **Context:** A player build needs at least one scene: Unity builds a
+  scene-less player successfully and the result launches to a black screen,
+  which only a human holding a device can see. This repository had no `.unity`
+  file at all, so every export would have shipped exactly that.
+- **Decision:** `Assets/_Game/Editor/BootstrapSceneBuilder.cs` composes the
+  scene from code on every build, writes it into a gitignored directory, and
+  makes it scene 0. `IOSBuild.PerformBuild` calls it before checking the scene
+  list, and still refuses to export if the list is empty afterwards.
+- **Rationale:** A `.unity` is Unity-generated YAML with GUID references. It
+  merges badly, cannot be asserted on without booting the editor, and a broken
+  reference in one produces an empty `GameObject` rather than an error — the
+  worst failure mode available, because the result looks like content. ADR-012
+  settled this class of file for the player settings: keep the intent in code
+  or JSON and let Unity own the artefact. Committing a hand-written scene would
+  be the same mistake with a quieter symptom. Composing it in code also makes
+  the contents testable — `BootstrapSceneTests` asserts them without writing a
+  file — and means reviewing the scene is reading one C# file rather than
+  diffing YAML.
+- **Consequence:** The scene cannot be edited in the Unity editor and kept:
+  changes have to be made in `Compose()`, which is the point. Scope is
+  deliberately the always-on managers and a camera — enough for an export to
+  produce an app that launches. Gameplay content belongs to its own cells. The
+  camera clears to a dark blue rather than black, so a genuinely empty first
+  frame stays distinguishable from a correct one on a device.
