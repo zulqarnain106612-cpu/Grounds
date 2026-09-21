@@ -894,21 +894,6 @@
       "kind": "part_of"
     },
     {
-      "from": "phase0_ci_pipeline_and_wiring",
-      "to": "cycle:0",
-      "kind": "part_of"
-    },
-    {
-      "from": "phase0_ci_pipeline_and_wiring",
-      "to": "domain:ci",
-      "kind": "delivers"
-    },
-    {
-      "from": "phase0_ci_pipeline_and_wiring",
-      "to": "domain:qa",
-      "kind": "delivers"
-    },
-    {
       "from": "phase0_ci_unity_test_workflow",
       "to": "cycle:0",
       "kind": "part_of"
@@ -1380,6 +1365,21 @@
     },
     {
       "from": "phase0_qa_advanced_test_suite",
+      "to": "domain:qa",
+      "kind": "delivers"
+    },
+    {
+      "from": "phase0_ci_pipeline_and_wiring",
+      "to": "cycle:0",
+      "kind": "part_of"
+    },
+    {
+      "from": "phase0_ci_pipeline_and_wiring",
+      "to": "domain:ci",
+      "kind": "delivers"
+    },
+    {
+      "from": "phase0_ci_pipeline_and_wiring",
       "to": "domain:qa",
       "kind": "delivers"
     }

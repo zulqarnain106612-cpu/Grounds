@@ -23,6 +23,8 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import check_unity_results as gate  # noqa: E402
 
+WORKFLOW_ROOT = Path(__file__).resolve().parents[1] / ".github" / "workflows"
+
 REAL_ROOT = Path(__file__).resolve().parent.parent
 WORKFLOW = REAL_ROOT / ".github" / "workflows" / "unity-test.yml"
 TESTS_DIR = REAL_ROOT / "Assets" / "_Game" / "Tests"
@@ -235,3 +237,48 @@ def test_the_script_is_runnable_as_a_program(tmp_path):
          "--results", str(tmp_path)],
         capture_output=True, text=True, timeout=30)
     assert proc.returncode == 0, proc.stderr
+
+
+def test_the_runner_publishes_no_check_run_of_its_own() -> None:
+    """Why checkName/githubToken are absent from the runner's inputs.
+
+    Given a token, game-ci/unity-test-runner publishes its own check run and
+    gives it conclusion `neutral` even when every test passed -- the
+    "editmode results" check read "825/825 - Passed" while sitting neutral.
+    A check that can never be green cannot be required and cannot be read as
+    a verdict, so it is not published at all; the gate step decides instead.
+
+    Re-adding either input brings the permanently-neutral check back, so it
+    fails here rather than on the next pull request.
+    """
+    workflow = (WORKFLOW_ROOT / "unity-test.yml").read_text(encoding="utf-8")
+    for line in workflow.splitlines():
+        stripped = line.strip()
+        assert not stripped.startswith("checkName:"), (
+            "unity-test.yml must not set checkName: it makes game-ci publish a "
+            "check run that is neutral even on a full pass"
+        )
+        assert not stripped.startswith("githubToken:"), (
+            "unity-test.yml must not pass githubToken to the runner: that is "
+            "what enables the neutral check run"
+        )
+        assert not stripped.startswith("checks: write"), (
+            "checks: write existed only for that check run; nothing else in "
+            "the job writes a check"
+        )
+
+
+def test_the_gate_puts_its_counts_in_the_job_summary() -> None:
+    """The counts the removed check used to show still reach the PR.
+
+    check_unity_results.py prints the per-file tally; tee copies it into the
+    job summary, so the numbers live next to a conclusion that means
+    something instead of next to a neutral one.
+    """
+    workflow = (WORKFLOW_ROOT / "unity-test.yml").read_text(encoding="utf-8")
+    assert "check_unity_results.py" in workflow
+    assert 'tee -a "$GITHUB_STEP_SUMMARY"' in workflow
+    # pipefail, or tee's exit status would hide a failing gate and the job
+    # would go green on a red suite -- the exact class of bug this file exists
+    # to prevent.
+    assert "set -o pipefail" in workflow

@@ -77,14 +77,10 @@ jobs:
   test:
     needs: preflight
     runs-on: ubuntu-latest
-    # game-ci posts the suite's results as a check run, which needs more than
-    # the read-only default. Without it the action fails with "Resource not
-    # accessible by integration" *after* every test has passed -- a red job
-    # with a green results file behind it. It went unnoticed for as long as
-    # continue-on-error was swallowing the runner's exit code.
     permissions:
+      # checks: write was only ever for the action's own check run, which is
+      # no longer published. Nothing else in this job writes a check.
       contents: read
-      checks: write
     strategy:
       fail-fast: false
       # One seat at a time: editmode and playmode activating in parallel is
@@ -125,8 +121,13 @@ jobs:
         with:
           testMode: ${{ matrix.testMode }}
           artifactsPath: ${{ matrix.testMode }}-artifacts
-          checkName: ${{ matrix.testMode }} results
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          # No checkName/githubToken on purpose. Given a token, this action
+          # publishes its own check run -- and publishes it with conclusion
+          # `neutral` even on a clean sweep: the "editmode results" check read
+          # "825/825 - Passed" while sitting neutral forever. A check that can
+          # never be green is not a gate, it is a permanently ambiguous square
+          # on the PR, and it cannot be required because it never passes.
+          # The gate below is the one that decides, and it goes green or red.
           # Coverage is measured on the runtime assembly only -- including the
           # test assemblies would count code that is 100% covered by definition
           # and inflate the number until it stopped meaning anything. Same
@@ -151,9 +152,16 @@ jobs:
           echo "::error::https://id.unity.com. The other is a 2FA or new-device challenge,"
           echo "::error::which headless activation cannot answer."
 
+      # The counts the removed check used to show are not lost: the gate
+      # already prints them, and tee puts them in the job summary where that
+      # check used to be -- next to a conclusion that actually means something.
       - name: Gate on the results file
         if: always()
-        run: python scripts/check_unity_results.py --results "${{ matrix.testMode }}-artifacts" --min-tests 1
+        run: |
+          set -o pipefail
+          python scripts/check_unity_results.py \
+            --results "${{ matrix.testMode }}-artifacts" --min-tests 1 \
+            | tee -a "$GITHUB_STEP_SUMMARY"
 
       # No floor is enforced on this number yet, and that is a deliberate,
       # temporary state rather than an oversight: the only runtime code in the
