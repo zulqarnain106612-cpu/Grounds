@@ -99,13 +99,13 @@ jobs:
       matrix:
         testMode: [editmode, playmode]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           lfs: true
 
       # Library/ is gitignored and rebuilding it from scratch is most of the
       # job's runtime, so it is cached per test mode and project state.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: Library
           key: Library-${{ matrix.testMode }}-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}
@@ -141,7 +141,7 @@ jobs:
             generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;
             assemblyFilters:+JetFighter.Runtime,-*Tests*
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
@@ -179,7 +179,7 @@ jobs:
       # GitHub only lets an app update check runs it created itself.
       - name: Make the results check say what the gate decided
         if: always()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const name = `${{ matrix.testMode }} results`;
@@ -235,7 +235,7 @@ jobs:
           set -o pipefail
           python scripts/report_unity_coverage.py "${{ matrix.testMode }}" | tee -a "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: unity-${{ matrix.testMode }}-results
