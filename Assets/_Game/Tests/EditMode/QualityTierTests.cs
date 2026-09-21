@@ -138,6 +138,23 @@ namespace JetFighter.Tests.EditMode
         }
 
         [Test]
+        public void TheSettingsScreenAndTheTierAgreeOnTheFrameCap()
+        {
+            // SettingsUI.DefaultFrameRateFor held its own copy of "low means
+            // 30". Two copies drift the first time one is tuned, and the
+            // symptom is a settings screen promising a cap the game does not
+            // apply -- visible only on a device, with a frame counter. It
+            // forwards now; this fails if a copy comes back.
+            foreach (QualityTierManager.Tier tier in
+                     System.Enum.GetValues(typeof(QualityTierManager.Tier)))
+            {
+                Assert.AreEqual(QualityTierManager.TargetFrameRateFor(tier),
+                                JetFighter.Settings.SettingsUI.DefaultFrameRateFor(tier),
+                                tier.ToString());
+            }
+        }
+
+        [Test]
         public void CurrentAndEnemyBudgetNeverDisagree()
         {
             // Two statics that must move together. They are set from one place
