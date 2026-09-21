@@ -79,9 +79,25 @@ def test_clearing_returns_to_detection():
 
 def test_the_low_tier_frame_rate_matches_what_the_game_was_tuned_against():
     """30 on low is the number the gun's cooldown and the banking convergence
-    were both written against."""
-    body = _method_body(SETTINGS, "public static int DefaultFrameRateFor(QualityTierManager.Tier tier)")
+    were both written against.
+
+    The rule moved to QualityTierManager, which owns the tier and applies the
+    same cap at launch; SettingsUI had its own copy, and two copies drift the
+    first time one is tuned. The assertion follows the rule rather than the
+    file: same number, checked where it now lives.
+    """
+    tier_manager = SCRIPTS / "Build" / "QualityTierManager.cs"
+    body = _method_body(tier_manager,
+                        "public static int TargetFrameRateFor(Tier tier)")
     assert "Tier.Low ? 30 : 60" in body
+
+
+def test_the_settings_screen_does_not_keep_its_own_copy_of_that_number():
+    """What the move is for. A settings screen promising a cap the game does
+    not apply is visible only on a device, with a frame counter."""
+    body = _method_body(SETTINGS, "public static int DefaultFrameRateFor(QualityTierManager.Tier tier)")
+    assert "QualityTierManager.TargetFrameRateFor(tier)" in body
+    assert "30" not in body and "60" not in body
 
 
 def test_a_persisted_tier_is_clamped_on_read():
