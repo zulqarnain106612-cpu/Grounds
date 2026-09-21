@@ -38,6 +38,7 @@ Every request/response is one JSON object validated against `schema/agent.schema
 - `ci_logs` — handled
 - `ingest` — handled
 - `manifest` — handled
+- `test_run` — handled
 
 ## intent.domain (enum)
 
@@ -57,6 +58,7 @@ Every request/response is one JSON object validated against `schema/agent.schema
 - `log`
 - `schema`
 - `ci`
+- `qa`
 
 ## payload sub-objects
 
@@ -181,6 +183,21 @@ Every request/response is one JSON object validated against `schema/agent.schema
 | `log_offset` | integer | no | Lines to skip from the end before the window starts, for when the probe shows the cause sits above the tail. |
 | `remote_only` | boolean | yes | Must be true. Asserts the work runs on GitHub Actions, never on the local machine. const: True |
 | `wait` | boolean | no | Must be false. Dispatch returns immediately; callers never block on a run. const: False |
+
+### TestOp
+
+| field | type | required | notes |
+|---|---|---|---|
+| `suite` | string | yes | Which verification technique to run. 'editmode'/'playmode' are the two Unity Test Framework modes; the rest are Python-side suites. enum: unit, regression, property, metamorphic, mutation, contract, soak, performance, editmode, playmode, all |
+| `scope` | string | no | Optional selector passed to the runner (a pytest -k expression, or an NUnit test filter). Capped so it cannot become a command line. |
+| `min_tests` | integer | no | Fail the run unless at least this many tests actually executed. The minimum is 1, not 0, on purpose: both pytest and Unity's runner exit 0 when they discover nothing, so a request that tolerates zero tests is a request for a green lie. It is not expressible here. |
+| `seed` | integer | no | PRNG seed for randomised suites. Required for 'property' and 'soak' (see allOf): a randomised failure nobody can replay is an anecdote, not a regression. |
+| `coverage_min` | number | no | Line+branch coverage floor, percent. Defaults to the repo gate when omitted. |
+| `mutation_score_min` | number | no | Percent of injected mutants the suite must kill. Required for the 'mutation' suite -- a mutation report with no floor is a number nobody is obliged to act on. |
+| `budget_ms` | number | no | Wall-clock ceiling for the 'performance' suite, which requires it. A timing run with no budget produces a measurement, not a verdict. |
+| `baseline` | string | no | Identifier of the golden artefact to compare against. Required for the 'regression' suite, which has nothing to regress against without it. |
+| `remote_only` | boolean | yes | Must be true. execution_policy forbids running tests on the local machine; this asserts the run happens on GitHub Actions. const: True |
+| `wait` | boolean | yes | Must be false. Dispatch returns immediately; callers never block on a run. const: False |
 
 ## Enforcement guarantees encoded in this schema
 

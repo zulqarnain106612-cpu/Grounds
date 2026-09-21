@@ -93,7 +93,8 @@
             "ci_status",
             "ci_logs",
             "ingest",
-            "manifest"
+            "manifest",
+            "test_run"
           ]
         },
         "domain": {
@@ -114,7 +115,8 @@
             "daemon",
             "log",
             "schema",
-            "ci"
+            "ci",
+            "qa"
           ]
         },
         "priority": {
@@ -171,6 +173,9 @@
         },
         "ci_op": {
           "$ref": "#/definitions/CIOp"
+        },
+        "test_op": {
+          "$ref": "#/definitions/TestOp"
         }
       }
     },
@@ -692,6 +697,158 @@
           "then": {
             "required": [
               "pr"
+            ]
+          }
+        }
+      ]
+    },
+    "TestOp": {
+      "type": "object",
+      "description": "A request for a verification run. Every field that would let a run report success without proving anything is either required or floored: see the allOf conditions and min_tests below.",
+      "required": [
+        "suite",
+        "remote_only",
+        "wait"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "suite": {
+          "type": "string",
+          "enum": [
+            "unit",
+            "regression",
+            "property",
+            "metamorphic",
+            "mutation",
+            "contract",
+            "soak",
+            "performance",
+            "editmode",
+            "playmode",
+            "all"
+          ],
+          "description": "Which verification technique to run. 'editmode'/'playmode' are the two Unity Test Framework modes; the rest are Python-side suites."
+        },
+        "scope": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Optional selector passed to the runner (a pytest -k expression, or an NUnit test filter). Capped so it cannot become a command line."
+        },
+        "min_tests": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Fail the run unless at least this many tests actually executed. The minimum is 1, not 0, on purpose: both pytest and Unity's runner exit 0 when they discover nothing, so a request that tolerates zero tests is a request for a green lie. It is not expressible here."
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "description": "PRNG seed for randomised suites. Required for 'property' and 'soak' (see allOf): a randomised failure nobody can replay is an anecdote, not a regression."
+        },
+        "coverage_min": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Line+branch coverage floor, percent. Defaults to the repo gate when omitted."
+        },
+        "mutation_score_min": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Percent of injected mutants the suite must kill. Required for the 'mutation' suite -- a mutation report with no floor is a number nobody is obliged to act on."
+        },
+        "budget_ms": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 600000,
+          "description": "Wall-clock ceiling for the 'performance' suite, which requires it. A timing run with no budget produces a measurement, not a verdict."
+        },
+        "baseline": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Identifier of the golden artefact to compare against. Required for the 'regression' suite, which has nothing to regress against without it."
+        },
+        "remote_only": {
+          "type": "boolean",
+          "const": true,
+          "description": "Must be true. execution_policy forbids running tests on the local machine; this asserts the run happens on GitHub Actions."
+        },
+        "wait": {
+          "type": "boolean",
+          "const": false,
+          "description": "Must be false. Dispatch returns immediately; callers never block on a run."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "suite"
+            ],
+            "properties": {
+              "suite": {
+                "const": "mutation"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "mutation_score_min"
+            ]
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "suite"
+            ],
+            "properties": {
+              "suite": {
+                "const": "performance"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "budget_ms"
+            ]
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "suite"
+            ],
+            "properties": {
+              "suite": {
+                "const": "regression"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "baseline"
+            ]
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "suite"
+            ],
+            "properties": {
+              "suite": {
+                "enum": [
+                  "property",
+                  "soak"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "seed"
             ]
           }
         }

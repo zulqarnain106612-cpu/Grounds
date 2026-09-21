@@ -127,6 +127,13 @@ jobs:
           artifactsPath: ${{ matrix.testMode }}-artifacts
           checkName: ${{ matrix.testMode }} results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
+          # Coverage is measured on the runtime assembly only -- including the
+          # test assemblies would count code that is 100% covered by definition
+          # and inflate the number until it stopped meaning anything. Same
+          # reasoning as .coveragerc excluding tests/ on the Python side.
+          coverageOptions: >-
+            generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;
+            assemblyFilters:+JetFighter.Runtime,-*Tests*
 
       - uses: actions/setup-python@v5
         with:
@@ -147,6 +154,27 @@ jobs:
       - name: Gate on the results file
         if: always()
         run: python scripts/check_unity_results.py --results "${{ matrix.testMode }}-artifacts" --min-tests 1
+
+      # No floor is enforced on this number yet, and that is a deliberate,
+      # temporary state rather than an oversight: the only runtime code in the
+      # repo is JetController, JetFlightConfig and QualityTierManager, and the
+      # last of those reads SystemInfo at Awake and has no test. Setting a floor
+      # today would mean picking a number the current code happens to hit, which
+      # is how a gate becomes decoration. The floor lands with the cell that
+      # gives QualityTierManager a seam worth testing.
+      - name: Report C# coverage
+        if: always()
+        # tee, not a bare redirect: the number belongs in the step log as well
+        # as the job summary. The script writes neither file itself, so no path
+        # from the environment reaches it.
+        #
+        # pipefail because tee's exit status would otherwise mask the script's.
+        # The reporter never gates on a missing number -- it exits 0 for that --
+        # so the only status it can fail with is a caller error, which is
+        # exactly the one worth surfacing rather than swallowing.
+        run: |
+          set -o pipefail
+          python scripts/report_unity_coverage.py "${{ matrix.testMode }}" | tee -a "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v4
         if: always()

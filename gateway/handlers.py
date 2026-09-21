@@ -384,6 +384,65 @@ def h_manifest(req: dict) -> dict:
     )
 
 
+# ---- QA handler ----------------------------------------------------------------
+
+# Suites the qa.yml workflow knows how to run, and the input name it expects.
+# Kept here rather than inlined so the handler's validation and the workflow's
+# matrix have one list to disagree about, which a test then asserts they don't.
+_TEST_SUITES = (
+    "unit", "regression", "property", "metamorphic", "mutation",
+    "contract", "soak", "performance", "editmode", "playmode", "all",
+)
+
+
+def h_test_run(req: dict) -> dict:
+    """Dispatch a verification run. Never executes in-process, CI included.
+
+    Unlike h_ingest/h_manifest this does not take the `_remote_only` shortcut of
+    running locally when `_in_ci()` is true. A test_run handled inside a CI job
+    would be pytest invoking itself from within its own process -- the inner run
+    inherits the outer run's coverage context and its result is attributed to the
+    wrong suite. Tests are dispatched as their own job, always.
+    """
+    test_op = req["payload"].get("test_op")
+    if not test_op:
+        return _error("missing_test_op", "payload.test_op required for test_run")
+
+    suite = test_op.get("suite")
+    if suite not in _TEST_SUITES:
+        return _error("unknown_suite", f"test_op.suite must be one of {list(_TEST_SUITES)}")
+
+    # The schema floors min_tests at 1 and defaults it to 1. Applying the same
+    # default here means a schema-valid request that omitted it still reaches the
+    # runner with a non-zero floor, rather than relying on the workflow's own
+    # default to be the same number.
+    min_tests = test_op.get("min_tests", 1)
+    if not isinstance(min_tests, int) or isinstance(min_tests, bool) or min_tests < 1:
+        return _error("invalid_min_tests", "test_op.min_tests must be an integer >= 1")
+
+    inputs = {"suite": suite, "min_tests": str(min_tests)}
+    for key in ("scope", "seed", "coverage_min", "mutation_score_min", "budget_ms", "baseline"):
+        if test_op.get(key) is not None:
+            inputs[key] = str(test_op[key])
+
+    ci_op = {
+        "op": "dispatch",
+        "workflow": "qa.yml",
+        "ref": (req["payload"].get("ci_op") or {}).get("ref", "main"),
+        "inputs": inputs,
+        "remote_only": True,
+    }
+    result = h_ci_dispatch({"payload": {"ci_op": ci_op}})
+    if result.get("status") == "ok":
+        result["result"]["delegated_action"] = "test_run"
+        result["result"]["suite"] = suite
+        result["result"]["min_tests"] = min_tests
+        result["result"]["reason"] = (
+            "local execution forbidden by execution_policy; dispatched to GitHub Actions"
+        )
+    return result
+
+
 def _tool_noop(params: dict):
     """Reference/example tool registration. Replace or add entries as real
     tools (e.g. a Unity batchmode build) are wired in."""
@@ -419,4 +478,5 @@ DISPATCH = {
     "ci_logs": h_ci_logs,
     "ingest": h_ingest,
     "manifest": h_manifest,
+    "test_run": h_test_run,
 }

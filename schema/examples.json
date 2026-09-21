@@ -492,6 +492,32 @@
           "wait": false
         }
       }
+    },
+    "test_run": {
+      "meta": {
+        "schema_version": "1.1.0",
+        "session_id": "550e8400-e29b-41d4-a716-446655440000",
+        "tick": 24,
+        "phase": "1",
+        "timestamp_utc": "2026-09-04T00:00:24Z"
+      },
+      "intent": {
+        "action": "test_run",
+        "domain": "qa",
+        "priority": 8
+      },
+      "payload": {
+        "data": null,
+        "test_op": {
+          "suite": "property",
+          "scope": "tests/test_property_invariants.py",
+          "min_tests": 1,
+          "seed": 1729,
+          "coverage_min": 99,
+          "remote_only": true,
+          "wait": false
+        }
+      }
     }
   }
 }
