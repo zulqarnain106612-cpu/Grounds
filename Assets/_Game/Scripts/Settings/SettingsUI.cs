@@ -73,10 +73,17 @@ namespace JetFighter.Settings
         /// checked by watching a counter -- and 30 on low is the number the
         /// gun's cooldown and the banking convergence were both written
         /// against.
+        ///
+        /// Forwards to QualityTierManager, which owns the tier and applies the
+        /// same cap at launch. The rule was written out twice, here and there;
+        /// two copies of "low means 30" drift the first time somebody tunes
+        /// one of them, and the symptom would be a settings screen promising a
+        /// cap the game does not apply. This stays as the name the settings
+        /// code and its tests call, and is a forwarder rather than a copy.
         /// </summary>
         public static int DefaultFrameRateFor(QualityTierManager.Tier tier)
         {
-            return tier == QualityTierManager.Tier.Low ? 30 : 60;
+            return QualityTierManager.TargetFrameRateFor(tier);
         }
 
         /// <summary>
