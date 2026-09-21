@@ -240,3 +240,14 @@ def test_nothing_in_this_workflow_can_report_as_skipped():
     assert "if: github.event_name" not in code, (
         "an event-conditioned job reports as skipped rather than absent"
     )
+
+
+def test_the_makefile_can_dispatch_the_only_way_this_workflow_starts():
+    """It runs on no event, so a target is the whole interface. Without one
+    the pipeline is reachable only by remembering a gh incantation, which is
+    how a dispatch-only workflow quietly stops being run at all."""
+    makefile = (REAL_ROOT / "Makefile").read_text(encoding="utf-8")
+    assert "gh workflow run ios-build.yml --ref $(REF)" in makefile
+    # .PHONY too, or a file appearing with that name stops the target running.
+    phony = [line for line in makefile.splitlines() if ".PHONY" in line or line.startswith("\t")]
+    assert any("ios-build" in line for line in phony if ".PHONY" in line)

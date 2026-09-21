@@ -116,7 +116,8 @@ python scripts/check_apple_credentials.py --names
 
 ### Producing the archive
 
-`ios-build` is dispatch-only: Actions → ios-build → Run workflow. Three jobs,
+`ios-build` is dispatch-only — `make ios-build REF=<branch>`, or Actions →
+ios-build → Run workflow. Three jobs,
 cheapest first, because a macOS runner is roughly ten times a Linux one and an
 archive is tens of minutes:
 
