@@ -8,8 +8,11 @@ name: coverage
 # scripts/check_coverage.py additionally gates branch coverage and every
 # individual module and file, which the ruleset rule does not cover.
 
+# push restricted to main: a branch push plus its own pull_request event ran
+# this entire job twice on the same commit.
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
     inputs:
@@ -21,6 +24,10 @@ on:
 permissions:
   contents: read
   code-quality: write
+
+concurrency:
+  group: coverage-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   coverage:
@@ -36,6 +43,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
 
       - run: pip install -r requirements.txt
 

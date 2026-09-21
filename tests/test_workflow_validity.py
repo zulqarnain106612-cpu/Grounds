@@ -32,6 +32,7 @@ import pytest
 REAL_ROOT = Path(__file__).resolve().parent.parent
 WORKFLOW_DIR = REAL_ROOT / ".github" / "workflows"
 AUTO_MERGE = WORKFLOW_DIR / "auto-merge.yml"
+UNITY_TEST = WORKFLOW_DIR / "unity-test.yml"
 
 
 def _workflows():
@@ -62,12 +63,34 @@ def _workflow_name(text):
     return m.group(1).strip("'\"") if m else None
 
 
-def _inline_list(text, key, indent):
-    """`key: [a, b]` -> ['a', 'b']; absent or not inline -> None."""
-    m = re.search(rf"^{' ' * indent}{re.escape(key)}:[^\S\n]*\[([^\]]*)\]", text, re.M)
-    if m is None:
+def _yaml_list(text, key, indent):
+    """`key: [a, b]` or a block sequence under `key:` -> ['a', 'b'].
+
+    Absent, or present but empty -> None.
+
+    Both spellings are valid YAML and both appear in this repo's workflows.
+    Reading only the inline form had two costs: a populated block list was
+    reported as "empty", and at the call site below that tolerates None it
+    meant the names were never checked against real workflows at all.
+    """
+    pad = " " * indent
+    inline = re.search(rf"^{pad}{re.escape(key)}:[^\S\n]*\[([^\]]*)\]", text, re.M)
+    if inline is not None:
+        values = [v.strip().strip("'\"") for v in inline.group(1).split(",") if v.strip()]
+        return values or None
+
+    header = re.search(rf"^{pad}{re.escape(key)}:[^\S\n]*$", text, re.M)
+    if header is None:
         return None
-    return [v.strip().strip("'\"") for v in m.group(1).split(",") if v.strip()]
+    values = []
+    for line in text[header.end():].splitlines():
+        if not line.strip():
+            continue
+        entry = re.match(rf"^{pad}\s+-\s*(.+?)\s*$", line)
+        if entry is None:
+            break
+        values.append(entry.group(1).strip().strip("'\""))
+    return values or None
 
 
 def _check_run_names(text):
@@ -132,7 +155,7 @@ def test_workflow_run_triggers_name_the_workflows_they_follow():
             f"{path.name}: workflow_run requires a `workflows:` key; without it "
             f"the file is invalid and every run is a startup failure"
         )
-        assert _inline_list(spec, "workflows", 4), f"{path.name}: `workflows:` is empty"
+        assert _yaml_list(spec, "workflows", 4), f"{path.name}: `workflows:` is empty"
 
 
 def test_workflow_run_triggers_reference_real_workflow_names():
@@ -143,7 +166,7 @@ def test_workflow_run_triggers_reference_real_workflow_names():
         if not re.search(r"^  workflow_run:", on_block, re.M):
             continue
         spec = _block(on_block, "workflow_run", indent=2)
-        for named in (_inline_list(spec, "workflows", 4) or []):
+        for named in (_yaml_list(spec, "workflows", 4) or []):
             assert named in declared, (
                 f"{path.name}: workflow_run follows '{named}', which is not the "
                 f"`name:` of any workflow here. Known: {sorted(n for n in declared if n)}"
@@ -211,3 +234,44 @@ def test_every_policy_declared_workflow_is_one_of_the_files_here():
     present = {f".github/workflows/{p.name}" for p in _workflows()}
     for name, path in policy["workflows"].items():
         assert path in present, f"policy workflow '{name}' points at {path}, which is not present"
+
+
+def test_auto_merge_requires_the_unity_legs_only_when_they_will_run():
+    """The third auto-merge defect: requiring a check that will never appear.
+
+    unity-test.yml is path-filtered. On a pull request touching none of those
+    paths the workflow never runs, so `test (editmode)` / `test (playmode)`
+    never exist as check runs. Requiring them unconditionally made
+    `checksByName[name]` undefined and auto-merge waited forever -- on every
+    ingest, docs or gateway pull request, which is most of them.
+    """
+    text = _text(AUTO_MERGE)
+    assert "touchesUnity" in text, (
+        "auto-merge must decide the Unity legs from the changed files, not "
+        "require them unconditionally"
+    )
+    assert "listFiles" in text, "it needs the PR's file list to make that call"
+    # 'validate' comes from enforce.yml, which is not path-filtered, so it is
+    # always required.
+    assert "const requiredChecks = ['validate'];" in text
+
+
+def test_auto_merge_unity_paths_match_the_workflow_they_mirror():
+    """UNITY_PATHS is a copy of unity-test.yml's `paths:` filter, and a copy
+    that drifts is worse than no copy: auto-merge would either wait for a run
+    that never comes, or stop requiring a run that does."""
+    # unity-test.yml lists each path twice (push and pull_request); a set
+    # collapses that. The filter uses globs, auto-merge matches by prefix.
+    declared = {
+        entry.replace("/**", "/")
+        for entry in re.findall(r'^\s*-\s*"([^"]+)"\s*$', _text(UNITY_TEST), re.M)
+    }
+    assert declared, "unity-test.yml no longer declares a paths: filter"
+
+    array = re.search(r"UNITY_PATHS = \[(.*?)\];", _text(AUTO_MERGE), re.S)
+    assert array, "auto-merge no longer declares UNITY_PATHS"
+    mirrored = set(re.findall(r"'([^']+)'", array.group(1)))
+    assert declared == mirrored, (
+        f"unity-test.yml paths {sorted(declared)} != auto-merge UNITY_PATHS "
+        f"{sorted(mirrored)}; update both together"
+    )

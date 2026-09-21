@@ -77,11 +77,10 @@ jobs:
   test:
     needs: preflight
     runs-on: ubuntu-latest
-    # game-ci posts the suite's results as a check run, which needs more than
-    # the read-only default. Without it the action fails with "Resource not
-    # accessible by integration" *after* every test has passed -- a red job
-    # with a green results file behind it. It went unnoticed for as long as
-    # continue-on-error was swallowing the runner's exit code.
+    # game-ci posts the suite's results as a check run using the ambient
+    # GITHUB_TOKEN. It does that whether or not `githubToken` is passed, so
+    # dropping the permission does not stop the post -- it makes the post 403
+    # and fails the job *after* every test has passed. Verified the hard way.
     permissions:
       contents: read
       checks: write
@@ -151,9 +150,62 @@ jobs:
           echo "::error::https://id.unity.com. The other is a 2FA or new-device challenge,"
           echo "::error::which headless activation cannot answer."
 
+      # The gate's counts also go to the job summary, so the numbers are
+      # readable without opening the check.
       - name: Gate on the results file
+        id: gate
         if: always()
-        run: python scripts/check_unity_results.py --results "${{ matrix.testMode }}-artifacts" --min-tests 1
+        run: |
+          set -o pipefail
+          python scripts/check_unity_results.py \
+            --results "${{ matrix.testMode }}-artifacts" --min-tests 1 \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+
+      # game-ci publishes "<mode> results" with conclusion `neutral` even when
+      # every test passed -- that check read "825/825 - Passed" while sitting
+      # neutral. A square that can never be green cannot be required and is
+      # not a verdict, so this replaces the conclusion with the one the gate
+      # above actually reached.
+      #
+      # The action posts as the github-actions app with GITHUB_TOKEN, and this
+      # step runs as that same app, which is what makes the check updatable:
+      # GitHub only lets an app update check runs it created itself.
+      - name: Make the results check say what the gate decided
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const name = `${{ matrix.testMode }} results`;
+            // The action posts against the PR head, not the merge commit that
+            // context.sha names on a pull_request event.
+            const sha = context.payload.pull_request
+              ? context.payload.pull_request.head.sha
+              : context.sha;
+            const gate = '${{ steps.gate.outcome }}';
+
+            const { data } = await github.rest.checks.listForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: sha,
+              check_name: name,
+            });
+            const run = data.check_runs.find(c => c.name === name);
+            if (!run) {
+              console.log(`No "${name}" check run on ${sha}; nothing to correct.`);
+              return;
+            }
+            if (run.conclusion === 'success' || run.conclusion === 'failure') {
+              console.log(`"${name}" already concluded ${run.conclusion}.`);
+              return;
+            }
+            const conclusion = gate === 'success' ? 'success' : 'failure';
+            await github.rest.checks.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              check_run_id: run.id,
+              conclusion,
+            });
+            console.log(`"${name}": ${run.conclusion} -> ${conclusion} (gate ${gate})`);
 
       # No floor is enforced on this number yet, and that is a deliberate,
       # temporary state rather than an oversight: the only runtime code in the

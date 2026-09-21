@@ -23,6 +23,8 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import check_unity_results as gate  # noqa: E402
 
+WORKFLOW_ROOT = Path(__file__).resolve().parents[1] / ".github" / "workflows"
+
 REAL_ROOT = Path(__file__).resolve().parent.parent
 WORKFLOW = REAL_ROOT / ".github" / "workflows" / "unity-test.yml"
 TESTS_DIR = REAL_ROOT / "Assets" / "_Game" / "Tests"
@@ -235,3 +237,43 @@ def test_the_script_is_runnable_as_a_program(tmp_path):
          "--results", str(tmp_path)],
         capture_output=True, text=True, timeout=30)
     assert proc.returncode == 0, proc.stderr
+
+
+def test_the_results_check_is_given_a_real_conclusion() -> None:
+    """game-ci publishes "<mode> results" with conclusion `neutral` even when
+    every test passed -- that check read "825/825 - Passed" while neutral.
+
+    It posts using the ambient GITHUB_TOKEN whether or not `githubToken` is
+    passed, so the post cannot be prevented by withholding the input: drop
+    `checks: write` and it 403s and fails the job *after* the suite passed.
+    The conclusion is therefore corrected to the gate's verdict instead.
+    """
+    workflow = (WORKFLOW_ROOT / "unity-test.yml").read_text(encoding="utf-8")
+
+    # The permission the post needs. Without it the runner step fails on
+    # "Resource not accessible by integration".
+    assert "checks: write" in workflow
+
+    # The gate must be addressable, or its verdict cannot be read.
+    assert "id: gate" in workflow
+    assert "steps.gate.outcome" in workflow
+
+    # And the correction itself.
+    assert "checks.update" in workflow
+    assert "conclusion" in workflow
+
+
+def test_the_gate_puts_its_counts_in_the_job_summary() -> None:
+    """The counts the removed check used to show still reach the PR.
+
+    check_unity_results.py prints the per-file tally; tee copies it into the
+    job summary, so the numbers live next to a conclusion that means
+    something instead of next to a neutral one.
+    """
+    workflow = (WORKFLOW_ROOT / "unity-test.yml").read_text(encoding="utf-8")
+    assert "check_unity_results.py" in workflow
+    assert 'tee -a "$GITHUB_STEP_SUMMARY"' in workflow
+    # pipefail, or tee's exit status would hide a failing gate and the job
+    # would go green on a red suite -- the exact class of bug this file exists
+    # to prevent.
+    assert "set -o pipefail" in workflow

@@ -105,11 +105,40 @@ jobs:
             // previous three names matched no check run at all, so every
             // lookup returned undefined and auto-merge always concluded that
             // the required checks had not passed.
-            const requiredChecks = [
-              'validate',
-              'test (editmode)',
-              'test (playmode)',
+            // unity-test.yml is path-filtered, so on a pull request that
+            // touches none of those paths it never runs and its check runs
+            // never exist. Requiring them unconditionally meant
+            // checksByName[name] was undefined, `passed` was false, and
+            // auto-merge waited for a check that was never coming -- on every
+            // ingest, docs or gateway pull request, which is most of them.
+            //
+            // So the Unity legs are required only when they are going to run.
+            // UNITY_PATHS mirrors the `paths:` filter in unity-test.yml;
+            // tests/test_workflow_validity.py fails if the two drift apart.
+            const UNITY_PATHS = [
+              'Assets/',
+              'ProjectSettings/',
+              'Packages/',
+              'scripts/check_unity_results.py',
+              '.github/workflows/unity-test.yml',
             ];
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner,
+              repo,
+              pull_number: number,
+              per_page: 100,
+            });
+            const touchesUnity = files.some(f =>
+              UNITY_PATHS.some(prefix => f.filename.startsWith(prefix)));
+
+            const requiredChecks = ['validate'];
+            if (touchesUnity) {
+              requiredChecks.push('test (editmode)', 'test (playmode)');
+            }
+            console.log(
+              `Changed files: ${files.length}; touches Unity paths: ${touchesUnity}`);
+            console.log('Required checks:', requiredChecks);
 
             // Verify all required checks passed
             const allPassed = requiredChecks.every(checkName => {
