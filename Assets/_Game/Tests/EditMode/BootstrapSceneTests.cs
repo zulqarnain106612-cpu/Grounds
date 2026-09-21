@@ -1,6 +1,5 @@
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using JetFighter.Build;
 using JetFighter.Editor;
 
@@ -11,33 +10,59 @@ namespace JetFighter.Tests.EditMode
     ///
     /// The scene is composed from code rather than committed as YAML, so it
     /// can be asserted here without booting a player -- which is the point of
-    /// composing it from code. Compose() is exercised against a throwaway
-    /// scene; nothing here writes a .unity file, so a developer running the
-    /// suite does not end up with a generated asset in their working tree.
+    /// composing it from code. Nothing here writes a .unity file, so running
+    /// the suite leaves no generated asset in a working tree.
+    ///
+    /// Compose() returns its root objects rather than filling a Scene, and
+    /// these tests hold them directly. The first version created a scene with
+    /// SceneManager.CreateScene and all nine tests failed in SetUp before a
+    /// single assertion ran: the scene APIs are runtime APIs, and every other
+    /// EditMode suite in this project builds with a bare `new GameObject`.
     /// </summary>
     public class BootstrapSceneTests
     {
-        private Scene _scene;
+        private GameObject[] _roots;
 
         [SetUp]
-        public void CreateScene()
+        public void ComposeRoots()
         {
-            _scene = SceneManager.CreateScene("BootstrapSceneTests");
-            BootstrapSceneBuilder.Compose(_scene);
+            _roots = BootstrapSceneBuilder.Compose();
         }
 
         [TearDown]
-        public void DestroyScene()
+        public void DestroyRoots()
         {
-            foreach (GameObject root in _scene.GetRootGameObjects())
+            DestroyAll(_roots);
+        }
+
+        private static void DestroyAll(GameObject[] roots)
+        {
+            if (roots == null)
             {
-                Object.DestroyImmediate(root);
+                return;
             }
+            foreach (GameObject root in roots)
+            {
+                if (root != null)
+                {
+                    Object.DestroyImmediate(root);
+                }
+            }
+        }
+
+        private static int CountOf<T>(GameObject[] roots) where T : Component
+        {
+            int found = 0;
+            foreach (GameObject root in roots)
+            {
+                found += root.GetComponentsInChildren<T>(true).Length;
+            }
+            return found;
         }
 
         private T Find<T>() where T : Component
         {
-            foreach (GameObject root in _scene.GetRootGameObjects())
+            foreach (GameObject root in _roots)
             {
                 T found = root.GetComponentInChildren<T>(true);
                 if (found != null)
@@ -52,21 +77,16 @@ namespace JetFighter.Tests.EditMode
         public void TheSceneIsNotEmpty()
         {
             // A Compose() that silently did nothing would leave every other
-            // assertion here passing on a scene with no objects in it.
-            Assert.IsNotEmpty(_scene.GetRootGameObjects());
+            // assertion here passing on nothing at all.
+            Assert.IsNotEmpty(_roots);
         }
 
         [Test]
         public void ThereIsExactlyOneCamera()
         {
-            int cameras = 0;
-            foreach (GameObject root in _scene.GetRootGameObjects())
-            {
-                cameras += root.GetComponentsInChildren<Camera>(true).Length;
-            }
             // Two cameras render twice and halve the frame rate, which reads
             // as a performance problem rather than a scene problem.
-            Assert.AreEqual(1, cameras);
+            Assert.AreEqual(1, CountOf<Camera>(_roots));
         }
 
         [Test]
@@ -93,14 +113,9 @@ namespace JetFighter.Tests.EditMode
         [Test]
         public void ThereIsExactlyOneAudioListener()
         {
-            int listeners = 0;
-            foreach (GameObject root in _scene.GetRootGameObjects())
-            {
-                listeners += root.GetComponentsInChildren<AudioListener>(true).Length;
-            }
             // Unity logs a warning and picks one arbitrarily with more than
             // one, which makes positional audio non-deterministic.
-            Assert.AreEqual(1, listeners);
+            Assert.AreEqual(1, CountOf<AudioListener>(_roots));
         }
 
         [Test]
@@ -117,7 +132,7 @@ namespace JetFighter.Tests.EditMode
             // An inactive root runs no Awake, so a manager that is present but
             // disabled is indistinguishable from one that is missing -- except
             // that it looks correct in the hierarchy.
-            foreach (GameObject root in _scene.GetRootGameObjects())
+            foreach (GameObject root in _roots)
             {
                 Assert.IsTrue(root.activeSelf, root.name);
             }
@@ -129,26 +144,22 @@ namespace JetFighter.Tests.EditMode
             // Regenerated on every build, so two runs must agree. A scene that
             // differed between runs would make a build reproducible only by
             // accident.
-            Scene second = SceneManager.CreateScene("BootstrapSceneTests2");
+            GameObject[] second = BootstrapSceneBuilder.Compose();
             try
             {
-                BootstrapSceneBuilder.Compose(second);
-                string[] first = NamesOf(_scene);
-                string[] repeat = NamesOf(second);
-                CollectionAssert.AreEqual(first, repeat);
+                CollectionAssert.AreEqual(NamesOf(_roots), NamesOf(second));
+                Assert.AreEqual(CountOf<Camera>(_roots), CountOf<Camera>(second));
+                Assert.AreEqual(CountOf<QualityTierManager>(_roots),
+                                CountOf<QualityTierManager>(second));
             }
             finally
             {
-                foreach (GameObject root in second.GetRootGameObjects())
-                {
-                    Object.DestroyImmediate(root);
-                }
+                DestroyAll(second);
             }
         }
 
-        private static string[] NamesOf(Scene scene)
+        private static string[] NamesOf(GameObject[] roots)
         {
-            GameObject[] roots = scene.GetRootGameObjects();
             var names = new string[roots.Length];
             for (int i = 0; i < roots.Length; i++)
             {

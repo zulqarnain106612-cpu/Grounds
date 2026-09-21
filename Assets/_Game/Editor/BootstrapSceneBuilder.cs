@@ -48,10 +48,13 @@ namespace JetFighter.Editor
         {
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
 
+            // Single, so the new scene becomes the active one and everything
+            // Compose() creates lands in it without a MoveGameObjectToScene
+            // call -- which is a runtime API and is not reliable in the editor.
             Scene scene = EditorSceneManager.NewScene(
                 NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
-            Compose(scene);
+            Compose();
 
             if (!EditorSceneManager.SaveScene(scene, ScenePath))
             {
@@ -69,18 +72,24 @@ namespace JetFighter.Editor
         }
 
         /// <summary>
-        /// Everything the scene contains. Separated from the file writing so
-        /// the contents can be asserted in an EditMode test without leaving a
-        /// .unity behind on a developer's machine.
+        /// Everything the scene contains, created in the active scene and
+        /// returned as its root objects.
+        ///
+        /// Separated from the file writing so the contents can be asserted in
+        /// an EditMode test without leaving a .unity behind on a developer's
+        /// machine -- and taking no Scene, because every other EditMode suite
+        /// here builds with a bare `new GameObject(...)`. The scene APIs are
+        /// runtime APIs; reaching for them is what made the first version of
+        /// these tests fail in SetUp, all nine of them, before a single
+        /// assertion ran.
         /// </summary>
-        public static void Compose(Scene scene)
+        public static GameObject[] Compose()
         {
             // NewSceneSetup.EmptyScene is deliberate: the default setup ships a
             // camera and a directional light whose settings are Unity's
             // defaults rather than this project's, and a scene that is partly
             // authored elsewhere is the drift this file exists to avoid.
             var cameraObject = new GameObject("Main Camera");
-            SceneManager.MoveGameObjectToScene(cameraObject, scene);
             cameraObject.tag = "MainCamera";
             Camera camera = cameraObject.AddComponent<Camera>();
             camera.clearFlags = CameraClearFlags.SolidColor;
@@ -94,8 +103,9 @@ namespace JetFighter.Editor
             // and Awake order between MonoBehaviours is not guaranteed, so it
             // is the first object composed here rather than merely present.
             var managers = new GameObject("Managers");
-            SceneManager.MoveGameObjectToScene(managers, scene);
             managers.AddComponent<QualityTierManager>();
+
+            return new[] { cameraObject, managers };
         }
     }
 }
