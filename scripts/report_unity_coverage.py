@@ -23,14 +23,55 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 
+# CodeQL flags the argv-derived and environment-derived paths below as
+# "uncontrolled data used in a path expression". In this repo neither is
+# attacker-controlled: the only caller is unity-test.yml passing a matrix
+# literal (editmode/playmode), and GITHUB_STEP_SUMMARY is written by the
+# runner. The containment checks cost nothing and hold whatever calls this
+# later, so the alert is closed by construction rather than by annotation.
+
+def _roots() -> list[Path]:
+    """Directories this script is ever allowed to touch."""
+    roots = []
+    for var in ("GITHUB_WORKSPACE", "RUNNER_TEMP"):
+        value = os.environ.get(var)
+        if value:
+            try:
+                roots.append(Path(value).resolve())
+            except OSError:
+                pass
+    if not roots:
+        roots.append(Path.cwd().resolve())
+    return roots
+
+
+def within(path: Path, roots: list[Path]) -> Path | None:
+    """`path` resolved, or None when it escapes every allowed root."""
+    try:
+        resolved = path.resolve()
+    except OSError:
+        return None
+    for root in roots:
+        try:
+            resolved.relative_to(root)
+        except ValueError:
+            continue
+        return resolved
+    return None
+
+
 def find_summary(artifacts: Path) -> Path | None:
     """Unity's coverage package writes Report/Summary.xml under the artifacts
     directory. Its exact depth has moved between package versions, so search
     rather than hardcode."""
-    if not artifacts.is_dir():
+    roots = _roots()
+    safe = within(artifacts, roots)
+    if safe is None or not safe.is_dir():
         return None
-    for candidate in sorted(artifacts.rglob("Summary.xml")):
-        return candidate
+    for candidate in sorted(safe.rglob("Summary.xml")):
+        checked = within(candidate, roots)
+        if checked is not None:
+            return checked
     return None
 
 
@@ -76,8 +117,10 @@ def main(argv: list[str]) -> int:
 
     step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if step_summary:
-        with open(step_summary, "a", encoding="utf-8") as handle:
-            handle.write(body)
+        target = within(Path(step_summary), _roots())
+        if target is not None:
+            with open(target, "a", encoding="utf-8") as handle:
+                handle.write(body)
     return 0
 
 
