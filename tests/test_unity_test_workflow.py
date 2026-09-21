@@ -239,33 +239,28 @@ def test_the_script_is_runnable_as_a_program(tmp_path):
     assert proc.returncode == 0, proc.stderr
 
 
-def test_the_runner_publishes_no_check_run_of_its_own() -> None:
-    """Why checkName/githubToken are absent from the runner's inputs.
+def test_the_results_check_is_given_a_real_conclusion() -> None:
+    """game-ci publishes "<mode> results" with conclusion `neutral` even when
+    every test passed -- that check read "825/825 - Passed" while neutral.
 
-    Given a token, game-ci/unity-test-runner publishes its own check run and
-    gives it conclusion `neutral` even when every test passed -- the
-    "editmode results" check read "825/825 - Passed" while sitting neutral.
-    A check that can never be green cannot be required and cannot be read as
-    a verdict, so it is not published at all; the gate step decides instead.
-
-    Re-adding either input brings the permanently-neutral check back, so it
-    fails here rather than on the next pull request.
+    It posts using the ambient GITHUB_TOKEN whether or not `githubToken` is
+    passed, so the post cannot be prevented by withholding the input: drop
+    `checks: write` and it 403s and fails the job *after* the suite passed.
+    The conclusion is therefore corrected to the gate's verdict instead.
     """
     workflow = (WORKFLOW_ROOT / "unity-test.yml").read_text(encoding="utf-8")
-    for line in workflow.splitlines():
-        stripped = line.strip()
-        assert not stripped.startswith("checkName:"), (
-            "unity-test.yml must not set checkName: it makes game-ci publish a "
-            "check run that is neutral even on a full pass"
-        )
-        assert not stripped.startswith("githubToken:"), (
-            "unity-test.yml must not pass githubToken to the runner: that is "
-            "what enables the neutral check run"
-        )
-        assert not stripped.startswith("checks: write"), (
-            "checks: write existed only for that check run; nothing else in "
-            "the job writes a check"
-        )
+
+    # The permission the post needs. Without it the runner step fails on
+    # "Resource not accessible by integration".
+    assert "checks: write" in workflow
+
+    # The gate must be addressable, or its verdict cannot be read.
+    assert "id: gate" in workflow
+    assert "steps.gate.outcome" in workflow
+
+    # And the correction itself.
+    assert "checks.update" in workflow
+    assert "conclusion" in workflow
 
 
 def test_the_gate_puts_its_counts_in_the_job_summary() -> None:
