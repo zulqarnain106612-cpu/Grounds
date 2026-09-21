@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "updated_at": "2026-09-21T08:24:30.007012Z",
+  "updated_at": "2026-09-21T08:36:00.632286Z",
   "generated_by": "gateway/symbol_scanner.py",
   "note": "Auto-generated. Never hand-edit.",
   "symbols": [
@@ -2152,7 +2152,7 @@
       "name": "DefaultFrameRateFor",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
-      "line": 77,
+      "line": 84,
       "namespace": "JetFighter.Settings",
       "tags": []
     },
@@ -2160,7 +2160,7 @@
       "name": "SetTierOverride",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
-      "line": 89,
+      "line": 96,
       "namespace": "JetFighter.Settings",
       "tags": []
     },
@@ -2168,7 +2168,7 @@
       "name": "ClearOverride",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
-      "line": 105,
+      "line": 112,
       "namespace": "JetFighter.Settings",
       "tags": []
     },
@@ -2176,7 +2176,7 @@
       "name": "Apply",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
-      "line": 122,
+      "line": 129,
       "namespace": "JetFighter.Settings",
       "tags": []
     },
@@ -2184,7 +2184,7 @@
       "name": "Load",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
-      "line": 130,
+      "line": 137,
       "namespace": "JetFighter.Settings",
       "tags": []
     },
@@ -2192,7 +2192,7 @@
       "name": "Save",
       "kind": "method",
       "file": "Assets/_Game/Scripts/Settings/SettingsUI.cs",
-      "line": 164,
+      "line": 171,
       "namespace": "JetFighter.Settings",
       "tags": []
     },
