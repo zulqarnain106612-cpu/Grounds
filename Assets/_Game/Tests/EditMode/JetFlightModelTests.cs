@@ -39,7 +39,7 @@ namespace JetFighter.Tests.EditMode
         public void NoInput_AtRest_ProducesNoAcceleration()
         {
             Assert.AreEqual(0f, JetController.ComputeAcceleration(
-                Vector2.zero, Vector2.zero, config).magnitude, 1e-4f);
+                Vector2.zero, Vector2.zero, config.maxSpeed, config.acceleration).magnitude, 1e-4f);
         }
 
         [Test]
@@ -48,7 +48,7 @@ namespace JetFighter.Tests.EditMode
             // Releasing the stick must coast on drag. Accelerating back toward
             // zero here would read as a handbrake and kill the inertia the
             // whole cycle exists to get right.
-            Vector3 a = JetController.ComputeAcceleration(Vector2.zero, new Vector2(8f, 0f), config);
+            Vector3 a = JetController.ComputeAcceleration(Vector2.zero, new Vector2(8f, 0f), config.maxSpeed, config.acceleration);
             Assert.LessOrEqual(a.x, 0f);
             Assert.AreEqual(config.acceleration, a.magnitude, 1e-3f,
                 "the coast-back is capped at the configured acceleration");
@@ -57,7 +57,7 @@ namespace JetFighter.Tests.EditMode
         [Test]
         public void FullInput_FromRest_AcceleratesTowardTheInput()
         {
-            Vector3 a = JetController.ComputeAcceleration(Vector2.right, Vector2.zero, config);
+            Vector3 a = JetController.ComputeAcceleration(Vector2.right, Vector2.zero, config.maxSpeed, config.acceleration);
             Assert.Greater(a.x, 0f);
             Assert.AreEqual(0f, a.y, 1e-4f);
             Assert.AreEqual(0f, a.z, 1e-4f, "the flight model never accelerates on the locked axis");
@@ -67,7 +67,7 @@ namespace JetFighter.Tests.EditMode
         public void AtTargetVelocity_TheJetStopsAccelerating()
         {
             Vector3 a = JetController.ComputeAcceleration(
-                Vector2.right, new Vector2(config.maxSpeed, 0f), config);
+                Vector2.right, new Vector2(config.maxSpeed, 0f), config.maxSpeed, config.acceleration);
             Assert.AreEqual(0f, a.magnitude, 1e-3f);
         }
 
@@ -77,8 +77,8 @@ namespace JetFighter.Tests.EditMode
             // Vector2.one has magnitude 1.41; unclamped, holding a diagonal
             // would be 41% faster than holding right. Classic and invisible
             // until someone speedruns the game sideways.
-            Vector3 diagonal = JetController.ComputeAcceleration(Vector2.one, Vector2.zero, config);
-            Vector3 cardinal = JetController.ComputeAcceleration(Vector2.right, Vector2.zero, config);
+            Vector3 diagonal = JetController.ComputeAcceleration(Vector2.one, Vector2.zero, config.maxSpeed, config.acceleration);
+            Vector3 cardinal = JetController.ComputeAcceleration(Vector2.right, Vector2.zero, config.maxSpeed, config.acceleration);
             Assert.AreEqual(cardinal.magnitude, diagonal.magnitude, 1e-3f);
         }
 
@@ -86,22 +86,26 @@ namespace JetFighter.Tests.EditMode
         public void AccelerationIsCappedByTheConfig()
         {
             Vector3 a = JetController.ComputeAcceleration(
-                Vector2.right, new Vector2(-500f, 0f), config);
+                Vector2.right, new Vector2(-500f, 0f), config.maxSpeed, config.acceleration);
             Assert.LessOrEqual(a.magnitude, config.acceleration + 1e-3f);
         }
 
         [Test]
-        public void ANullConfigIsInertRatherThanAnException()
+        public void UnusableStatsAreInertRatherThanAnException()
         {
-            Assert.AreEqual(Vector3.zero, JetController.ComputeAcceleration(Vector2.one, Vector2.zero, null));
-            Assert.AreEqual(0f, JetController.ComputeTargetBankAngle(5f, null));
+            // The functions take numbers now, not the asset, so the bad-input
+            // case is a zero cap rather than a null reference -- which is what
+            // a jet with no stats component actually produces.
+            Assert.AreEqual(Vector3.zero, JetController.ComputeAcceleration(Vector2.one, Vector2.zero, 0f, 10f));
+            Assert.AreEqual(Vector3.zero, JetController.ComputeAcceleration(Vector2.one, Vector2.zero, 10f, 0f));
+            Assert.AreEqual(0f, JetController.ComputeTargetBankAngle(5f, 0f, 30f));
         }
 
         [Test]
         public void TheJetBanksIntoTheTurnNotAwayFromIt()
         {
-            float rightward = JetController.ComputeTargetBankAngle(config.maxSpeed, config);
-            float leftward = JetController.ComputeTargetBankAngle(-config.maxSpeed, config);
+            float rightward = JetController.ComputeTargetBankAngle(config.maxSpeed, config.maxSpeed, config.bankAngleMax);
+            float leftward = JetController.ComputeTargetBankAngle(-config.maxSpeed, config.maxSpeed, config.bankAngleMax);
             Assert.AreEqual(-config.bankAngleMax, rightward, 1e-3f);
             Assert.AreEqual(config.bankAngleMax, leftward, 1e-3f);
         }
@@ -110,13 +114,13 @@ namespace JetFighter.Tests.EditMode
         public void BankAngleIsClampedBeyondMaxSpeed()
         {
             Assert.AreEqual(-config.bankAngleMax,
-                JetController.ComputeTargetBankAngle(config.maxSpeed * 12f, config), 1e-3f);
+                JetController.ComputeTargetBankAngle(config.maxSpeed * 12f, config.maxSpeed, config.bankAngleMax), 1e-3f);
         }
 
         [Test]
         public void LevelFlightBanksLevel()
         {
-            Assert.AreEqual(0f, JetController.ComputeTargetBankAngle(0f, config), 1e-4f);
+            Assert.AreEqual(0f, JetController.ComputeTargetBankAngle(0f, config.maxSpeed, config.bankAngleMax), 1e-4f);
         }
 
         [Test]

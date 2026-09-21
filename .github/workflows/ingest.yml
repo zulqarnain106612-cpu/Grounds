@@ -86,6 +86,17 @@ jobs:
             echo "indexes already up to date; nothing to propose"
             exit 0
           fi
+          # The byte comparison above never fires: every generator stamps a
+          # fresh generated_at/updated_at on each run, so the staged diff is
+          # always non-empty. Left in place as the cheap path, it is followed
+          # by the comparison that decides -- the same content-only definition
+          # of freshness that enforce.yml gates on. Without this, the nightly
+          # cron opened a pull request a day whose whole content was a moved
+          # clock (#199-#208), each conflicting with the last.
+          if ! python scripts/ingest_content_changed.py; then
+            echo "indexes are content-identical; nothing to propose" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           BRANCH="chore/ingest-${{ github.run_id }}"
           git checkout -b "$BRANCH"
           git commit -m "chore(ingest): refresh kb index, graph, symbols, manifest"

@@ -1,7 +1,9 @@
 {
   "name": "JetFighter.Runtime",
   "rootNamespace": "JetFighter",
-  "references": [],
+  "references": [
+    "UnityEngine.UI"
+  ],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,

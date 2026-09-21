@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- The game's own manifest. Each SDK bundle ships its own; this one
+         covers what JetFighter itself does.
+
+         NSPrivacyTracking is false because nothing here tracks: the wallet,
+         the entitlement and the settings are all local files, and analytics
+         events carry no identifier this app creates. The ads SDK's manifest
+         is the one that declares tracking, and it is a separate file. -->
+    <key>NSPrivacyTracking</key>
+    <false/>
+    <key>NSPrivacyTrackingDomains</key>
+    <array/>
+
+    <!-- No data leaves the device from this app's own code. Firebase and the
+         ads SDK declare their own collection in their own manifests, which is
+         how Apple expects it. A single merged manifest would become wrong the
+         moment an SDK is swapped. -->
+    <key>NSPrivacyCollectedDataTypes</key>
+    <array/>
+
+    <key>NSPrivacyAccessedAPITypes</key>
+    <array>
+        <dict>
+            <!-- SaveService, RemoveAdsFlag and SettingsUI all write to
+                 persistentDataPath and call File.Exists, which reads a file
+                 timestamp. C617.1 is the "files created by the app itself"
+                 reason. -->
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>C617.1</string>
+            </array>
+        </dict>
+        <dict>
+            <!-- Unity itself reads UserDefaults during startup, so this is
+                 required even though the game's own saves are plain files.
+                 CA92.1 is "access info from the same app". -->
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>CA92.1</string>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>
