@@ -208,3 +208,35 @@ def test_the_third_party_builder_is_pinned_to_a_commit():
     for uses in re.findall(r"uses:\s*(game-ci/[^\s]+)", workflow):
         _, _, ref = uses.partition("@")
         assert len(ref) == 40 and all(c in "0123456789abcdef" for c in ref), uses
+
+
+def test_nothing_in_this_workflow_can_report_as_skipped():
+    """A skipped check is not a verdict.
+
+    The earlier version ran the credential check on pull requests touching it
+    and held the expensive jobs behind `if: github.event_name ==
+    'workflow_dispatch'`. That put two permanently grey squares on every such
+    pull request: neither pass nor fail, not requirable, and meaningless
+    without knowing why they are grey.
+
+    What a pull request can verify about this workflow, the suites under
+    `validate` verify -- this file is most of them. What it cannot (are the
+    secrets real, does Unity export, does Xcode sign) needs a dispatch either
+    way. So the trigger goes, rather than the jobs being conditioned.
+    """
+    # Comments are stripped first: this file explains both defects at length,
+    # and a test that matched prose would fail on its own documentation.
+    code = "\n".join(
+        line for line in WORKFLOW.read_text(encoding="utf-8").splitlines()
+        if not line.lstrip().startswith("#")
+    )
+    trigger = code.split("permissions:", 1)[0]
+    assert "workflow_dispatch:" in trigger
+    for never in ("pull_request:", "push:", "schedule:"):
+        assert never not in trigger, (
+            f"{never} would make this workflow's jobs appear on pull requests, "
+            f"where they can only be skipped or spend a Unity seat"
+        )
+    assert "if: github.event_name" not in code, (
+        "an event-conditioned job reports as skipped rather than absent"
+    )

@@ -1,15 +1,8 @@
 name: ios-build
 
-# The road to `phase6/appstore-cert-checklist`, which closes on an Xcode
-# archive. This is its first stage: prove the Apple credentials are usable
-# before anything expensive depends on them.
-#
-# Dispatch-only, deliberately. The secrets this reads may not exist yet, and a
-# workflow that runs on `pull_request` would turn every pull request in the
-# repository red for a reason unrelated to its diff -- exactly the "green lie"
-# inversion that unity-test.yml's preflight comment warns about, in the other
-# direction. It becomes a pull request gate in the same commit that adds the
-# archive job, by which point a missing secret is a real failure.
+# `phase6/appstore-cert-checklist` closes on an Xcode archive. This produces
+# one: check the credentials on Linux, export the Xcode project on Linux, and
+# archive on macOS only once both have passed.
 #
 # Cloud signing, not a stored certificate: `xcodebuild -allowProvisioningUpdates`
 # obtains the signing assets from the App Store Connect API key, so the four
@@ -17,15 +10,24 @@ name: ios-build
 # `.mobileprovision` -- three fewer secrets, and three fewer things that expire
 # silently a year from now with an error that reads like a code problem.
 
+# Dispatch only, and no pull_request trigger at all.
+#
+# The earlier version ran the credential check on pull requests that touched
+# it, with the expensive jobs behind `if: github.event_name ==
+# 'workflow_dispatch'`. That worked, and it put two permanently *skipped*
+# squares on every such pull request. A skipped check is not a verdict: it
+# reports neither pass nor fail, it cannot be required, and a reader has to
+# know why it is grey before the pull request means anything.
+#
+# Nothing is lost by dropping the trigger. What a pull request can actually
+# verify about this workflow is verified by the Python suites under
+# `validate`, which run the checker, both reporters and the assertions that
+# this file's secret names, paths and job ordering still match them. What a
+# pull request cannot verify -- whether the secrets in this repository are
+# real, whether Unity exports, whether Xcode signs -- needs a dispatch either
+# way.
 on:
   workflow_dispatch:
-  # Changes to the checker or to this file are checked against themselves. The
-  # path filter is what keeps this off unrelated pull requests; the job below
-  # tolerates absent secrets on that trigger.
-  pull_request:
-    paths:
-      - "scripts/check_apple_credentials.py"
-      - ".github/workflows/ios-build.yml"
 
 permissions:
   contents: read
@@ -51,11 +53,6 @@ jobs:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_P8: ${{ secrets.APP_STORE_CONNECT_API_KEY_P8 }}
-        # On a dispatch the credentials are the subject, so a problem is the
-        # answer and the job is red. On a pull_request the subject is the
-        # checker's own code -- the fork case has no secrets at all -- so the
-        # outcome is recorded and reported below rather than failing here.
-        continue-on-error: ${{ github.event_name == 'pull_request' }}
         run: python scripts/check_apple_credentials.py
 
       - name: Say what to store
@@ -73,9 +70,8 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   # ---------------------------------------------------------------------
-  # Export, then archive. Dispatch-only for the same reason the preflight
-  # is: a Unity seat and a macOS runner are both scarce, and neither should
-  # be spent by a pull request that did not ask for them.
+  # Export, then archive. A Unity seat and a macOS runner are both scarce,
+  # which is part of why this whole workflow is dispatch-only.
   #
   # Nothing here has run yet. It is written from each tool's documented
   # interface, and the first dispatch is its verification -- said plainly
@@ -84,7 +80,6 @@ jobs:
   # ---------------------------------------------------------------------
   export:
     needs: apple-credentials
-    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -132,7 +127,6 @@ jobs:
 
   archive:
     needs: export
-    if: github.event_name == 'workflow_dispatch'
     # macOS because xcodebuild exists nowhere else. It is roughly ten times a
     # Linux runner, which is why the credential check and the export both had
     # to pass before this job starts.
