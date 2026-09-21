@@ -31,8 +31,13 @@ case "$OFFSET" in ''|*[!0-9]*) OFFSET=0 ;; esac
 [ "$LINES" -lt 1 ] && LINES=1
 [ "$LINES" -gt "$MAX_LINES" ] && LINES=$MAX_LINES
 
-read -r BRANCH HEAD <<<"$(gh pr view "$PR" --json headRefName,headRefOid \
-    --jq '"\(.headRefName) \(.headRefOid)"' 2>/dev/null)"
+# `gh pr view --json` is a GraphQL call, and GraphQL is not reachable from
+# every environment this script has to run in -- where it is blocked, the
+# lookup failed and every PR reported "not found", which reads as a missing
+# PR rather than a missing transport. The REST endpoint carries the same two
+# fields and is available wherever the rest of this script's calls are.
+read -r BRANCH HEAD <<<"$(gh api "repos/{owner}/{repo}/pulls/$PR" \
+    --jq '"\(.head.ref) \(.head.sha)"' 2>/dev/null)"
 if [ -z "${BRANCH:-}" ]; then
     echo "PR #$PR: not found" >&2
     exit 1
