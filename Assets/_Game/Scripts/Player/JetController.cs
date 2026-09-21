@@ -30,6 +30,19 @@ namespace JetFighter.Player
 
         private Rigidbody body;
         private float bankAngle;
+        private IFlightStats stats;
+
+        /// <summary>
+        /// The numbers the jet flies with. Defaults to an immutable snapshot
+        /// of the config; PlayerStatsRuntime replaces it so power-ups can
+        /// change flight without anything writing to the asset. Assigning null
+        /// falls back to the snapshot rather than grounding the jet.
+        /// </summary>
+        public IFlightStats Stats
+        {
+            get => stats ??= new FlightStatsSnapshot(config);
+            set => stats = value ?? new FlightStatsSnapshot(config);
+        }
 
         /// <summary>Current visual roll in degrees. Exposed for tests and tuning HUDs.</summary>
         public float BankAngle => bankAngle;
@@ -37,12 +50,20 @@ namespace JetFighter.Player
         public JetFlightConfig Config
         {
             get => config;
-            set => config = value;
+            set
+            {
+                config = value;
+                // Re-snapshotted rather than kept: a swapped config that left
+                // the old numbers in place would be a tuning change that
+                // appears to do nothing.
+                stats = new FlightStatsSnapshot(config);
+            }
         }
 
         private void Awake()
         {
             body = GetComponent<Rigidbody>();
+            stats = new FlightStatsSnapshot(config);
             ApplyConfigToBody();
         }
 
@@ -53,18 +74,18 @@ namespace JetFighter.Player
         /// </summary>
         public void ApplyConfigToBody()
         {
-            if (body == null || config == null)
+            if (body == null)
             {
                 return;
             }
-            body.linearDamping = config.linearDrag;
-            body.angularDamping = config.angularDrag;
+            body.linearDamping = Stats.LinearDrag;
+            body.angularDamping = Stats.AngularDrag;
             body.useGravity = false;
         }
 
         private void FixedUpdate()
         {
-            if (body == null || config == null)
+            if (body == null)
             {
                 return;
             }
@@ -81,7 +102,7 @@ namespace JetFighter.Player
         {
             Vector3 current = body.linearVelocity;
             Vector3 acceleration = ComputeAcceleration(
-                input, new Vector2(current.x, current.y), config);
+                input, new Vector2(current.x, current.y), Stats.MaxSpeed, Stats.Acceleration);
             body.AddForce(acceleration, ForceMode.Acceleration);
         }
 
@@ -91,8 +112,9 @@ namespace JetFighter.Player
         /// </summary>
         public void ApplyBanking(float deltaTime)
         {
-            float target = ComputeTargetBankAngle(body.linearVelocity.x, config);
-            bankAngle = StepTowardBank(bankAngle, target, config.bankResponsiveness, deltaTime);
+            float target = ComputeTargetBankAngle(
+                body.linearVelocity.x, Stats.MaxSpeed, Stats.BankAngleMax);
+            bankAngle = StepTowardBank(bankAngle, target, Stats.BankResponsiveness, deltaTime);
             if (visual != null)
             {
                 visual.localRotation = Quaternion.Euler(0f, 0f, bankAngle);
@@ -109,20 +131,24 @@ namespace JetFighter.Player
         /// input is clamped to the unit circle first, so a diagonal push is
         /// not 1.41x faster than a cardinal one.
         /// </summary>
-        public static Vector3 ComputeAcceleration(Vector2 input, Vector2 currentVelocity, JetFlightConfig config)
+        public static Vector3 ComputeAcceleration(Vector2 input, Vector2 currentVelocity,
+            float maxSpeed, float acceleration)
         {
-            if (config == null)
+            // Numbers rather than the asset: the jet flies on effective
+            // values, and taking the ScriptableObject here would be an
+            // invitation to write back to it.
+            if (maxSpeed <= 0f || acceleration <= 0f)
             {
                 return Vector3.zero;
             }
             Vector2 clamped = Vector2.ClampMagnitude(input, 1f);
-            Vector2 targetVelocity = clamped * config.maxSpeed;
+            Vector2 targetVelocity = clamped * maxSpeed;
             Vector2 delta = targetVelocity - currentVelocity;
 
             // Cap the step at `acceleration` so releasing the stick coasts on
             // drag rather than braking, and so a large velocity error cannot
             // produce an impulse the tuning never accounted for.
-            Vector2 result = Vector2.ClampMagnitude(delta * config.acceleration, config.acceleration);
+            Vector2 result = Vector2.ClampMagnitude(delta * acceleration, acceleration);
             return new Vector3(result.x, result.y, 0f);
         }
 
@@ -131,14 +157,14 @@ namespace JetFighter.Player
         /// rightward motion: the jet leans into the turn, it does not lean
         /// away from it.
         /// </summary>
-        public static float ComputeTargetBankAngle(float lateralVelocity, JetFlightConfig config)
+        public static float ComputeTargetBankAngle(float lateralVelocity, float maxSpeed, float bankAngleMax)
         {
-            if (config == null)
+            if (maxSpeed <= 0f)
             {
                 return 0f;
             }
-            float normalized = Mathf.Clamp(lateralVelocity / config.maxSpeed, -1f, 1f);
-            return -normalized * config.bankAngleMax;
+            float normalized = Mathf.Clamp(lateralVelocity / maxSpeed, -1f, 1f);
+            return -normalized * bankAngleMax;
         }
 
         /// <summary>

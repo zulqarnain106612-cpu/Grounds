@@ -51,9 +51,9 @@ state, not an oversight — the scaffold exists, the gameplay code does not.
 | Done | Branch | Domain | Requirement | ADR | Verified by | Seed node |
 |---|---|---|---|---|---|---|
 | [x] | `phase1/player-flight-rigidbody` | player | Roadmap §2 `player`, §3.1 — real inertia/drag/banking | — | Inertia and banking validated unconstrained, in isolation | `phase1_player_flight_rigidbody` |
-| [ ] | `phase1/physics-plane-constraint` | physics | Roadmap §3.2 — post-solve axis clamp | **ADR-001** | Locked-axis deviation stays within epsilon over a long run | `phase1_physics_plane_constraint` |
-| [ ] | `phase1/input-joystick-mapping` | ui | Roadmap §2 `ui` — left-region joystick, no bleed | — | Left-region-only guarantee test; on-device touch test | `phase1_input_joystick_mapping` |
-| [ ] | `phase1/weapon-gun-stub` | weapon | Roadmap §2 `weapon` — pooled 1/sec auto-fire | — | Pool stays bounded; no `Instantiate`/`Destroy` in the fire path | `phase1_weapon_gun_stub` |
+| [x] | `phase1/physics-plane-constraint` | physics | Roadmap §3.2 — post-solve axis clamp | **ADR-001** | Locked-axis deviation stays within epsilon over a long run | `phase1_physics_plane_constraint` |
+| [x] | `phase1/input-joystick-mapping` | ui | Roadmap §2 `ui` — left-region joystick, no bleed | — | Left-region-only guarantee test; on-device touch test | `phase1_input_joystick_mapping` |
+| [x] | `phase1/weapon-gun-stub` | weapon | Roadmap §2 `weapon` — pooled 1/sec auto-fire | — | Pool stays bounded; no `Instantiate`/`Destroy` in the fire path | `phase1_weapon_gun_stub` |
 
 **Cycle gate (roadmap §8):** jet flies under physics, feels right, never
 leaves the locked plane, responsive on-device.
@@ -62,13 +62,13 @@ leaves the locked plane, responsive on-device.
 
 | Done | Branch | Domain | Requirement | ADR | Verified by | Seed node |
 |---|---|---|---|---|---|---|
-| [ ] | *(retrofit)* gun reads `PlayerStatsRuntime` | weapon | Phase 2 spec, cross-phase note | — | Runs **before** the cells below | — |
-| [ ] | `phase2/enemy-core` | enemy | Roadmap §2 `enemy` — data-driven `EnemyDef`, damage events | — | Damage pipeline unit-tested through `IDamageable` | `phase2_enemy_core` |
-| [ ] | `phase2/enemy-healthbar-ui` | ui | Roadmap §2 `enemy` — event-driven world-space bar | — | Bar updates on event, not per-frame polling | `phase2_enemy_healthbar_ui` |
-| [ ] | `phase2/weapon-bullet-damage` | weapon | Roadmap §2 `weapon` — bullet damage pipeline | — | Bullet applies damage via `IDamageable` | `phase2_weapon_bullet_damage` |
-| [ ] | `phase2/right-hand-targeting` | ui | Roadmap §2 `ui` — independent right-hand surface | **ADR-002** | Right-half touches move the reticle; left-half touches have zero targeting effect | `phase2_right_hand_targeting` |
-| [ ] | `phase2/missile-system` | weapon | Roadmap §2 `weapon` — ground-locked missiles | **ADR-002** | Missile destroys targeted ground enemy; cooldown holds; pool bounded under soak | `phase2_missile_system` |
-| [ ] | `phase2/intro-sequence` | player | Roadmap §2 `player` — spawn/countdown state machine | — | Control hands off to physics only at `Go` | `phase2_intro_sequence` |
+| [x] | *(retrofit)* gun reads `PlayerStatsRuntime` | weapon | Phase 2 spec, cross-phase note | — | Runs **before** the cells below. Landed as the `IPlayerStats` seam — `PlayerStatsRuntime` itself is Cycle 3, so the interface ships here and the implementation ships in its own cell, with no weapon code changing then | — |
+| [x] | `phase2/enemy-core` | enemy | Roadmap §2 `enemy` — data-driven `EnemyDef`, damage events | — | Damage pipeline unit-tested through `IDamageable` | `phase2_enemy_core` |
+| [x] | `phase2/enemy-healthbar-ui` | ui | Roadmap §2 `enemy` — event-driven world-space bar | — | Bar updates on event, not per-frame polling | `phase2_enemy_healthbar_ui` |
+| [x] | `phase2/weapon-bullet-damage` | weapon | Roadmap §2 `weapon` — bullet damage pipeline | — | Bullet applies damage via `IDamageable` | `phase2_weapon_bullet_damage` |
+| [x] | `phase2/right-hand-targeting` | ui | Roadmap §2 `ui` — independent right-hand surface | **ADR-002** | Right-half touches move the reticle; left-half touches have zero targeting effect | `phase2_right_hand_targeting` |
+| [x] | `phase2/missile-system` | weapon | Roadmap §2 `weapon` — ground-locked missiles | **ADR-002** | Missile destroys targeted ground enemy; cooldown holds; pool bounded under soak | `phase2_missile_system` |
+| [x] | `phase2/intro-sequence` | player | Roadmap §2 `player` — spawn/countdown state machine | — | Control hands off to physics only at `Go` | `phase2_intro_sequence` |
 
 **Cycle gate:** one full engagement loop — gun kills air enemy, health bar
 animates and colours correctly, missile locks and destroys a ground target.
@@ -77,12 +77,12 @@ animates and colours correctly, missile locks and destroys a ground target.
 
 | Done | Branch | Domain | Requirement | ADR | Verified by | Seed node |
 |---|---|---|---|---|---|---|
-| [ ] | `phase3/player-stats-runtime` | player | Roadmap §2 `asset` — power-ups mutate player stats | — | Stat changes observable at runtime | `phase3_player_stats_runtime` |
-| [ ] | `phase3/powerup-core` | asset | Roadmap §2 `asset` — stacking with a hard cap | **ADR-003** | Multiplicative stacking never exceeds the cap | `phase3_powerup_core` |
-| [ ] | `phase3/enemy-drop-tables` | enemy | Roadmap §2 `asset` — weighted drops, data-only balancing | — | Drop weights are retunable with no code change | `phase3_enemy_drop_tables` |
-| [ ] | `phase3/difficulty-scaling` | enemy | Roadmap §4 — bounded DDA | — | Time-to-kill never exceeds the ceiling across a `PlayerPowerLevel` sweep | `phase3_difficulty_scaling` |
-| [ ] | `phase3/enemy-spawner-waves` | enemy | Roadmap §4 — archetype variety by threshold | — | Archetypes unlock at the configured thresholds | `phase3_enemy_spawner_waves` |
-| [ ] | `phase3/economy-coins` | scene | Roadmap §5 — currency-generic `Wallet` | **ADR-004** | Adding a third currency requires no `Wallet` change | `phase3_economy_coins` |
+| [x] | `phase3/player-stats-runtime` | player | Roadmap §2 `asset` — power-ups mutate player stats | — | Stat changes observable at runtime | `phase3_player_stats_runtime` |
+| [x] | `phase3/powerup-core` | asset | Roadmap §2 `asset` — stacking with a hard cap | **ADR-003** | Multiplicative stacking never exceeds the cap | `phase3_powerup_core` |
+| [x] | `phase3/enemy-drop-tables` | enemy | Roadmap §2 `asset` — weighted drops, data-only balancing | — | Drop weights are retunable with no code change | `phase3_enemy_drop_tables` |
+| [x] | `phase3/difficulty-scaling` | enemy | Roadmap §4 — bounded DDA | — | Time-to-kill never exceeds the ceiling across a `PlayerPowerLevel` sweep | `phase3_difficulty_scaling` |
+| [x] | `phase3/enemy-spawner-waves` | enemy | Roadmap §4 — archetype variety by threshold | — | Archetypes unlock at the configured thresholds | `phase3_enemy_spawner_waves` |
+| [x] | `phase3/economy-coins` | scene | Roadmap §5 — currency-generic `Wallet` | **ADR-004** | Adding a third currency requires no `Wallet` change | `phase3_economy_coins` |
 
 **Cycle gate:** a 5+ minute solo run; power-ups visibly change behaviour;
 difficulty escalates and stays beatable.
@@ -91,24 +91,27 @@ difficulty escalates and stays beatable.
 
 | Done | Branch | Domain | Requirement | ADR | Verified by | Seed node |
 |---|---|---|---|---|---|---|
-| [ ] | `phase4/network-abstraction` | network | Roadmap §6 — `INetworkTransport` seam | **ADR-005** | Loopback transport drives gameplay with no GameKit present | `phase4_network_abstraction` |
-| [ ] | `phase4/player-state-sync` | network | Roadmap §6 — position/fire sync | ADR-005 | Passes over loopback before any device is involved | `phase4_player_state_sync` |
-| [ ] | `phase4/host-authoritative-enemies` | enemy | Roadmap §6 — one authority for enemy state | ADR-005 | No enemy-HP divergence over loopback | `phase4_host_authoritative_enemies` |
-| [ ] | `phase4/gamekit-transport` | network | Roadmap §6 — GameKit as an implementation, not a dependency | ADR-005 | **Zero gameplay-code changes** when swapping transport — this is the abstraction's own test | `phase4_gamekit_transport` |
-| [ ] | `phase4/network-soak-test` | network | Roadmap §11 R4 | ADR-005 | Two physical devices, full co-op run, no visible desync; brief interruption crashes neither client | `phase4_network_soak_test` |
+| [x] | `phase4/network-abstraction` | network | Roadmap §6 — `INetworkTransport` seam | **ADR-005** | Loopback transport drives gameplay with no GameKit present | `phase4_network_abstraction` |
+| [x] | `phase4/player-state-sync` | network | Roadmap §6 — position/fire sync | ADR-005 | Passes over loopback before any device is involved | `phase4_player_state_sync` |
+| [x] | `phase4/host-authoritative-enemies` | enemy | Roadmap §6 — one authority for enemy state | ADR-005 | No enemy-HP divergence over loopback | `phase4_host_authoritative_enemies` |
+| [x] | `phase4/gamekit-transport` | network | Roadmap §6 — GameKit as an implementation, not a dependency | ADR-005 | **Zero gameplay-code changes** when swapping transport — this is the abstraction's own test | `phase4_gamekit_transport` |
+| [ ] | `phase4/network-soak-test` | network | Roadmap §11 R4 | ADR-005 | Two physical devices, full co-op run, no visible desync; brief interruption crashes neither client. **Deliberately still open:** the automated half shipped (latency, jitter, 50% loss, 20 interruptions, a 5-minute run with divergence checked every frame — `NetworkSoakTests`), and the device half is `docs/DEVICE_SOAK_PROCEDURE.md`, which needs two provisioned devices and `UNITY_LICENSE`. Ticking on the automated half alone would be the green lie Cycle 0 was built to prevent | `phase4_network_soak_test` |
 
 **Cycle gate:** two physical iOS devices complete a co-op run with no visible
-enemy-health desync.
+enemy-health desync. **Not yet met** — every cell below it is closed and the
+soak harness exists, but the gate itself is a device observation. See
+`docs/DEVICE_SOAK_PROCEDURE.md` for what is automated, what only devices can
+show, and the evidence a passing run has to produce.
 
 ## Cycle 5 — Economy and monetization  *(risk R6)*
 
 | Done | Branch | Domain | Requirement | ADR | Verified by | Seed node |
 |---|---|---|---|---|---|---|
-| [ ] | `phase5/product-catalog` | scene | Roadmap §5 — data-only pricing | ADR-004 | Price changes touch no code | `phase5_product_catalog` |
-| [ ] | `phase5/iap-integration` | scene | Roadmap §5 — IAP ladder | ADR-004 | Sandbox purchase credits gems via the Phase 3 `Wallet` | `phase5_iap_integration` |
-| [ ] | `phase5/store-ui` | ui | Roadmap §5 — dual-currency store | ADR-004 | Both currencies purchase and deduct correctly | `phase5_store_ui` |
-| [ ] | `phase5/ads-integration` | scene | Roadmap §5 — rewarded + interstitial, remove-ads IAP | — | Remove-ads suppresses interstitials permanently | `phase5_ads_integration` |
-| [ ] | `phase5/compliance-odds-ui` | ui | Roadmap §5 — Guideline 3.1.1 slot | **ADR-006** | Renders correctly in a test harness while dormant | `phase5_compliance_odds_ui` |
+| [x] | `phase5/product-catalog` | scene | Roadmap §5 — data-only pricing | ADR-004 | Price changes touch no code | `phase5_product_catalog` |
+| [x] | `phase5/iap-integration` | scene | Roadmap §5 — IAP ladder | ADR-004 | Sandbox purchase credits gems via the Phase 3 `Wallet` | `phase5_iap_integration` |
+| [x] | `phase5/store-ui` | ui | Roadmap §5 — dual-currency store | ADR-004 | Both currencies purchase and deduct correctly | `phase5_store_ui` |
+| [x] | `phase5/ads-integration` | scene | Roadmap §5 — rewarded + interstitial, remove-ads IAP | — | Remove-ads suppresses interstitials permanently | `phase5_ads_integration` |
+| [x] | `phase5/compliance-odds-ui` | ui | Roadmap §5 — Guideline 3.1.1 slot | **ADR-006** | Renders correctly in a test harness while dormant. **Still human-owned:** ADR-006 says to re-read the current App Store guidelines at Cycle 5 rather than trusting the note — the component being testable is not the same as the disclosure being what Guideline 3.1.1 currently requires | `phase5_compliance_odds_ui` |
 
 **Cycle gate:** a sandbox IAP completes end-to-end and unlocks a store item.
 
@@ -116,10 +119,10 @@ enemy-health desync.
 
 | Done | Branch | Domain | Requirement | ADR | Verified by | Seed node |
 |---|---|---|---|---|---|---|
-| [ ] | `phase6/analytics-instrumentation` | scene | Roadmap §7 — Firebase event set | — | Every listed event appears in the Firebase dashboard on a real run | `phase6_analytics_instrumentation` |
-| [ ] | `phase6/settings-ui` | ui | Spec item 2c — adjustable settings | — | Manual override persists across relaunch and visibly changes rendering | `phase6_settings_ui` |
-| [ ] | `phase6/perf-profiling-pass` | physics | Roadmap §2 `build_pipeline` — Burst decided from data | — | Sustained fps floor at low tier on the lowest supported device | `phase6_perf_profiling_pass` |
-| [ ] | `phase6/appstore-cert-checklist` | build_pipeline | Roadmap §8 Phase 6 | ADR-006 | Archives cleanly with all required Privacy Manifests | `phase6_appstore_cert_checklist` |
+| [x] | `phase6/analytics-instrumentation` | scene | Roadmap §7 — Firebase event set | — | Every listed event appears in the Firebase dashboard on a real run | `phase6_analytics_instrumentation` |
+| [x] | `phase6/settings-ui` | ui | Spec item 2c — adjustable settings | — | Manual override persists across relaunch and visibly changes rendering | `phase6_settings_ui` |
+| [ ] | `phase6/perf-profiling-pass` | physics | Roadmap §2 `build_pipeline` — Burst decided from data | — | Sustained fps floor at low tier on the lowest supported device. **Deliberately still open:** a profiler capture is the criterion and no CI run produces one. What shipped is `FrameBudgetProbe` (worst frame, 1% low, hitch count — not the average) and the hot-path property checks that stop a capture being invalidated later; the capture itself is `docs/PERF_PROFILING_PROCEDURE.md` | `phase6_perf_profiling_pass` |
+| [ ] | `phase6/appstore-cert-checklist` | build_pipeline | Roadmap §8 Phase 6 | ADR-006 | Archives cleanly with all required Privacy Manifests. **Deliberately still open:** an Xcode archive is the criterion and no CI run produces one, and the three SDK manifests arrive with SDKs not yet installed. What shipped is the game's own manifest, `config/appstore.checklist.json` and `scripts/check_appstore_readiness.py` (`--release` blocks on the SDK manifests); the archive and the manual gates are `docs/APPSTORE_SUBMISSION.md` | `phase6_appstore_cert_checklist` |
 
 **Cycle gate:** acceptable frame rate at low tier on the lowest supported
 device, and analytics visible in Firebase.

@@ -249,3 +249,36 @@ The four below were not in the roadmap. They are recorded here because
   fix is to re-run the menu item, which makes the JSON authoritative again.
   When the Unity licence lands, `unity-test.yml` should run `Apply` in batch
   mode so drift is corrected in CI rather than by convention.
+
+## ADR-013 — The ingest workflow proposes a pull request on content, not on bytes
+
+- **Context:** The nightly ingest cron (`17 3 * * *`) gated its pull request
+  on `git diff --cached --quiet` after staging the four generated files.
+  Every generator stamps a fresh `generated_at`/`updated_at` into its output
+  on every run, so that staged diff is never empty and the "indexes already
+  up to date; nothing to propose" branch was unreachable. The cron therefore
+  opened a pull request every single day whose entire content was a moved
+  clock. Ten of them accumulated against a protected `main` (#199–#208), and
+  because each touched the same four files, each conflicted with the others —
+  so none could be merged without resolving generated files by hand, which
+  ADR-008's "never hand-edit generated files" rule forbids.
+- **Decision:** `scripts/ingest_content_changed.py` decides instead. It
+  compares the freshly built files against `HEAD` on content keys only —
+  `symbols`, `chunks`/`chunk_count`, `graph` — plus the `index/manifest.json`
+  ledger with its own `generated_at` and the entries of those three
+  timestamp-bearing artifacts excluded. A timestamp-only refresh exits
+  non-zero and the workflow proposes nothing.
+- **Rationale:** Those content keys are exactly what `enforce.yml`'s
+  staleness check compares, and it already ignores timestamps for the same
+  reason. Reusing that definition makes the gate that *opens* a pull request
+  and the gate that *fails the build* agree by construction: nothing that
+  could turn a build red is ever suppressed, and nothing that cannot is ever
+  proposed. `tests/test_ingest_pr_guard.py` pins both halves, including a
+  test that fails if the two key lists drift apart.
+- **Consequence:** The committed indexes' timestamps now lag the last ingest
+  run, sometimes by weeks. That is intentional and costs nothing — no gate
+  reads them, and freshness is defined by content everywhere it matters. A
+  refresh that carries real content still lands within a day. The manifest's
+  `bytes`/`sha256` entries for the three generated artifacts are no longer
+  a change signal, which is sound because a real change to any of them is
+  already caught by that file's own content keys.
