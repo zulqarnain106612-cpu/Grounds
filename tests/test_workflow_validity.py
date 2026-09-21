@@ -32,6 +32,7 @@ import pytest
 REAL_ROOT = Path(__file__).resolve().parent.parent
 WORKFLOW_DIR = REAL_ROOT / ".github" / "workflows"
 AUTO_MERGE = WORKFLOW_DIR / "auto-merge.yml"
+UNITY_TEST = WORKFLOW_DIR / "unity-test.yml"
 
 
 def _workflows():
@@ -233,3 +234,44 @@ def test_every_policy_declared_workflow_is_one_of_the_files_here():
     present = {f".github/workflows/{p.name}" for p in _workflows()}
     for name, path in policy["workflows"].items():
         assert path in present, f"policy workflow '{name}' points at {path}, which is not present"
+
+
+def test_auto_merge_requires_the_unity_legs_only_when_they_will_run():
+    """The third auto-merge defect: requiring a check that will never appear.
+
+    unity-test.yml is path-filtered. On a pull request touching none of those
+    paths the workflow never runs, so `test (editmode)` / `test (playmode)`
+    never exist as check runs. Requiring them unconditionally made
+    `checksByName[name]` undefined and auto-merge waited forever -- on every
+    ingest, docs or gateway pull request, which is most of them.
+    """
+    text = _text(AUTO_MERGE)
+    assert "touchesUnity" in text, (
+        "auto-merge must decide the Unity legs from the changed files, not "
+        "require them unconditionally"
+    )
+    assert "listFiles" in text, "it needs the PR's file list to make that call"
+    # 'validate' comes from enforce.yml, which is not path-filtered, so it is
+    # always required.
+    assert "const requiredChecks = ['validate'];" in text
+
+
+def test_auto_merge_unity_paths_match_the_workflow_they_mirror():
+    """UNITY_PATHS is a copy of unity-test.yml's `paths:` filter, and a copy
+    that drifts is worse than no copy: auto-merge would either wait for a run
+    that never comes, or stop requiring a run that does."""
+    # unity-test.yml lists each path twice (push and pull_request); a set
+    # collapses that. The filter uses globs, auto-merge matches by prefix.
+    declared = {
+        entry.replace("/**", "/")
+        for entry in re.findall(r'^\s*-\s*"([^"]+)"\s*$', _text(UNITY_TEST), re.M)
+    }
+    assert declared, "unity-test.yml no longer declares a paths: filter"
+
+    array = re.search(r"UNITY_PATHS = \[(.*?)\];", _text(AUTO_MERGE), re.S)
+    assert array, "auto-merge no longer declares UNITY_PATHS"
+    mirrored = set(re.findall(r"'([^']+)'", array.group(1)))
+    assert declared == mirrored, (
+        f"unity-test.yml paths {sorted(declared)} != auto-merge UNITY_PATHS "
+        f"{sorted(mirrored)}; update both together"
+    )
