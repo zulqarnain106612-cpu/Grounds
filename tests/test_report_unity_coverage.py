@@ -132,3 +132,22 @@ def test_the_script_opens_no_path_from_the_environment() -> None:
         encoding="utf-8"
     )
     assert 'report_unity_coverage.py "${{ matrix.testMode }}" | tee -a' in workflow
+
+
+def test_the_artifacts_path_is_a_constant_not_an_interpolation() -> None:
+    """Why the mode maps to a Path instead of being formatted into one.
+
+    Validating the mode and then building `Path(f"{mode}-artifacts")` still
+    carries argv into the path, and CodeQL kept flagging the search in
+    find_summary because a membership test is not a barrier. Every value in
+    ARTIFACTS is a literal, so the path used is a constant on both branches.
+    """
+    module = _load()
+    assert set(module.ARTIFACTS) == {"editmode", "playmode"}
+    assert module.MODES == tuple(module.ARTIFACTS)
+    for mode, path in module.ARTIFACTS.items():
+        assert path == Path(f"{mode}-artifacts")
+
+    source = SCRIPT.read_text(encoding="utf-8")
+    body = source.split("ARTIFACTS = {", 1)[1]
+    assert 'Path(f"' not in body, "the artifacts path must not be interpolated"

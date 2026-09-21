@@ -25,12 +25,19 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-# The test modes unity-test.yml runs, and the only values this script accepts.
-# The artifacts directory is built from the chosen one rather than taken as a
-# path argument: the caller passes a matrix value, so there is no reason to
-# accept an arbitrary path, and not accepting one means there is no path here
-# derived from input at all.
-MODES = ("editmode", "playmode")
+# The test modes unity-test.yml runs, mapped to the directory each one writes.
+#
+# A lookup, not `Path(f"{mode}-artifacts")`. Validating the mode and then
+# interpolating it still carries argv into the path, and CodeQL does not treat
+# a membership test as a barrier -- it kept flagging the search below, which is
+# fair: a guard is only as good as the next edit that moves it. Reading the
+# path out of this table means the value used is a constant either way, so
+# nothing derived from input reaches a path expression at all.
+ARTIFACTS = {
+    "editmode": Path("editmode-artifacts"),
+    "playmode": Path("playmode-artifacts"),
+}
+MODES = tuple(ARTIFACTS)
 
 
 def find_summary(artifacts: Path) -> Path | None:
@@ -66,11 +73,11 @@ def main(argv: list[str]) -> int:
         print(f"usage: report_unity_coverage.py <{'|'.join(MODES)}>", file=sys.stderr)
         return 2
     mode = argv[1]
-    if mode not in MODES:
+    artifacts = ARTIFACTS.get(mode)
+    if artifacts is None:
         print(f"unknown test mode {mode!r}; expected one of {', '.join(MODES)}",
               file=sys.stderr)
         return 2
-    artifacts = Path(f"{mode}-artifacts")
 
     lines = [f"## C# coverage -- {mode}", ""]
     summary = find_summary(artifacts)
