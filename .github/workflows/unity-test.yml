@@ -164,7 +164,17 @@ jobs:
       # gives QualityTierManager a seam worth testing.
       - name: Report C# coverage
         if: always()
-        run: python scripts/report_unity_coverage.py "${{ matrix.testMode }}-artifacts" "${{ matrix.testMode }}"
+        # tee, not a bare redirect: the number belongs in the step log as well
+        # as the job summary. The script writes neither file itself, so no path
+        # from the environment reaches it.
+        #
+        # pipefail because tee's exit status would otherwise mask the script's.
+        # The reporter never gates on a missing number -- it exits 0 for that --
+        # so the only status it can fail with is a caller error, which is
+        # exactly the one worth surfacing rather than swallowing.
+        run: |
+          set -o pipefail
+          python scripts/report_unity_coverage.py "${{ matrix.testMode }}" | tee -a "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v4
         if: always()
