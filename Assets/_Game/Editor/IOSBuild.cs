@@ -76,16 +76,23 @@ namespace JetFighter.Editor
             // Unity-generated output.
             IOSPlayerSettings.Apply();
 
+            // The scene is generated, never committed: see
+            // BootstrapSceneBuilder. Building it here rather than expecting it
+            // keeps a fresh checkout -- which is every CI run -- buildable
+            // without a manual editor step.
+            BootstrapSceneBuilder.Build();
+
             string[] scenes = EnabledScenes();
             if (scenes.Length == 0)
             {
                 Debug.LogError(
-                    "[IOSBuild] EditorBuildSettings lists no enabled scene, so this " +
-                    "build would produce an app that launches to a black screen. " +
-                    "Refusing rather than exporting one: a silent black screen is " +
-                    "only catchable by a human on a device, which is the acceptance " +
-                    "this project does not rely on. Add the bootstrap scene to " +
-                    "File > Build Settings before exporting.");
+                    "[IOSBuild] EditorBuildSettings lists no enabled scene even " +
+                    "after BootstrapSceneBuilder ran, so this build would produce " +
+                    "an app that launches to a black screen. Refusing rather than " +
+                    "exporting one: a silent black screen is only catchable by a " +
+                    "human on a device, which is the acceptance this project does " +
+                    "not rely on. The scene builder's own log line above says " +
+                    "whether it wrote " + BootstrapSceneBuilder.ScenePath + ".");
                 EditorApplication.Exit(RefusedExitCode);
                 return;
             }
