@@ -2,6 +2,13 @@ using NUnit.Framework;
 using UnityEngine;
 using JetFighter.Player;
 
+// NUnit and UnityEngine both define a RangeAttribute, so a bare [Range] here
+// is CS0104. The combinatorial tests below want NUnit's three-argument
+// (from, to, step) parameter attribute -- UnityEngine's is an inspector slider
+// for fields and is not even legal on a parameter. Aliased once rather than
+// qualified at six call sites, so a seventh cannot reintroduce the ambiguity.
+using Range = NUnit.Framework.RangeAttribute;
+
 namespace JetFighter.Tests.EditMode
 {
     /// <summary>
@@ -113,7 +120,7 @@ namespace JetFighter.Tests.EditMode
             [Range(-1f, 1f, 0.2f)] float x,
             [Range(-1f, 1f, 0.2f)] float y)
         {
-            Vector3 a = JetController.ComputeAcceleration(new Vector2(x, y), Vector2.zero, config);
+            Vector3 a = JetController.ComputeAcceleration(new Vector2(x, y), Vector2.zero, config.maxSpeed, config.acceleration);
             Assert.LessOrEqual(a.magnitude, config.acceleration + 1e-3f,
                 $"input ({x}, {y}) produced {a.magnitude}");
             Assert.AreEqual(0f, a.z, 1e-6f, "the flight model never accelerates on the locked axis");
@@ -129,7 +136,7 @@ namespace JetFighter.Tests.EditMode
         {
             float radians = degrees * Mathf.Deg2Rad;
             Vector2 input = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians));
-            Vector3 a = JetController.ComputeAcceleration(input, Vector2.zero, config);
+            Vector3 a = JetController.ComputeAcceleration(input, Vector2.zero, config.maxSpeed, config.acceleration);
             Assert.AreEqual(config.acceleration, a.magnitude, 1e-3f,
                 $"a full push at {degrees} degrees is not the same strength as at 0");
         }
@@ -146,8 +153,8 @@ namespace JetFighter.Tests.EditMode
             [Range(-1f, 1f, 0.25f)] float x,
             [Range(-1f, 1f, 0.25f)] float y)
         {
-            Vector3 forward = JetController.ComputeAcceleration(new Vector2(x, y), Vector2.zero, config);
-            Vector3 mirrored = JetController.ComputeAcceleration(new Vector2(-x, -y), Vector2.zero, config);
+            Vector3 forward = JetController.ComputeAcceleration(new Vector2(x, y), Vector2.zero, config.maxSpeed, config.acceleration);
+            Vector3 mirrored = JetController.ComputeAcceleration(new Vector2(-x, -y), Vector2.zero, config.maxSpeed, config.acceleration);
             Assert.AreEqual(-forward.x, mirrored.x, 1e-4f);
             Assert.AreEqual(-forward.y, mirrored.y, 1e-4f);
         }
@@ -156,8 +163,8 @@ namespace JetFighter.Tests.EditMode
         public void MirroringLateralMotionMirrorsTheBank([Range(0f, 20f, 2.5f)] float speed)
         {
             Assert.AreEqual(
-                -JetController.ComputeTargetBankAngle(speed, config),
-                JetController.ComputeTargetBankAngle(-speed, config),
+                -JetController.ComputeTargetBankAngle(speed, config.maxSpeed, config.bankAngleMax),
+                JetController.ComputeTargetBankAngle(-speed, config.maxSpeed, config.bankAngleMax),
                 1e-4f);
         }
 
@@ -172,7 +179,7 @@ namespace JetFighter.Tests.EditMode
             float previous = 0f;
             for (float speed = 0f; speed <= config.maxSpeed * 2f; speed += 0.25f)
             {
-                float current = Mathf.Abs(JetController.ComputeTargetBankAngle(speed, config));
+                float current = Mathf.Abs(JetController.ComputeTargetBankAngle(speed, config.maxSpeed, config.bankAngleMax));
                 Assert.GreaterOrEqual(current, previous - 1e-4f,
                     $"bank fell from {previous} to {current} when speed rose to {speed}");
                 previous = current;
@@ -204,7 +211,7 @@ namespace JetFighter.Tests.EditMode
             [Values(0.5f, 0.9f, 0.999f, 1f, 1.001f, 1.5f, 40f)] float fractionOfMax)
         {
             float lateral = config.maxSpeed * fractionOfMax;
-            float bank = Mathf.Abs(JetController.ComputeTargetBankAngle(lateral, config));
+            float bank = Mathf.Abs(JetController.ComputeTargetBankAngle(lateral, config.maxSpeed, config.bankAngleMax));
             if (fractionOfMax >= 1f)
             {
                 Assert.AreEqual(config.bankAngleMax, bank, 1e-3f, "the clamp did not hold past max speed");
@@ -251,7 +258,7 @@ namespace JetFighter.Tests.EditMode
                 var input = new Vector2(Next(-5f, 5f), Next(-5f, 5f));
                 var velocity = new Vector2(Next(-500f, 500f), Next(-500f, 500f));
 
-                Vector3 a = JetController.ComputeAcceleration(input, velocity, config);
+                Vector3 a = JetController.ComputeAcceleration(input, velocity, config.maxSpeed, config.acceleration);
 
                 Assert.IsFalse(float.IsNaN(a.x) || float.IsNaN(a.y) || float.IsNaN(a.z),
                     $"NaN at iteration {i}: input={input} velocity={velocity}");
@@ -304,8 +311,8 @@ namespace JetFighter.Tests.EditMode
 
             for (int i = 0; i < inputs.Length; i++)
             {
-                Vector3 first = JetController.ComputeAcceleration(inputs[i], velocities[i], config);
-                Vector3 second = JetController.ComputeAcceleration(inputs[i], velocities[i], config);
+                Vector3 first = JetController.ComputeAcceleration(inputs[i], velocities[i], config.maxSpeed, config.acceleration);
+                Vector3 second = JetController.ComputeAcceleration(inputs[i], velocities[i], config.maxSpeed, config.acceleration);
                 Assert.IsTrue(first.x.Equals(second.x), $"x differed on evaluation {i}");
                 Assert.IsTrue(first.y.Equals(second.y), $"y differed on evaluation {i}");
             }
@@ -324,13 +331,13 @@ namespace JetFighter.Tests.EditMode
             var forward = new float[speeds.Length];
             for (int i = 0; i < speeds.Length; i++)
             {
-                forward[i] = JetController.ComputeTargetBankAngle(speeds[i], config);
+                forward[i] = JetController.ComputeTargetBankAngle(speeds[i], config.maxSpeed, config.bankAngleMax);
             }
 
             var backward = new float[speeds.Length];
             for (int i = speeds.Length - 1; i >= 0; i--)
             {
-                backward[i] = JetController.ComputeTargetBankAngle(speeds[i], config);
+                backward[i] = JetController.ComputeTargetBankAngle(speeds[i], config.maxSpeed, config.bankAngleMax);
             }
 
             CollectionAssert.AreEqual(forward, backward);
@@ -352,11 +359,11 @@ namespace JetFighter.Tests.EditMode
             config.maxSpeed = maxSpeed;
             config.acceleration = acceleration;
 
-            Vector3 a = JetController.ComputeAcceleration(Vector2.one, new Vector2(3f, -4f), config);
+            Vector3 a = JetController.ComputeAcceleration(Vector2.one, new Vector2(3f, -4f), config.maxSpeed, config.acceleration);
             Assert.IsFalse(float.IsNaN(a.magnitude), "degenerate tuning produced NaN acceleration");
             Assert.LessOrEqual(a.magnitude, acceleration + 1e-2f);
 
-            float bank = JetController.ComputeTargetBankAngle(maxSpeed * 0.5f, config);
+            float bank = JetController.ComputeTargetBankAngle(maxSpeed * 0.5f, config.maxSpeed, config.bankAngleMax);
             Assert.IsFalse(float.IsNaN(bank), "degenerate tuning produced NaN bank");
             Assert.LessOrEqual(Mathf.Abs(bank), config.bankAngleMax + 1e-3f);
         }

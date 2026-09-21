@@ -12,15 +12,32 @@ prevent on the other axis.
 The floor lands with the cell that gives QualityTierManager a testable seam.
 Until then this prints the number so the trend is visible in every run.
 
+The report goes to stdout. The workflow appends it to the job summary with
+a shell redirect rather than this script opening $GITHUB_STEP_SUMMARY: the
+redirect is the same result with one less path for this process to touch.
+
 Usage:
-    python scripts/report_unity_coverage.py <artifacts-dir> <test-mode>
+    python scripts/report_unity_coverage.py <test-mode>
 """
 from __future__ import annotations
 
-import os
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
+
+# The test modes unity-test.yml runs, mapped to the directory each one writes.
+#
+# A lookup, not `Path(f"{mode}-artifacts")`. Validating the mode and then
+# interpolating it still carries argv into the path, and CodeQL does not treat
+# a membership test as a barrier -- it kept flagging the search below, which is
+# fair: a guard is only as good as the next edit that moves it. Reading the
+# path out of this table means the value used is a constant either way, so
+# nothing derived from input reaches a path expression at all.
+ARTIFACTS = {
+    "editmode": Path("editmode-artifacts"),
+    "playmode": Path("playmode-artifacts"),
+}
+MODES = tuple(ARTIFACTS)
 
 
 def find_summary(artifacts: Path) -> Path | None:
@@ -52,10 +69,15 @@ def line_coverage(summary: Path) -> str | None:
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) < 3:
-        print("usage: report_unity_coverage.py <artifacts-dir> <test-mode>", file=sys.stderr)
+    if len(argv) < 2:
+        print(f"usage: report_unity_coverage.py <{'|'.join(MODES)}>", file=sys.stderr)
         return 2
-    artifacts, mode = Path(argv[1]), argv[2]
+    mode = argv[1]
+    artifacts = ARTIFACTS.get(mode)
+    if artifacts is None:
+        print(f"unknown test mode {mode!r}; expected one of {', '.join(MODES)}",
+              file=sys.stderr)
+        return 2
 
     lines = [f"## C# coverage -- {mode}", ""]
     summary = find_summary(artifacts)
@@ -71,13 +93,7 @@ def main(argv: list[str]) -> int:
         else:
             lines.append(f"Line coverage: **{value}%** — reported, not gated (see this script's docstring).")
 
-    body = "\n".join(lines) + "\n"
-    print(body)
-
-    step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
-    if step_summary:
-        with open(step_summary, "a", encoding="utf-8") as handle:
-            handle.write(body)
+    print("\n".join(lines))
     return 0
 
 
