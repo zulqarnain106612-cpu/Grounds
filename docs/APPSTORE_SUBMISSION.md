@@ -69,6 +69,59 @@ python scripts/check_appstore_readiness.py --release
 
 It must exit 0. Then archive, and work the manual list above.
 
+## Credentials CI needs
+
+Four repository secrets, at **Settings → Secrets and variables → Actions**.
+`.github/workflows/ios-build.yml` reads exactly these and nothing else, and
+`scripts/check_apple_credentials.py` validates their shape before anything
+expensive runs:
+
+| Secret | What it is | Where it comes from |
+| --- | --- | --- |
+| `APPLE_TEAM_ID` | Ten characters, `A-Z0-9` | developer.apple.com → Account → Membership details → Team ID |
+| `APP_STORE_CONNECT_KEY_ID` | Ten characters, `A-Z0-9` | App Store Connect → Users and Access → Integrations → App Store Connect API → the *Key ID* column |
+| `APP_STORE_CONNECT_ISSUER_ID` | A UUID | Same page, shown once above the key table as *Issuer ID* |
+| `APP_STORE_CONNECT_API_KEY_P8` | The `AuthKey_<KEYID>.p8`, base64 encoded | Downloadable **exactly once**, when the key is created. `base64 -i AuthKey_XXXXXXXXXX.p8 \| tr -d '\n'` |
+
+Create the API key with the **App Manager** role: Developer cannot create the
+signing assets, and Admin grants more than a build needs.
+
+### Why an API key and not a certificate
+
+`xcodebuild -allowProvisioningUpdates` obtains the distribution certificate and
+provisioning profile from the App Store Connect key itself. The alternative —
+storing an Apple Distribution `.p12`, its password and a `.mobileprovision` —
+is three more secrets, and three more things that expire silently: a
+certificate lasts a year, a profile less, and both fail at the archive step
+with an error that reads like a code problem.
+
+### Paste mistakes the preflight catches
+
+Each of these fails at signing, minutes into a macOS job, with an Apple error
+that does not name the cause. The preflight names it on Linux in seconds, and
+never prints a value — only which value is wrong:
+
+- a trailing newline, which GitHub stores verbatim;
+- the raw `.p8` pasted instead of its base64 (the environment flattens the
+  PEM's newlines and the key stops parsing);
+- the Key ID and the Issuer ID swapped — they sit on the same page and have
+  different shapes, which is what makes the swap detectable;
+- the `.cer` base64-encoded instead of the `.p8`.
+
+Run it yourself:
+
+```
+python scripts/check_apple_credentials.py --names
+```
+
+### Why this workflow is dispatch-only for now
+
+It runs on `workflow_dispatch`, and on pull requests only when the checker or
+the workflow itself changes. Gating every pull request on secrets that may not
+be set yet would turn the whole repository red for a reason unrelated to its
+diff. It becomes a pull request gate in the same commit that adds the archive
+job, by which point a missing secret really is a failure.
+
 ## Why the row stays open
 
 There is no Xcode archive and there are no installed SDKs. Ticking on a green
