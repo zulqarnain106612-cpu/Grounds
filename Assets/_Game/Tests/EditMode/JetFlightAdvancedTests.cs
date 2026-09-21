@@ -2,6 +2,13 @@ using NUnit.Framework;
 using UnityEngine;
 using JetFighter.Player;
 
+// NUnit and UnityEngine both define a RangeAttribute, so a bare [Range] here
+// is CS0104. The combinatorial tests below want NUnit's three-argument
+// (from, to, step) parameter attribute -- UnityEngine's is an inspector slider
+// for fields and is not even legal on a parameter. Aliased once rather than
+// qualified at six call sites, so a seventh cannot reintroduce the ambiguity.
+using Range = NUnit.Framework.RangeAttribute;
+
 namespace JetFighter.Tests.EditMode
 {
     /// <summary>
