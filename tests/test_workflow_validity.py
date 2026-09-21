@@ -356,3 +356,46 @@ def test_the_floor_table_covers_every_first_party_action_in_use():
         f"Read runs.using from the action's action.yml at each major tag and "
         f"add the lowest one that says node24."
     )
+
+
+# --- the mutation gate ------------------------------------------------------
+
+def test_the_mutation_gate_can_actually_pass():
+    """A gate that can only fail is the same defect as one that can only pass.
+
+    The first version counted kills by searching `mutmut results` output for
+    "<n> killed". mutmut does not print that there -- the kill count is in
+    `mutmut run`'s emoji summary line. So killed was always 0, the score
+    always 0.0%, and the gate could only ever report failure. That is harder
+    to notice than the usual direction, because it looks like bad news rather
+    than like no news.
+
+    The fix is to read mutmut's JUnit document, whose shape is a contract:
+    one testcase per mutant, <failure> for survived, <skipped> for not
+    covered. This asserts the workflow still reads that rather than prose.
+    """
+    qa = _text(WORKFLOW_DIR / "qa.yml")
+    assert "mutmut junitxml" in qa
+    assert "ET.parse" in qa or "ElementTree" in qa
+    assert '"killed"' not in qa and "killed\\b" not in qa, (
+        "counting kills by searching mutmut's prose output is the bug this "
+        "replaced"
+    )
+
+
+def test_the_mutation_run_is_bounded_below_the_job_cap():
+    """Unbounded, it is killed at GitHub's six-hour job cap, which produces no
+    score and no log line saying why. Measured: the first dispatch was still
+    running at four hours eighteen minutes."""
+    qa = _text(WORKFLOW_DIR / "qa.yml")
+    match = re.search(r"^\s*timeout-minutes:\s*(\d+)\s*$", qa, re.M)
+    assert match, "the mutation step must be bounded"
+    assert 0 < int(match.group(1)) < 360, "the bound must sit below the 6h cap"
+
+
+def test_mutants_no_test_covers_are_skipped_rather_than_run():
+    """An uncovered mutant is the expensive one: nothing fails early, so it
+    costs a full run of the suite before being recorded as survived. It is
+    also not a finding -- the coverage floor already reports that line, more
+    cheaply."""
+    assert "--use-coverage" in _text(WORKFLOW_DIR / "qa.yml")

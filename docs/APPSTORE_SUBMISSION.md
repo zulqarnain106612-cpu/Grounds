@@ -114,13 +114,33 @@ Run it yourself:
 python scripts/check_apple_credentials.py --names
 ```
 
-### Why this workflow is dispatch-only for now
+### Producing the archive
 
-It runs on `workflow_dispatch`, and on pull requests only when the checker or
-the workflow itself changes. Gating every pull request on secrets that may not
-be set yet would turn the whole repository red for a reason unrelated to its
-diff. It becomes a pull request gate in the same commit that adds the archive
-job, by which point a missing secret really is a failure.
+`ios-build` is dispatch-only — `make ios-build REF=<branch>`, or Actions →
+ios-build → Run workflow. Three jobs,
+cheapest first, because a macOS runner is roughly ten times a Linux one and an
+archive is tens of minutes:
+
+1. **apple-credentials** (Linux, seconds) — the four secrets above are present
+   and well-formed. A trailing newline fails here rather than at signing.
+2. **export** (Linux) — Unity runs `JetFighter.Editor.IOSBuild.PerformBuild`,
+   which applies `config/ios.build.json`, generates the bootstrap scene and
+   writes the Xcode project to `build/iOS`. `scripts/check_ios_export.py` then
+   names any missing piece, so a bad export never reaches macOS.
+3. **archive** (macOS) — `xcodebuild archive -allowProvisioningUpdates` with
+   the App Store Connect key. `scripts/check_archive.py` refuses an archive
+   whose payload carries no code signature or no embedded provisioning
+   profile, which is the form of "App Store Connect will reject this" that can
+   be checked before uploading.
+
+The archive lands at `build/JetFighter.xcarchive` on the runner. Signature
+*validity* is checked at upload, not by that script.
+
+Nothing in `ios-build` runs on a pull request. That is deliberate: a job
+conditioned on the event reports as *skipped*, and a skipped check is not a
+verdict. Everything a pull request can check about this pipeline —  the
+checker, both reporters, the secret names, the paths, the job ordering, the
+key handling — is checked by the Python suites under `validate`.
 
 ## Why the row stays open
 

@@ -111,14 +111,48 @@ def test_the_build_path_is_an_argument_with_a_default(source: str) -> None:
     assert '"-buildPath"' in source
 
 
-def test_the_repo_still_has_no_scene_so_the_guard_is_load_bearing() -> None:
-    """Pins the fact the refusal is written against, and fails the day a
-    scene lands -- which is the day the export job can be wired up and this
-    test should be replaced by one asserting the scene is in the build list.
+def test_no_scene_is_committed() -> None:
+    """The scene is build output, not an authored asset.
+
+    A .unity file is Unity-generated YAML with GUID references: it merges
+    badly, cannot be asserted on without booting the editor, and a broken
+    reference in one produces an empty GameObject rather than an error. ADR-012
+    settled that class of file for the player settings. BootstrapSceneBuilder
+    composes this one from code on every build instead, into a gitignored
+    directory -- so a .unity appearing under version control means somebody
+    authored one by hand, which is the thing being avoided.
     """
-    scenes = [p for p in REAL_ROOT.rglob("*.unity") if ".git" not in p.parts]
-    assert scenes == [], (
-        "a scene now exists, so IOSBuild can produce a real player: add it to "
-        "EditorBuildSettings, wire the export job in ios-build.yml, and "
-        "replace this test with one that asserts the scene is enabled"
+    generated = REAL_ROOT / "Assets" / "_Game" / "Generated"
+    committed = [
+        p for p in REAL_ROOT.rglob("*.unity")
+        if ".git" not in p.parts and generated not in p.parents
+    ]
+    assert committed == [], (
+        f"scenes committed: {[str(p.relative_to(REAL_ROOT)) for p in committed]}. "
+        f"Compose them in BootstrapSceneBuilder instead."
     )
+
+
+def test_the_generated_scene_directory_is_ignored() -> None:
+    """Without this line the scene is committed the first time anyone builds,
+    silently, because a new .unity looks like an authored asset."""
+    ignored = (REAL_ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
+    assert "Assets/_Game/Generated/" in [line.strip() for line in ignored]
+
+
+def test_the_exporter_generates_the_scene_before_it_checks_for_one(
+    source: str,
+) -> None:
+    """Every CI run is a fresh checkout, so the scene never exists at the
+    start of one. An exporter that expected it rather than building it would
+    refuse every run, and the refusal would look like the black-screen guard
+    firing correctly."""
+    build_at = source.index("BootstrapSceneBuilder.Build()")
+    check_at = source.index("scenes.Length == 0")
+    assert build_at < check_at
+
+
+def test_the_refusal_names_the_scene_builder(source: str) -> None:
+    """After the builder runs, zero scenes means the builder failed -- so the
+    message has to point at it rather than at File > Build Settings."""
+    assert "BootstrapSceneBuilder" in source[source.index("scenes.Length == 0"):]

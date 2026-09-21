@@ -1,6 +1,6 @@
 REF ?= main
 
-.PHONY: init validate test ingest manifest review retrieval-verify ci-status \
+.PHONY: init validate test ingest manifest review retrieval-verify ios-build ci-status \
         ci-logs daemons-start daemons-stop daemons-status
 
 init:
@@ -34,6 +34,13 @@ review:
 retrieval-verify:
 	gh workflow run retrieval-verify.yml --ref $(REF)
 	@echo "dispatched retrieval-verify.yml on $(REF); check with 'make ci-status'"
+
+# The iOS archive pipeline: credentials, Unity export, xcodebuild archive.
+# Dispatch-only by design -- it runs on no event -- so this target is the only
+# way to start it, and REF decides which branch's workflow file runs.
+ios-build:
+	gh workflow run ios-build.yml --ref $(REF)
+	@echo "dispatched ios-build.yml on $(REF); check with 'make ci-status'"
 
 # PR-scoped by policy: a repo-wide run listing is not available here. The old
 # target ran `gh run list` from inside make, which the permission layer never
