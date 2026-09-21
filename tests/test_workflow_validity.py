@@ -62,12 +62,34 @@ def _workflow_name(text):
     return m.group(1).strip("'\"") if m else None
 
 
-def _inline_list(text, key, indent):
-    """`key: [a, b]` -> ['a', 'b']; absent or not inline -> None."""
-    m = re.search(rf"^{' ' * indent}{re.escape(key)}:[^\S\n]*\[([^\]]*)\]", text, re.M)
-    if m is None:
+def _yaml_list(text, key, indent):
+    """`key: [a, b]` or a block sequence under `key:` -> ['a', 'b'].
+
+    Absent, or present but empty -> None.
+
+    Both spellings are valid YAML and both appear in this repo's workflows.
+    Reading only the inline form had two costs: a populated block list was
+    reported as "empty", and at the call site below that tolerates None it
+    meant the names were never checked against real workflows at all.
+    """
+    pad = " " * indent
+    inline = re.search(rf"^{pad}{re.escape(key)}:[^\S\n]*\[([^\]]*)\]", text, re.M)
+    if inline is not None:
+        values = [v.strip().strip("'\"") for v in inline.group(1).split(",") if v.strip()]
+        return values or None
+
+    header = re.search(rf"^{pad}{re.escape(key)}:[^\S\n]*$", text, re.M)
+    if header is None:
         return None
-    return [v.strip().strip("'\"") for v in m.group(1).split(",") if v.strip()]
+    values = []
+    for line in text[header.end():].splitlines():
+        if not line.strip():
+            continue
+        entry = re.match(rf"^{pad}\s+-\s*(.+?)\s*$", line)
+        if entry is None:
+            break
+        values.append(entry.group(1).strip().strip("'\""))
+    return values or None
 
 
 def _check_run_names(text):
@@ -132,7 +154,7 @@ def test_workflow_run_triggers_name_the_workflows_they_follow():
             f"{path.name}: workflow_run requires a `workflows:` key; without it "
             f"the file is invalid and every run is a startup failure"
         )
-        assert _inline_list(spec, "workflows", 4), f"{path.name}: `workflows:` is empty"
+        assert _yaml_list(spec, "workflows", 4), f"{path.name}: `workflows:` is empty"
 
 
 def test_workflow_run_triggers_reference_real_workflow_names():
@@ -143,7 +165,7 @@ def test_workflow_run_triggers_reference_real_workflow_names():
         if not re.search(r"^  workflow_run:", on_block, re.M):
             continue
         spec = _block(on_block, "workflow_run", indent=2)
-        for named in (_inline_list(spec, "workflows", 4) or []):
+        for named in (_yaml_list(spec, "workflows", 4) or []):
             assert named in declared, (
                 f"{path.name}: workflow_run follows '{named}', which is not the "
                 f"`name:` of any workflow here. Known: {sorted(n for n in declared if n)}"
