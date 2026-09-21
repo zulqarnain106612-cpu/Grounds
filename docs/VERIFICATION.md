@@ -108,12 +108,19 @@ to the wrong suite.
 
 Stated here rather than left implicit, so their absence is a decision:
 
-- **No floor on C# coverage.** `scripts/report_unity_coverage.py` prints
-  the number and gates nothing. The only runtime code is `JetController`,
-  `JetFlightConfig` and `QualityTierManager`, and the last reads
-  `SystemInfo` in `Awake` with no seam to test. A floor chosen today would
-  be whichever number the current code happens to hit. It lands with the
-  cell that gives `QualityTierManager` a testable seam.
+- **No floor on C# coverage, and until now no number either.**
+  `scripts/report_unity_coverage.py` searched the artifacts directory, while
+  `game-ci/unity-test-runner` writes its coverage report to a separate
+  `CodeCoverage` directory at the workspace root. So the reporter printed *no
+  coverage summary was produced* on every run, under a green check, where
+  nobody reads it — and the figure has never once been measured. This entry
+  previously described the number as reported-but-not-gated; it was not
+  reported at all, and the reason it gave (that `QualityTierManager` had no
+  testable seam, and that it was one of only three runtime files) was wrong
+  on both counts.
+  Both roots are searched now and the coverage directory is uploaded with the
+  results. **The floor lands in the commit that reads the first real
+  figure** — a floor set against a number nobody has seen is decoration.
 - **No mutation testing on C#.** Stryker.NET would cover it. Not wired up;
   it needs its own cell.
 - **Flight feel is still half-subjective.** The objective half is
